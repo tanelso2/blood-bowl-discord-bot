@@ -5,14 +5,32 @@ const client = new Discord.Client();
 
 function advanceRound(message, user) {
     message.channel.send(`no ${user}`);
+    /* Example output:
+        Alright @owner, ${league.name} has been advanced to ${round}
+
+        Here are the matchups:
+
+        @user1 (teamType) v (teamType) @user2
+        @user3 (teamType) v (teamType) @user4
+    
+    */
 }
 
 function findOpponent(message, user) {
     message.channel.send(`Fuck you ${user}`);
+    /* Example output:
+        @user is playing @opponent this round
+    */
 }
 
 function printSchedule(message, user) {
     message.channel.send(`I'm on my break, ${user}`);
+    /* Example output:
+        @user, here is your schedule:
+        
+        1. ${opponent.commonName} - ${opponent.teamName} (${opponent.teamType})
+        2. etc....
+    */
 }
 
 const commands = {
