@@ -1,3 +1,6 @@
+name: Pissmonger Test Tournament
+ownerID: 42069101
+currentRound: 2
 coaches:
 - name: Dagoth Ur            # Name of the coach
   id: 8675309                # Discord userID
