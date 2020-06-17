@@ -4,8 +4,8 @@ Description = "Discord bot"
 [Service]
 Type=simple
 Restart=always
-WorkingDirectory=/opt/blood-bowl-discord-bot/
-ExecStart=/opt/blood-bowl-discord-bot/run.sh
+WorkingDirectory=/opt/bb_bot/
+ExecStart=/opt/bb_bot/deployment/run.sh
 User=bb_bot
 
 [Install]

@@ -1,5 +1,11 @@
 #!/bin/bash -x
 
+apt-get update
+
+# Install Node
+curl -sL https://deb.nodesource.com/setup_12.x | bash -
+apt-get install -y nodejs
+
 BB_DIR=/opt/bb_bot
 
 git clone https://github.com/tanelso2/blood-bowl-discord-bot "${BB_DIR}"
