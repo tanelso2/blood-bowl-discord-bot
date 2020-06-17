@@ -8,7 +8,7 @@ const { League } = require('./league.js')
 const leagueFile = './sample-league.yaml';
 
 function getLeague() {
-    let content = fs.readFileSync('./sample-league.yaml');
+    let content = fs.readFileSync(leagueFile);
     let data = yaml.safeLoad(content);
     return new League(data);
 }
