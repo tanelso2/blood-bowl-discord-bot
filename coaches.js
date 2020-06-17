@@ -19,3 +19,5 @@ class Coach {
         return `<@${this.id}>`;
     }
 }
+
+module.exports = { Coach };

@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/tanelso2/blood-bowl-discord-bot#readme",
   "dependencies": {
-    "discord.js": "^12.2.0"
+    "discord.js": "^12.2.0",
+    "js-yaml": "^3.14.0"
   }
 }

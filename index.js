@@ -1,6 +1,16 @@
 const config = require('./config.json');
+const fs = require('fs');
+const yaml = require('js-yaml');
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const { League } = require('./league.js')
+
+
+function getLeague() {
+    let content = fs.readFileSync('./sample-league.yaml');
+    let data = yaml.safeLoad(content);
+    return new League(data);
+}
 
 
 function advanceRound(message, user) {
@@ -17,10 +27,20 @@ function advanceRound(message, user) {
 }
 
 function findOpponent(message, user) {
-    message.channel.send(`Fuck you ${user}`);
     /* Example output:
         @user is playing @opponent this round
     */
+    const league = getLeague();
+    for (const game of league.getCurrentRound().games) {
+        const coaches = game.coaches;
+        if (coaches.map(c => c.id).includes(user.id)) {
+            const otherCoach = coaches.filter(c => (c.id !== user.id))[0];
+            return message.channel.send(`${user.toString()} is playing ${otherCoach.mentionString}`);
+        }
+    }
+
+    // Players not in any match this round fall through to be chastised
+    message.channel.send(`${user.toString()} you don't seem to be playing this round, smoothbrain.`);
 }
 
 function printSchedule(message, user) {
