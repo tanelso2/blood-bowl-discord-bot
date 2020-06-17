@@ -5,16 +5,59 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const { League } = require('./league.js')
 
+const leagueFile = './sample-league.yaml';
 
 function getLeague() {
-    let content = fs.readFileSync('./sample-league.yaml');
+    let content = fs.readFileSync(leagueFile);
     let data = yaml.safeLoad(content);
     return new League(data);
 }
 
+function incrementRound() {
+    const content = fs.readFileSync(leagueFile);
+    const data = yaml.safeLoad(content);
+
+    const currentRound = data.currentRound;
+
+    const newRound = currentRound + 1;
+
+    data.currentRound = newRound;
+
+    const yamlStr = yaml.safeDump(data);
+    fs.writeFileSync(leagueFile, yamlStr, 'utf8');
+
+    return newRound;
+}
+
+function getMatchupString(game) {
+    const home = game.homeCoach;
+    const away = game.awayCoach;
+
+    return `${home.mentionString} (${home.teamType}) v (${away.teamType}) ${away.mentionString}`;
+}
+
+function collectMatchupsForRound(round) {
+    const league = getLeague();
+
+    const games = league.getCurrentRound().games;
+
+    const matchups = games.map(getMatchupString);
+
+    const full = matchups.join('\n\n');
+
+    return `${league.name} has been advanced to ${round}\n\nHere are the matchups\n\n${full}`
+}
+
 
 function advanceRound(message, user) {
-    message.channel.send(`no ${user}`);
+    const league = getLeague();
+    if (user.id !== league.ownerId) {
+        message.channel.send(`You're not the fucking owner of this league, ${user}`);
+    } else {
+        const newRound = incrementRound();
+        const response = collectMatchupsForRound(newRound);
+        message.channel.send(`Alright ${user}, ${response}`);
+    }
     /* Example output:
         Alright @owner, ${league.name} has been advanced to ${round}
 
@@ -22,7 +65,6 @@ function advanceRound(message, user) {
 
         @user1 (teamType) v (teamType) @user2
         @user3 (teamType) v (teamType) @user4
-    
     */
 }
 
