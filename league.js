@@ -7,7 +7,7 @@ class League {
         this.ownerId = data.ownerId;
         this.currentRound = data.currentRound;
         this.coaches = data.coaches.map(makeCoach);
-        this.schedule = new Schedule(data.schedule);
+        this.schedule = new Schedule(data.schedule, this.coaches);
     }
 
     getCurrentRound() {
