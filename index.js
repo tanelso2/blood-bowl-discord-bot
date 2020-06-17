@@ -43,7 +43,7 @@ function collectMatchupsForRound(round) {
 
     const matchups = games.map(getMatchupString);
 
-    const full = '\n'.join(matchups);
+    const full = matchups.join('\n\n');
 
     return `${league.name} has been advanced to ${round}\n\nHere are the matchups\n\n${full}`
 }
