@@ -34,4 +34,4 @@ class Game {
 // Mappable constructors
 
 
-module.exports = { Schedule };
+module.exports = { Schedule, Round, Game };

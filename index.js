@@ -1,9 +1,11 @@
-const config = require('./config.json');
+// DNC
+// const config = require('./config.json');
 const fs = require('fs');
 const yaml = require('js-yaml');
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const { League } = require('./league.js')
+const { League } = require('./league.js');
+const { Format } = require('./format.js');
 
 const leagueFile = './sample-league.yaml';
 
@@ -132,4 +134,7 @@ client.on('message', message => {
 
 });
 
-client.login(config.token);
+// DNC
+const league = getLeague();
+console.log(Format.league(league));
+// client.login(config.token);

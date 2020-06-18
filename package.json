@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --recursive \"*.spec*.js\""
   },
   "repository": {
     "type": "git",
@@ -19,5 +19,11 @@
   "dependencies": {
     "discord.js": "^12.2.0",
     "js-yaml": "^3.14.0"
+  },
+  "devDependencies": {
+    "mocha": "^8.0.1",
+    "should": "^13.2.3",
+    "should-sinon": "0.0.6",
+    "sinon": "^9.0.2"
   }
 }
