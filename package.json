@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --recursive \"*.spec*.js\""
+    "test": "mocha --recursive \"*.spec*.js\"",
+    "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
   },
   "repository": {
     "type": "git",
@@ -21,6 +22,8 @@
     "js-yaml": "^3.14.0"
   },
   "devDependencies": {
+    "docdash": "^1.2.0",
+    "jsdoc": "^3.6.4",
     "mocha": "^8.0.1",
     "should": "^13.2.3",
     "should-sinon": "0.0.6",
