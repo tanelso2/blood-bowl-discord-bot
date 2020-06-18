@@ -6,14 +6,11 @@
 class Format {
 
     static league(league, options={}) {
-        const schedule = this.schedule(league.schedule, options);
+        const formatRound = (r) => this.round(r, options);
+        const schedule = league.schedule.map(formatRound).join('\n\n');
+
         const title = prettyTitle(league.name);
         return `${title}\n\nCurrent round: ${league.currentRound}\n\n${schedule}`;
-    }
-
-    static schedule(schedule, options={}) {
-        const formatRound = (r) => this.round(r, options);
-        return schedule.rounds.map(formatRound).join('\n\n');
     }
 
     static round(round, options={}) {

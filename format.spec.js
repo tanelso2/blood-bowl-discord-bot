@@ -30,7 +30,7 @@ describe('Format', function () {
     });
 
     describe('#game()', function() {
-        const g = testLeague.schedule.rounds[0].games[0];
+        const g = testLeague.schedule[0].games[0];
 
         it('should forward format options when formatting coaches', function () {
             sinon.spy(Format, "coach");
@@ -51,7 +51,7 @@ describe('Format', function () {
     });
 
     describe('#round()', function() {
-        const round = testLeague.schedule.rounds[0];
+        const round = testLeague.schedule[0];
 
         it('should forward format options when formatting games', function () {
             sinon.spy(Format, "game");
@@ -77,8 +77,8 @@ describe('Format', function () {
             const options = {};
             Format.league(testLeague, options);
 
-            Format.round.callCount.should.be.exactly(testLeague.schedule.rounds.length);
-            for (const round of testLeague.schedule.rounds) {
+            Format.round.callCount.should.be.exactly(testLeague.schedule.length);
+            for (const round of testLeague.schedule) {
                 Format.round.should.be.calledWithExactly(round, options);
             }
         });
