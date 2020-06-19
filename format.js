@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 
+// Currently unused in favor of DiscordFormat, but useful for debugging
 class StringFormat {
 
     static league(league) {
@@ -13,7 +14,7 @@ class StringFormat {
         const title = `Round ${round.id}:`;
 
         const formatGame = (g) => this.game(g);
-        const games = indent(round.games.map(formatGame).join('\n'));
+        const games = round.games.map(formatGame).join('\n');
 
         return `${title}\n${games}`;
     }
@@ -35,12 +36,6 @@ class StringFormat {
     static coachAndTeam(coach) {
         return `${coach.commonName.padEnd(12)} - ${coach.teamName.padEnd(16)} (${coach.teamType})`
     }
-}
-
-
-function indent(s) {
-    const pad = (line) => (line !== '') ? '  '.concat(line) : line;
-    return s.split('\n').map(pad).join('\n');
 }
 
 
