@@ -1,18 +1,25 @@
-const config = require('./config.json');
 const fs = require('fs');
 const yaml = require('js-yaml');
+const process = require('process');
 const Discord = require('discord.js');
-const client = new Discord.Client();
+const config = require('./config.json');
+const { DiscordFormat } = require('./formatting/discordFormat.js');
 const logger = require('./logger.js').child({ module: 'index' });
-const { League } = require('./league.js');
-const { DiscordFormat } = require('./format.js');
+const { League } = require('./models/league.js');
 
-const leagueFile = './sample-league.yaml';
+
+const leagueFile = process.argv[2];
+if (!leagueFile) {
+    console.error('USAGE: node index.js <league_file>');
+    process.exit(1);
+}
+
+const client = new Discord.Client();
 const formatter = new DiscordFormat(client);
 
 function getLeague() {
-    let content = fs.readFileSync(leagueFile);
-    let data = yaml.safeLoad(content);
+    const content = fs.readFileSync(leagueFile);
+    const data = yaml.safeLoad(content);
     return new League(data);
 }
 
