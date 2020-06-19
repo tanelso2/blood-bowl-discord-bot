@@ -3,7 +3,7 @@ const yaml = require('js-yaml');
 const process = require('process');
 const Discord = require('discord.js');
 const config = require('./config.json');
-const { DiscordFormat } = require('./formatting/stringFormat.js');
+const { DiscordFormat } = require('./formatting/discordFormat.js');
 const logger = require('./logger.js').child({ module: 'index' });
 const { League } = require('./models/league.js');
 
