@@ -8,7 +8,7 @@ const logger = require('./logger.js').child({ module: 'index' });
 const { League } = require('./models/league.js');
 
 
-const leagueFile = process.argv[1];
+const leagueFile = process.argv[2];
 if (!leagueFile) {
     console.error('USAGE: node index.js <league_file>');
     process.exit(1);
