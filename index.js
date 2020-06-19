@@ -1,18 +1,20 @@
-const config = require('./config.json');
 const fs = require('fs');
 const yaml = require('js-yaml');
 const Discord = require('discord.js');
-const client = new Discord.Client();
+
+const config = require('./config.json');
+const { DiscordFormat } = require('./formatting/stringFormat.js');
 const logger = require('./logger.js').child({ module: 'index' });
-const { League } = require('./league.js');
-const { DiscordFormat } = require('./format.js');
+const { League } = require('./models/league.js');
 
 const leagueFile = './sample-league.yaml';
+
+const client = new Discord.Client();
 const formatter = new DiscordFormat(client);
 
 function getLeague() {
-    let content = fs.readFileSync(leagueFile);
-    let data = yaml.safeLoad(content);
+    const content = fs.readFileSync(leagueFile);
+    const data = yaml.safeLoad(content);
     return new League(data);
 }
 

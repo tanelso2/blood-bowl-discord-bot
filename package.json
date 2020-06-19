@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --recursive \"*.spec*.js\"",
+    "test": "mocha --recursive \"**/*.spec*.js\" --ignore \"node_modules/**/*\"",
     "dev": "LOG_LEVEL=debug node . | ./node_modules/.bin/pino-pretty",
     "lint": "eslint .",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
