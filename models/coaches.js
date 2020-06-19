@@ -16,7 +16,7 @@ class Coach {
         this.teamType = data.teamType;
         this.nickname = data.nickname;
     }
-    
+
     get commonName() {
         if (this.nickname) {
             return this.nickname;
@@ -24,7 +24,7 @@ class Coach {
             return this.name;
         }
     }
-    
+
     get mentionString() {
         return `<@${this.id}>`;
     }
