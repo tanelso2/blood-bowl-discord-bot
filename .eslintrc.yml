@@ -1,0 +1,15 @@
+env:
+  node: true
+  es2020: true
+extends: 'eslint:recommended'
+parserOptions:
+  ecmaVersion: 11
+rules: 
+  no-unused-vars:
+    - error
+    - varsIgnorePattern: "logger"
+overrides:
+- files: ["*.spec.*js"]
+  rules:
+    no-unused-vars: off
+    no-undef: off

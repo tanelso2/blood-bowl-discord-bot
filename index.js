@@ -3,9 +3,12 @@ const fs = require('fs');
 const yaml = require('js-yaml');
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const { League } = require('./league.js')
+const logger = require('./logger.js').child({ module: 'index' });
+const { League } = require('./league.js');
+const { DiscordFormat } = require('./format.js');
 
 const leagueFile = './sample-league.yaml';
+const formatter = new DiscordFormat(client);
 
 function getLeague() {
     let content = fs.readFileSync(leagueFile);
@@ -29,70 +32,63 @@ function incrementRound() {
     return newRound;
 }
 
-function getMatchupString(game) {
-    const home = game.homeCoach;
-    const away = game.awayCoach;
-
-    return `${home.mentionString} (${home.teamType}) v (${away.teamType}) ${away.mentionString}`;
-}
-
-function collectMatchupsForRound(round) {
-    const league = getLeague();
-
-    const games = league.getCurrentRound().games;
-
-    const matchups = games.map(getMatchupString);
-
-    const full = matchups.join('\n\n');
-
-    return `${league.name} has been advanced to ${round}\n\nHere are the matchups\n\n${full}`
-}
-
-
+/*
+ * Example output:
+ *  @owner, round has been advanced
+ *  <embed>
+ */
 function advanceRound(message, user) {
     const league = getLeague();
     if (user.id !== league.ownerId) {
-        message.channel.send(`You're not the fucking owner of this league, ${user}`);
+        return message.channel.send(`You're not the fucking owner of this league, ${user}`);
     } else {
-        const newRound = incrementRound();
-        const response = collectMatchupsForRound(newRound);
-        message.channel.send(`Alright ${user}, ${response}`);
+        incrementRound();
+        const newRound = getLeague().getCurrentRound();
+
+        return message.reply(
+            `round has been advanced.`,
+            {
+                embed: formatter.roundAdvance(newRound),
+                disableMentions: 'all',
+            });
     }
-    /* Example output:
-        Alright @owner, ${league.name} has been advanced to ${round}
-
-        Here are the matchups:
-
-        @user1 (teamType) v (teamType) @user2
-        @user3 (teamType) v (teamType) @user4
-    */
 }
 
+/*
+ * Example output:
+ *  @user you are playing @opponent this round
+ */
 function findOpponent(message, user) {
-    /* Example output:
-        @user is playing @opponent this round
-    */
-    const league = getLeague();
-    for (const game of league.getCurrentRound().games) {
-        const coaches = game.coaches;
-        if (coaches.map(c => c.id).includes(user.id)) {
-            const otherCoach = coaches.filter(c => (c.id !== user.id))[0];
-            return message.channel.send(`${user.toString()} is playing ${otherCoach.mentionString}`);
-        }
+    const userInGame = (game) => game.coaches.some((c) => c.id === user.id);
+    const usersGame = getLeague().getCurrentRound().games.find(userInGame);
+
+    if (!usersGame) {
+        return message.reply("you don't seem to be playing this round, smoothbrain.");
     }
 
-    // Players not in any match this round fall through to be chastised
-    message.channel.send(`${user.toString()} you don't seem to be playing this round, smoothbrain.`);
+    const opponent = usersGame.getOpponent(user);
+    const response = `you are playing ${formatter.coach(opponent)} this round.`;
+    return message.reply(response);
 }
 
+/* 
+ * Example output:
+ *  @user, here is your schedule this league:
+ *  ```
+ *  1. ${opponent.commonName}     - ${opponent.teamName}     (${opponent.teamType})
+ * >2. ${nextOpponent.commonName} - ${nextOpponent.teamName} (${nextOpponent.teamType})
+ *  3. etc....
+ *  ```
+ */
 function printSchedule(message, user) {
-    message.channel.send(`I'm on my break, ${user}`);
-    /* Example output:
-        @user, here is your schedule:
-        
-        1. ${opponent.commonName} - ${opponent.teamName} (${opponent.teamType})
-        2. etc....
-    */
+    const league = getLeague();
+    const matches = league.findUserGames(user);
+    if (matches.length) {
+        const schedule = formatter.usersSchedule(user, matches, league.currentRound);
+        const response = `here is your schedule this league:\n${schedule}`;
+        return message.reply(response, {disableMentions: 'all'});
+    }
+    return message.reply(`you don't seem to be playing this round, smoothbrain.`);
 }
 
 const commands = {

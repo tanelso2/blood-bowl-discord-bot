@@ -1,4 +1,14 @@
 class Coach {
+    static null() {
+        return new Coach({
+            id: "unknown",
+            name: "unknown",
+            teamName: "unknown",
+            teamType: "unknown",
+            nickname: "unknown",
+        });
+    }
+
     constructor(data) {
         this.id = data.id;
         this.name = data.name;
