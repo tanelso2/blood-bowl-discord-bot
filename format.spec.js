@@ -5,7 +5,7 @@ require('should-sinon');
 const fs = require('fs');
 const yaml = require('js-yaml');
 const { League } = require('./league.js');
-const { Format } = require('./format.js');
+const { StringFormat } = require('./format.js');
 
 
 const leagueFile = './sample-league.yaml';
@@ -17,15 +17,15 @@ afterEach(() => {
     sinon.restore();
 });
 
-describe('Format', function () {
+describe('StringFormat', function () {
     describe('#coach()', function () {
         const c = testLeague.coaches[0];
 
         it('should use mention by default', function () {
-            Format.coach(c).should.equal(c.mentionString);
+            StringFormat.coach(c).should.equal(c.mentionString);
         });
         it('should use commonName if \'noMention\' option specified', function () {
-            Format.coach(c, {'noMention': true}).should.equal(c.commonName);
+            StringFormat.coach(c, {'noMention': true}).should.equal(c.commonName);
         });
     });
 
@@ -33,18 +33,18 @@ describe('Format', function () {
         const g = testLeague.schedule[0].games[0];
 
         it('should forward format options when formatting coaches', function () {
-            sinon.spy(Format, "coach");
+            sinon.spy(StringFormat, "coach");
 
             const options = {};
-            Format.game(g, options);
+            StringFormat.game(g, options);
 
-            Format.coach.should
+            StringFormat.coach.should
                 .be.calledTwice()
                 .be.calledWithExactly(g.homeCoach, options)
                 .be.calledWithExactly(g.awayCoach, options);
         });
         it('should include both coachs\' team types', function () {
-            Format.game(g).should
+            StringFormat.game(g).should
                 .containEql(g.homeCoach.teamType)
                 .containEql(g.awayCoach.teamType);
         });
@@ -54,37 +54,37 @@ describe('Format', function () {
         const round = testLeague.schedule[0];
 
         it('should forward format options when formatting games', function () {
-            sinon.spy(Format, "game");
+            sinon.spy(StringFormat, "game");
 
             const options = {};
-            Format.round(round, options);
+            StringFormat.round(round, options);
 
-            Format.game.callCount.should.be.exactly(round.games.length);
+            StringFormat.game.callCount.should.be.exactly(round.games.length);
             for (const game of round.games) {
-                Format.game.should.be.calledWithExactly(game, options);
+                StringFormat.game.should.be.calledWithExactly(game, options);
             }
         });
 
         it('should include round number in title', function () {
-            Format.round(round).should.containEql(round.id);
+            StringFormat.round(round).should.containEql(round.id);
         });
     });
 
     describe('#league()', function () {
         it('should forward format options when formatting rounds', function () {
-            sinon.spy(Format, "round");
+            sinon.spy(StringFormat, "round");
 
             const options = {};
-            Format.league(testLeague, options);
+            StringFormat.league(testLeague, options);
 
-            Format.round.callCount.should.be.exactly(testLeague.schedule.length);
+            StringFormat.round.callCount.should.be.exactly(testLeague.schedule.length);
             for (const round of testLeague.schedule) {
-                Format.round.should.be.calledWithExactly(round, options);
+                StringFormat.round.should.be.calledWithExactly(round, options);
             }
         });
 
         it('should include league name', function () {
-            Format.league(testLeague).should.containEql(testLeague.name);
+            StringFormat.league(testLeague).should.containEql(testLeague.name);
         });
     });
 });
