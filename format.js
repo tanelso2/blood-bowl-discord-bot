@@ -33,7 +33,7 @@ class StringFormat {
     }
 
     static coachAndTeam(coach) {
-        return `${this.coach(coach).padEnd(12)} - ${coach.teamName.padEnd(16)} (${coach.teamType})`
+        return `${coach.commonName.padEnd(12)} - ${coach.teamName.padEnd(16)} (${coach.teamType})`
     }
 }
 
@@ -44,10 +44,17 @@ function indent(s) {
 }
 
 
-/** Formats league structures for Discord. */
 const BLANK = '\u200b';
+
+/** Formats league structures for Discord. */
 class DiscordFormat {
 
+    /**
+     * @param {Discord.Client} client
+     */
+    constructor(client) {
+        this.client = client;
+    }
 
     /**
      * Creates the message for advancing a round.
@@ -55,11 +62,10 @@ class DiscordFormat {
      * @param {Round} newRound
      * @return {Discord.MessageEmbed}
      */
-    static roundAdvance(newRound) {
-        const result = this.MessageEmbed()
-            .setTitle(`Round ${newRound.id} Matchups`);
-        newRound.games.forEach((g) => result.addField(this.makeMatchupField(g)));
-        return result;
+    roundAdvance(newRound) {
+        return this.MessageEmbed()
+            .setTitle(`Round ${newRound.id} Matchups`)
+            .addFields(newRound.games.map(this.makeMatchupField, this));
     }
 
     /**
@@ -70,8 +76,17 @@ class DiscordFormat {
      * @param {Game} - The game to create an embed field for.
      * @return {Object} - The embed field to add for this game.
      */
-    static makeMatchupField(game) {
-        return { name: BLANK, value: StringFormat.game(game) };
+    makeMatchupField(game) {
+        const home = game.homeCoach;
+        const away = game.awayCoach;
+
+        const homeName = this.coach(home);
+        const awayName = this.coach(away);
+
+        return {
+            name: BLANK,
+            value: `${homeName} (${home.teamType}) v (${away.teamType}) ${awayName}`,
+        };
     }
 
     /**
@@ -88,19 +103,29 @@ class DiscordFormat {
                 { name: 'Away', value: game.awayCoach.teamName, inline: true },
             )
             .addFields(
-                { name: 'Coach', value: StringFormat.coach(game.homeCoach), inline: true },
-                { name: 'Coach', value: StringFormat.coach(game.awayCoach), inline: true },
+                { name: 'Coach', value: this.coach(game.homeCoach), inline: true },
+                { name: 'Coach', value: this.coach(game.awayCoach), inline: true },
             );
     }
 
     /**
      * Formats a coach.
      *
-     * @param {Coache} coach
+     * @param {Coach} coach
      * @return {String}
      */
-    static coach(coach) {
-        return StringFormat.coach(coach);
+    coach(coach) {
+        return coach.mentionString;
+    }
+
+    /**
+     * Formats a coach with their team name and type.
+     *
+     * @param {Coach} coach
+     * @return {String}
+     */
+    coachAndTeam(coach) {
+        return `${coach.commonName.padEnd(12)} - ${coach.teamName.padEnd(16)} (${coach.teamType})`
     }
 
     /**
@@ -110,18 +135,24 @@ class DiscordFormat {
      * @param {Array<Game>} usersGames - Matches in this league for the user in order.
      * @return {String}
      */
-    static usersSchedule(user, usersGames, currentRoundNumber) {
+    usersSchedule(user, usersGames, currentRoundNumber) {
         const formatLeader = function (roundId) {
             const caret = roundId === currentRoundNumber ? '>' : ' ';
             return `${caret}${roundId.toString().padStart(2)}.`;
         }
+
+        // OK I still hate JS, 'this' binding is broken so just capture it here
+        const formatCoachAndTeam = this.coachAndTeam;
+
         const formatOpponent = function (game) {
             const opponent = game.getOpponent(user);
-            return StringFormat.coachAndTeam(opponent);
+            return formatCoachAndTeam(opponent);
         }
 
         const formatMatch = (roundId, game) => `${formatLeader(roundId)} ${formatOpponent(game)}`;
-        return Array.from(usersGames.entries(), ([idx, game]) => formatMatch(idx + 1, game)).join('\n');
+
+        const result = Array.from(usersGames.entries(), ([idx, game]) => formatMatch(idx + 1, game)).join('\n');
+        return this.makeCodeBlock(result);
     }
 
     /**
@@ -129,17 +160,17 @@ class DiscordFormat {
      *
      * @return {Discord.MessageEmbed}
      */
-    static MessageEmbed() {
-        return new Discord.MessageEmbed({
-                type: 'rich',
-                color: 'RED',
-            });
+    MessageEmbed() {
+        return new Discord.MessageEmbed()
+            .setColor('RED')
+            .setAuthor(this.client.user.username)
+            .setTimestamp();
     }
 
     /**
      * Wraps content in a code block.
      */
-    static makeCodeBlock(s) {
+    makeCodeBlock(s) {
         const border = '```';
         return `${border}\n${s}${border}`;
     }

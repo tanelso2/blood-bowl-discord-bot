@@ -8,6 +8,7 @@ const { League } = require('./league.js');
 const { DiscordFormat } = require('./format.js');
 
 const leagueFile = './sample-league.yaml';
+const formatter = new DiscordFormat(client);
 
 function getLeague() {
     let content = fs.readFileSync(leagueFile);
@@ -47,9 +48,9 @@ function advanceRound(message, user) {
         return message.reply(
             `round has been advanced.`,
             {
-                embed: DiscordFormat.roundAdvance(newRound),
+                embed: formatter.roundAdvance(newRound),
                 disableMentions: 'all',
-            })
+            });
     }
 }
 
@@ -66,7 +67,7 @@ function findOpponent(message, user) {
     }
 
     const opponent = usersGame.getOpponent(user);
-    const response = `you are playing ${DiscordFormat.coach(opponent)} this round.`;
+    const response = `you are playing ${formatter.coach(opponent)} this round.`;
     return message.reply(response);
 }
 
@@ -83,9 +84,7 @@ function printSchedule(message, user) {
     const league = getLeague();
     const matches = league.findUserGames(user);
     if (matches.length) {
-        let schedule = DiscordFormat.usersSchedule(user, matches, league.currentRound);
-        schedule = DiscordFormat.makeCodeBlock(schedule);
-
+        const schedule = formatter.usersSchedule(user, matches, league.currentRound);
         const response = `here is your schedule this league:\n${schedule}`;
         return message.reply(response, {disableMentions: 'all'});
     }

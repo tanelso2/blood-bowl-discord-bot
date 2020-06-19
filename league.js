@@ -1,3 +1,4 @@
+const logger = require('./logger.js').child({ module: 'league' });
 const { Coach } = require('./coaches.js');
 
 /** A Blood Bowl league. */
@@ -23,11 +24,25 @@ class League {
     /**
      * Finds all games that a user participates in this league.
      *
-     * @param {User} user - The user whose games will be found.
+     * @param {Discord.User} user - The user whose games will be found.
      * @return {Array<Game>} - All games that user plays in.
      */
     findUserGames(user) {
+        logger.debug(`fetching games for ${user.username}(${user.id})`);
+        if (!this.userInLeague(user)) {
+            return [];
+        }
         return this.schedule.map((round) => round.findUserGame(user));
+    }
+
+    /**
+     * Returns if user is registered in the league as a coach.
+     *
+     * @param {Discord.User} user
+     * @return {bool}
+     */
+    userInLeague(user) {
+        return this.coaches.some((c) => c.id === user.id);
     }
 
     /**
@@ -52,7 +67,7 @@ class Round {
     /**
      * Finds all games that a user participates in this round.
      *
-     * @param {User} user - The user whose games will be found.
+     * @param {Discord.User} user - The user whose games will be found.
      * @return {Array<Game>} - All games in this round that user plays in.
      */
     findUserGame(user) {
@@ -77,8 +92,19 @@ class Game {
         return [this.homeCoach, this.awayCoach];
     }
 
+    /**
+     * Gets the opposing coach for this game.
+     *
+     * @param {Discord.User} user
+     * @return {Coach}
+     */
     getOpponent(user) {
-        return this.coaches.find((c) => c.id !== user.id);
+        const opponentOrUndef = this.coaches.find((c) => c.id !== user.id);
+        if (opponentOrUndef) {
+            return opponentOrUndef;
+        }
+        logger.error(`unknown opponent of ${user.id}`);
+        return Coach.null();
     }
 }
 
