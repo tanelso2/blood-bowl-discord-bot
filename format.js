@@ -45,9 +45,9 @@ function indent(s) {
 
 
 /** Formats league structures for Discord. */
+const BLANK = '\u200b';
 class DiscordFormat {
 
-    static BLANK = '\u200b';
 
     /**
      * Creates the message for advancing a round.
@@ -71,7 +71,7 @@ class DiscordFormat {
      * @return {Object} - The embed field to add for this game.
      */
     static makeMatchupField(game) {
-        return { name: this.BLANK, value: StringFormat.game(game) };
+        return { name: BLANK, value: StringFormat.game(game) };
     }
 
     /**
