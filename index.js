@@ -121,7 +121,7 @@ client.on('message', message => {
     if (message.mentions.has(client.user, mentionsOptions)) {
         // Should only trigger if they mention bot user by name
         //
-        const command = message.content.split(/ +/)[1];
+        const command = message.content.split(/ +/)[1].toLowerCase();
 
         const func = commands[command];
 
