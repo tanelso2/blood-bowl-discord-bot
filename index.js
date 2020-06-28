@@ -113,12 +113,19 @@ function announceGame(message, user) {
     return message.reply(`@here - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
 }
 
+
 const commands = {
     'advance': advanceRound,
     'announce': announceGame,
+    'help': listCommands,
     'opponent': findOpponent,
     'schedule': printSchedule
 };
+
+function listCommands(message, user) {
+    const commandNames = Object.keys(commands);
+    return message.reply(`Available commands: ${commandNames}`);
+}
 
 client.once('ready', () => {
     console.log('Ready!');
@@ -152,3 +159,4 @@ client.on('message', message => {
 });
 
 client.login(config.token);
+
