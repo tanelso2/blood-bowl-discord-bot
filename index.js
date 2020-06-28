@@ -78,7 +78,7 @@ function findOpponent(message, user) {
     return message.reply(response);
 }
 
-/* 
+/*
  * Example output:
  *  @user, here is your schedule this league:
  *  ```
@@ -98,8 +98,26 @@ function printSchedule(message, user) {
     return message.reply(`you don't seem to be playing this round, smoothbrain.`);
 }
 
+function announceGame(message, user) {
+    const league = getLeague();
+    const userInGame = (game) => game.coaches.some((c) => c.id === user.id);
+    const usersGame = getLeague().getCurrentRound().games.find(userInGame);
+
+
+    if (!usersGame) {
+        return message.reply("you don't seem to be playing this round, smoothbrain.");
+    }
+
+    const [homeCoach, awayCoach] = usersGame.coaches;
+
+    // I don't actually know how to do @here mentions from the bot, let's play around with
+    // it until it works
+    return message.reply(`<@here> - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
+}
+
 const commands = {
     'advance': advanceRound,
+    'announce': announceGame,
     'opponent': findOpponent,
     'schedule': printSchedule
 };
