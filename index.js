@@ -110,9 +110,7 @@ function announceGame(message, user) {
 
     const [homeCoach, awayCoach] = usersGame.coaches;
 
-    // I don't actually know how to do @here mentions from the bot, let's play around with
-    // it until it works
-    return message.reply(`<@here> - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
+    return message.reply(`@here - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
 }
 
 const commands = {
