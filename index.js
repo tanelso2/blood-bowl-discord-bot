@@ -6,6 +6,7 @@ const config = require('./config.json');
 const { DiscordFormat } = require('./formatting/discordFormat.js');
 const logger = require('./logger.js').child({ module: 'index' });
 const { League } = require('./models/league.js');
+const stringUtils = require('./utils/stringUtils.js');
 
 
 const leagueFile = process.argv[2];
@@ -131,6 +132,10 @@ function listCommands(message, user) {
     return message.reply(`Available commands: \n${commandsString}`);
 }
 
+function findCommand(commandName) {
+    return commands.find((c) => c.name == commandName);
+}
+
 client.once('ready', () => {
     console.log('Ready!');
 });
@@ -150,11 +155,20 @@ client.on('message', message => {
         //
         const command = message.content.split(/ +/)[1].toLowerCase();
 
-        const func = commands.find((c) => c.name == command).func;
+        const cmd = findCommand(command);
 
-        if(func) {
-            func(message, message.author);
+        if(cmd) {
+            cmd.func(message, message.author);
         } else {
+            if (command.endsWith('!')) {
+                const trimmedCommand = command.slice(0, -1); // cut off the exclamation point
+                const bestFit = stringUtils.getSimilarString(trimmedCommand, commands.map(c => c.name));
+                if (bestFit) {
+                    const bestFitCmd = findCommand(bestFit);
+                    bestFitCmd.func(message, message.author);
+                    return;
+                }
+            }
             message.channel.send(`Dude I have no idea what you're trying to say`);
         }
     }
