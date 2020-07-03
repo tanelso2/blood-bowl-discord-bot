@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/tanelso2/blood-bowl-discord-bot#readme",
   "dependencies": {
+    "damerau-levenshtein": "^1.0.6",
     "discord.js": "^12.2.0",
     "js-yaml": "^3.14.0",
     "pino": "^6.3.2"
