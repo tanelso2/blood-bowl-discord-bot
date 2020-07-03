@@ -113,18 +113,22 @@ function announceGame(message, user) {
     return message.reply(`@here - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
 }
 
+function makeCommand(name, func, description) {
+    return { name, func, description };
+}
 
-const commands = {
-    'advance': advanceRound,
-    'announce': announceGame,
-    'help': listCommands,
-    'opponent': findOpponent,
-    'schedule': printSchedule
-};
+const commands = [
+    makeCommand('advance', advanceRound, 'Advance to the next round (only usable by the league owner)'),
+    makeCommand('announce', announceGame, 'Announce that your game for this current round is starting'),
+    makeCommand('help', listCommands, 'Display this help text'),
+    makeCommand('opponent', findOpponent, 'Display and tag your current opponent'),
+    makeCommand('schedule', printSchedule, 'Display your schedule for this league')
+];
 
 function listCommands(message, user) {
-    const commandNames = Object.keys(commands);
-    return message.reply(`Available commands: ${commandNames}`);
+    const commandList = commands.map((c) => `**${c.name}** - ${c.description}`);
+    const commandsString = commandList.join('\n');
+    return message.reply(`Available commands: \n${commandsString}`);
 }
 
 client.once('ready', () => {
@@ -146,7 +150,7 @@ client.on('message', message => {
         //
         const command = message.content.split(/ +/)[1].toLowerCase();
 
-        const func = commands[command];
+        const func = commands.find((c) => c.name == command).func;
 
         if(func) {
             func(message, message.author);
