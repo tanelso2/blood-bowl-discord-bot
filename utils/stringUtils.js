@@ -6,7 +6,6 @@ function getSimilarString(s, dictionary) {
         const similarity = result.similarity;
         return { word, similarity };
     });
-    console.log(results);
 
     const minSimilarity = 0.75;
     let maxSimilarity = 0;
