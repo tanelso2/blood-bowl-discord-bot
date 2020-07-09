@@ -119,7 +119,7 @@ class DiscordFormat {
     MessageEmbed() {
         return new Discord.MessageEmbed()
             .setColor('RED')
-            .setAuthor(this.client.user.username)
+            .setAuthor(this.client.user.username, this.client.user.displayAvatarURL())
             .setTimestamp();
     }
 
