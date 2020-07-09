@@ -14,6 +14,7 @@ rules:
   no-unused-vars:
     - error
     - varsIgnorePattern: "logger"
+      argsIgnorePattern: "^_"
 overrides:
 - files: ["*.spec.*js"]
   rules:

@@ -100,7 +100,6 @@ function printSchedule(message, user) {
 }
 
 function announceGame(message, user) {
-    const league = getLeague();
     const userInGame = (game) => game.coaches.some((c) => c.id === user.id);
     const usersGame = getLeague().getCurrentRound().games.find(userInGame);
 
@@ -126,7 +125,7 @@ const commands = [
     makeCommand('schedule', printSchedule, 'Display your schedule for this league')
 ];
 
-function listCommands(message, user) {
+function listCommands(message, _user) {
     const commandList = commands.map((c) => `**${c.name}** - ${c.description}`);
     const commandsString = commandList.join('\n');
     return message.reply(`Available commands: \n${commandsString}`);
