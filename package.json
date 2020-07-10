@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha --recursive \"**/*.spec*.js\" --ignore \"node_modules/**/*\"",
     "dev": "LOG_LEVEL=debug node . ./sample-league.yaml | ./node_modules/.bin/pino-pretty",
-    "lint": "eslint .",
+    "lint": "eslint --fix-dry-run .",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
   },
   "repository": {

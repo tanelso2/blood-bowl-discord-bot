@@ -49,7 +49,8 @@ function incrementRound() {
 function advanceRound(message, user) {
     const league = getLeague();
     if (user.id !== league.ownerId) {
-        return message.channel.send(`You're not the fucking owner of this league, ${user}`);
+        const insult = insultGenerator.generateString("${insult}");
+        return message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
     } else {
         incrementRound();
         const newRound = getLeague().getCurrentRound();
@@ -72,7 +73,8 @@ function findOpponent(message, user) {
     const usersGame = getLeague().getCurrentRound().games.find(userInGame);
 
     if (!usersGame) {
-        return message.reply("you don't seem to be playing this round, smoothbrain.");
+        const insult = insultGenerator.generateString("${insult}");
+        return message.reply(`you don't seem to be playing this round, smoothbrain.\n${insult}`);
     }
 
     const opponent = usersGame.getOpponent(user);
@@ -112,7 +114,12 @@ function announceGame(message, user) {
 
     const [homeCoach, awayCoach] = usersGame.coaches;
 
-    return message.reply(`@here - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
+    return message.channel.send(`@here - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
+}
+
+function printInsult(message) {
+    const insult = insultGenerator.generateString("${insult}");
+    message.reply(insult);
 }
 
 function makeCommand(name, func, description) {
@@ -123,6 +130,7 @@ const commands = [
     makeCommand('advance', advanceRound, 'Advance to the next round (only usable by the league owner)'),
     makeCommand('announce', announceGame, 'Announce that your game for this current round is starting'),
     makeCommand('help', listCommands, 'Display this help text'),
+    makeCommand('insult', printInsult, 'Just print out an insult'),
     makeCommand('opponent', findOpponent, 'Display and tag your current opponent'),
     makeCommand('schedule', printSchedule, 'Display your schedule for this league')
 ];
