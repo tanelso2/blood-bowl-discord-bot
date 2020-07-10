@@ -6,6 +6,7 @@ const config = require('./config.json');
 const { DiscordFormat } = require('./formatting/discordFormat.js');
 const logger = require('./logger.js').child({ module: 'index' });
 const { League } = require('./models/league.js');
+const insultGenerator = require('./generator/string-generator.js');
 const stringUtils = require('./utils/stringUtils.js');
 
 
@@ -96,7 +97,8 @@ function printSchedule(message, user) {
         const response = `here is your schedule this league:\n${schedule}`;
         return message.reply(response, {disableMentions: 'all'});
     }
-    return message.reply(`you don't seem to be playing this round, smoothbrain.`);
+    const insult = insultGenerator.generateString("${insult}");
+    return message.reply(`you don't seem to be playing this round, smoothbrain.\n${insult}`);
 }
 
 function announceGame(message, user) {
