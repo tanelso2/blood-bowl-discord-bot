@@ -13,7 +13,7 @@ const directory = {
     "insult": insults
 }
 
-const pat = /\$\{([^ \}]*)\}/;
+const pat = /\$\{([^ }]*)}/;
 
 function generateString(template) {
     const matches = template.match(pat);
