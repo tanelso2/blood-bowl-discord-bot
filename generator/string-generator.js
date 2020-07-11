@@ -22,4 +22,4 @@ function generateString(template) {
     return generateString(newString);
 }
 
-module.exports = { generateString };
+module.exports = { generateString, pat };
