@@ -178,7 +178,8 @@ client.on('message', message => {
                     return;
                 }
             }
-            message.channel.send(`Dude I have no idea what you're trying to say`);
+            const insult = insultGenerator.generateString("${insult}");
+            message.channel.send(`Dude I have no idea what you're trying to say\n${insult}`);
         }
     }
 
