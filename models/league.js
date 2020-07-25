@@ -8,7 +8,7 @@ const { Round } = require("./round.js");
 class League {
     constructor(data, leagueFile) {
         this.name = data.name;
-        this.ownerId = data.ownerId;
+        this.ownerId = data.ownerId || data.ownerID;
         this.currentRound = data.currentRound;
         this.coaches = data.coaches.map((d) => new Coach(d));
         this.schedule = data.schedule.map((d) => new Round(d, this.coaches));
@@ -57,19 +57,25 @@ class League {
     }
 
     incrementRound() {
-        const content = fs.readFileSync(this.leagueFile);
-        const data = yaml.safeLoad(content);
-
-        const currentRound = data.currentRound;
-
-        const newRound = currentRound + 1;
-
-        data.currentRound = newRound;
-
-        const yamlStr = yaml.safeDump(data);
-        fs.writeFileSync(this.leagueFile, yamlStr, 'utf8');
-
+        const newRound = this.currentRound + 1;
+        this.currentRound = newRound;
+        this.save();
         return newRound;
+    }
+
+    save() {
+        console.log(this.encode());
+        const yamlStr = yaml.safeDump(this.encode());
+        fs.writeFileSync(this.leagueFile, yamlStr, 'utf8');
+    }
+
+    encode() {
+        const { name, ownerId, currentRound } = this;
+        let { coaches, schedule } = this;
+        coaches = coaches.map((c) => c.encode());
+        schedule = schedule.map((r) => r.encode());
+
+        return { name, ownerId, currentRound, coaches, schedule };
     }
 }
 

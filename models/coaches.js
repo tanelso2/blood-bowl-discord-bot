@@ -28,6 +28,11 @@ class Coach {
     get mentionString() {
         return `<@${this.id}>`;
     }
+
+    encode() {
+        const { id, name, teamName, teamType, nickname } = this;
+        return { id, name, teamName, teamType, nickname };
+    }
 }
 
 module.exports = { Coach };
