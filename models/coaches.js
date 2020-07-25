@@ -14,7 +14,7 @@ class Coach {
         this.name = data.name;
         this.teamName = data.teamName;
         this.teamType = data.teamType;
-        this.nickname = data.nickname;
+        this.nickname = data.nickname || null;
     }
 
     get commonName() {
