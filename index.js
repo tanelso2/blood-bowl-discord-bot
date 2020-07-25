@@ -112,7 +112,7 @@ function markGameDone(message, user) {
     return message.reply(`Gotcha. Your game against ${opponent.commonName} has been recorded. There are ${numUnfinishedGames} left in the round.`);
 }
 
-function printRound(message, user) {
+function printRound(message) {
     const league = getLeagueFromFile(leagueFile);
     const currentRound = league.getCurrentRound();
     const { games } = currentRound;
