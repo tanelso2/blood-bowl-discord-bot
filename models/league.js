@@ -1,15 +1,18 @@
+const fs = require('fs');
+const yaml = require('js-yaml');
 const logger = require('../logger.js').child({ module: 'league' });
 const { Coach } = require('./coaches.js');
 const { Round } = require("./round.js");
 
 /** A Blood Bowl league. */
 class League {
-    constructor(data) {
+    constructor(data, leagueFile) {
         this.name = data.name;
         this.ownerId = data.ownerId;
         this.currentRound = data.currentRound;
         this.coaches = data.coaches.map((d) => new Coach(d));
         this.schedule = data.schedule.map((d) => new Round(d, this.coaches));
+        this.leagueFile = leagueFile;
 
         // Ensure rounds are ordered by round number
         this.schedule.sort((l, r) => l.id - r.id);
@@ -52,6 +55,28 @@ class League {
     get ownerMentionString() {
         return `<@${this.ownerId}>`;
     }
+
+    incrementRound() {
+        const content = fs.readFileSync(this.leagueFile);
+        const data = yaml.safeLoad(content);
+
+        const currentRound = data.currentRound;
+
+        const newRound = currentRound + 1;
+
+        data.currentRound = newRound;
+
+        const yamlStr = yaml.safeDump(data);
+        fs.writeFileSync(this.leagueFile, yamlStr, 'utf8');
+
+        return newRound;
+    }
 }
 
-module.exports = { League };
+function getLeagueFromFile(leagueFile) {
+    const content = fs.readFileSync(leagueFile);
+    const data = yaml.safeLoad(content);
+    return new League(data, leagueFile);
+}
+
+module.exports = { League, getLeagueFromFile };

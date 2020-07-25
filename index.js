@@ -1,11 +1,9 @@
-const fs = require('fs');
-const yaml = require('js-yaml');
 const process = require('process');
 const Discord = require('discord.js');
 const config = require('./config.json');
 const { DiscordFormat } = require('./formatting/discordFormat.js');
 const logger = require('./logger.js').child({ module: 'index' });
-const { League } = require('./models/league.js');
+const { getLeagueFromFile } = require('./models/league.js');
 const insultGenerator = require('./generator/string-generator.js');
 const stringUtils = require('./utils/stringUtils.js');
 
@@ -19,41 +17,18 @@ if (!leagueFile) {
 const client = new Discord.Client();
 const formatter = new DiscordFormat(client);
 
-function getLeague() {
-    const content = fs.readFileSync(leagueFile);
-    const data = yaml.safeLoad(content);
-    return new League(data);
-}
-
-function incrementRound() {
-    const content = fs.readFileSync(leagueFile);
-    const data = yaml.safeLoad(content);
-
-    const currentRound = data.currentRound;
-
-    const newRound = currentRound + 1;
-
-    data.currentRound = newRound;
-
-    const yamlStr = yaml.safeDump(data);
-    fs.writeFileSync(leagueFile, yamlStr, 'utf8');
-
-    return newRound;
-}
-
 /*
  * Example output:
  *  @owner, round has been advanced
  *  <embed>
  */
 function advanceRound(message, user) {
-    const league = getLeague();
+    const league = getLeagueFromFile(leagueFile);
     if (user.id !== league.ownerId) {
         const insult = insultGenerator.generateString("${insult}");
         return message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
     } else {
-        incrementRound();
-        const newRound = getLeague().getCurrentRound();
+        const newRound = league.incrementRound();
 
         return message.reply(
             `round has been advanced.`,
@@ -70,7 +45,7 @@ function advanceRound(message, user) {
  */
 function findOpponent(message, user) {
     const userInGame = (game) => game.coaches.some((c) => c.id === user.id);
-    const usersGame = getLeague().getCurrentRound().games.find(userInGame);
+    const usersGame = getLeagueFromFile(leagueFile).getCurrentRound().games.find(userInGame);
 
     if (!usersGame) {
         const insult = insultGenerator.generateString("${insult}");
@@ -92,7 +67,7 @@ function findOpponent(message, user) {
  *  ```
  */
 function printSchedule(message, user) {
-    const league = getLeague();
+    const league = getLeagueFromFile(leagueFile);
     const matches = league.findUserGames(user);
     if (matches.length) {
         const schedule = formatter.usersSchedule(user, matches, league.currentRound);
@@ -105,7 +80,7 @@ function printSchedule(message, user) {
 
 function announceGame(message, user) {
     const userInGame = (game) => game.coaches.some((c) => c.id === user.id);
-    const usersGame = getLeague().getCurrentRound().games.find(userInGame);
+    const usersGame = getLeagueFromFile(leagueFile).getCurrentRound().games.find(userInGame);
 
 
     if (!usersGame) {
