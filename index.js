@@ -115,14 +115,8 @@ function markGameDone(message, user) {
 function printRound(message) {
     const league = getLeagueFromFile(leagueFile);
     const currentRound = league.getCurrentRound();
-    const { games } = currentRound;
-    const gameStrs = games.map((g) => {
-        const doneStr = g.done ? "   - DONE!" : ""; 
-        const { homeCoach, awayCoach } = g;
-        return `${homeCoach.commonName} (${homeCoach.teamType}) v. ${awayCoach.commonName} (${awayCoach.teamType})${doneStr}`;
-    });
-    const scheduleStr = gameStrs.join('\n');
-    return message.channel.send(`~ Round ${currentRound.id} ~\n${scheduleStr}`)
+    const roundStatus = formatter.roundStatus(currentRound);
+    return message.reply("", { embed: roundStatus });
 }
 
 function makeCommand(name, func, description) {
