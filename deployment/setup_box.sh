@@ -29,3 +29,12 @@ systemctl start discord-bot.service
 
 chown -R bb_bot:bb_bot "${BB_DIR}"
 
+# Give bb_bot permission to run update script as sudo (for automated deployments)
+SUDOERS_FILE="/etc/sudoers.d/10-bot-ops"
+cat <<EOF > "${SUDOERS_FILE}"
+
+bb_bot ALL=(ALL) !ALL
+bb_bot ALL=NOPASSWD: /opt/bb_bot/deployment/update.sh
+
+EOF
+chmod 0440 "${SUDOERS_FILE}"
