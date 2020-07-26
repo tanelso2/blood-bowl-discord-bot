@@ -1,11 +1,9 @@
-const fs = require('fs');
-const yaml = require('js-yaml');
 const process = require('process');
 const Discord = require('discord.js');
 const config = require('./config.json');
 const { DiscordFormat } = require('./formatting/discordFormat.js');
 const logger = require('./logger.js').child({ module: 'index' });
-const { League } = require('./models/league.js');
+const { getLeagueFromFile } = require('./models/league.js');
 const insultGenerator = require('./generator/string-generator.js');
 const stringUtils = require('./utils/stringUtils.js');
 
@@ -19,41 +17,18 @@ if (!leagueFile) {
 const client = new Discord.Client();
 const formatter = new DiscordFormat(client);
 
-function getLeague() {
-    const content = fs.readFileSync(leagueFile);
-    const data = yaml.safeLoad(content);
-    return new League(data);
-}
-
-function incrementRound() {
-    const content = fs.readFileSync(leagueFile);
-    const data = yaml.safeLoad(content);
-
-    const currentRound = data.currentRound;
-
-    const newRound = currentRound + 1;
-
-    data.currentRound = newRound;
-
-    const yamlStr = yaml.safeDump(data);
-    fs.writeFileSync(leagueFile, yamlStr, 'utf8');
-
-    return newRound;
-}
-
 /*
  * Example output:
  *  @owner, round has been advanced
  *  <embed>
  */
 function advanceRound(message, user) {
-    const league = getLeague();
+    const league = getLeagueFromFile(leagueFile);
     if (user.id !== league.ownerId) {
         const insult = insultGenerator.generateString("${insult}");
         return message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
     } else {
-        incrementRound();
-        const newRound = getLeague().getCurrentRound();
+        const newRound = league.incrementRound();
 
         return message.reply(
             `round has been advanced.`,
@@ -70,7 +45,7 @@ function advanceRound(message, user) {
  */
 function findOpponent(message, user) {
     const userInGame = (game) => game.coaches.some((c) => c.id === user.id);
-    const usersGame = getLeague().getCurrentRound().games.find(userInGame);
+    const usersGame = getLeagueFromFile(leagueFile).getCurrentRound().games.find(userInGame);
 
     if (!usersGame) {
         const insult = insultGenerator.generateString("${insult}");
@@ -92,7 +67,7 @@ function findOpponent(message, user) {
  *  ```
  */
 function printSchedule(message, user) {
-    const league = getLeague();
+    const league = getLeagueFromFile(leagueFile);
     const matches = league.findUserGames(user);
     if (matches.length) {
         const schedule = formatter.usersSchedule(user, matches, league.currentRound);
@@ -104,8 +79,7 @@ function printSchedule(message, user) {
 }
 
 function announceGame(message, user) {
-    const userInGame = (game) => game.coaches.some((c) => c.id === user.id);
-    const usersGame = getLeague().getCurrentRound().games.find(userInGame);
+    const usersGame = getLeagueFromFile(leagueFile).getCurrentRound().findUserGame(user);
 
 
     if (!usersGame) {
@@ -122,6 +96,35 @@ function printInsult(message) {
     message.reply(insult);
 }
 
+function markGameDone(message, user) {
+    const league = getLeagueFromFile(leagueFile);
+    const currentRound = league.getCurrentRound();
+    const usersGame = currentRound.findUserGame(user);
+    if (!usersGame) {
+        const insult = insultGenerator.generateString("${insult}");
+        return message.reply(`You don't appear to be playing this round...\n${insult}`);
+    }
+    usersGame.done = true;
+    league.save();
+
+    const numUnfinishedGames = currentRound.getUnfinishedGames().length;
+    const opponent = usersGame.getOpponent(user);
+    return message.reply(`Gotcha. Your game against ${opponent.commonName} has been recorded. There are ${numUnfinishedGames} left in the round.`);
+}
+
+function printRound(message) {
+    const league = getLeagueFromFile(leagueFile);
+    const currentRound = league.getCurrentRound();
+    const { games } = currentRound;
+    const gameStrs = games.map((g) => {
+        const doneStr = g.done ? "   - DONE!" : ""; 
+        const { homeCoach, awayCoach } = g;
+        return `${homeCoach.commonName} (${homeCoach.teamType}) v. ${awayCoach.commonName} (${awayCoach.teamType})${doneStr}`;
+    });
+    const scheduleStr = gameStrs.join('\n');
+    return message.channel.send(`~ Round ${currentRound.id} ~\n${scheduleStr}`)
+}
+
 function makeCommand(name, func, description) {
     return { name, func, description };
 }
@@ -129,9 +132,11 @@ function makeCommand(name, func, description) {
 const commands = [
     makeCommand('advance', advanceRound, 'Advance to the next round (only usable by the league owner)'),
     makeCommand('announce', announceGame, 'Announce that your game for this current round is starting'),
+    makeCommand('done', markGameDone, 'Mark your game for this round as done'),
     makeCommand('help', listCommands, 'Display this help text'),
     makeCommand('insult', printInsult, 'Just print out an insult'),
     makeCommand('opponent', findOpponent, 'Display and tag your current opponent'),
+    makeCommand('round', printRound, 'Print the status of the current round'),
     makeCommand('schedule', printSchedule, 'Display your schedule for this league')
 ];
 

@@ -1,43 +1,49 @@
 name: Pissmonger Test Tournament
-ownerID: 42069101
+ownerId: 42069101
 currentRound: 2
 coaches:
-- name: Dagoth Ur            # Name of the coach
-  id: 8675309                # Discord userID
-  nickname: Thomas           # Alternative name (used in the `schedule` view)
-  teamName: PharaohSmith
-  teamType: Khemri
-- name: Prince of Pizza
-  id: 42069101
-  nickname: Steef
-  teamName: Chaos-something
-  teamType: Chaos
-- name: Para
-  id: 898989898989
-  nickname: Para
-  teamName: TRVE KVLT
-  teamType: Norse
-- name: dillor
-  id: 420420420
-  nickname: dilllllor
-  teamName: It Ain't Ogre
-  teamType: Ogre
+  - id: 8675309
+    name: Dagoth Ur
+    teamName: PharaohSmith
+    teamType: Khemri
+    nickname: Thomas
+  - id: 42069101
+    name: Prince of Pizza
+    teamName: Chaos-something
+    teamType: Chaos
+    nickname: Steef
+  - id: 898989898989
+    name: Para
+    teamName: TRVE KVLT
+    teamType: Norse
+    nickname: Para
+  - id: 420420420
+    name: dillor
+    teamName: It Ain't Ogre
+    teamType: Ogre
+    nickname: dilllllor
 schedule:
-- round: 1
-  games:
-  - home: It Ain't Ogre
-    away: PharaohSmith
-  - home: Chaos-something
-    away: TRVE KVLT
-- round: 2
-  games:
-  - home: PharaohSmith
-    away: TRVE KVLT
-  - home: It Ain't Ogre
-    away: Chaos-something
-- round: 3
-  games:
-  - home: It Ain't Ogre
-    away: TRVE KVLT
-  - home: PharaohSmith
-    away: Chaos-something
+  - round: 1
+    games:
+      - home: It Ain't Ogre
+        away: PharaohSmith
+        done: true
+      - home: Chaos-something
+        away: TRVE KVLT
+        done: false
+  - round: 2
+    games:
+      - home: PharaohSmith
+        away: TRVE KVLT
+        done: true
+      - home: It Ain't Ogre
+        away: Chaos-something
+        done: false
+  - round: 3
+    games:
+      - home: It Ain't Ogre
+        away: TRVE KVLT
+        done: false
+      - home: PharaohSmith
+        away: Chaos-something
+        done: false

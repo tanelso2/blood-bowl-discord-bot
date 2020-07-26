@@ -9,6 +9,7 @@ class Game {
     constructor(data, coaches) {
         this.home = data.home;
         this.away = data.away;
+        this.done = data.done || false; // false if not-exists
         this.homeCoach = coaches.find(c => c.teamName === data.home);
         this.awayCoach = coaches.find(c => c.teamName === data.away);
     }
@@ -31,6 +32,11 @@ class Game {
         }
         logger.error(`unknown opponent of ${user.id}`);
         return Coach.null();
+    }
+
+    encode() {
+        const { home, away, done } = this;
+        return { home, away, done };
     }
 }
 
