@@ -25,6 +25,24 @@ class DiscordFormat {
     }
 
     /**
+     * Creates the message for the current status of a round.
+     * 
+     * @param {Round} round
+     * @return {Discord.MessageEmbed}
+     */
+    roundStatus(round) {
+        const gameFields = round.games.map((g) => {
+            const { homeCoach, awayCoach } = g;
+            const ret = `${homeCoach.commonName} (${homeCoach.teamType}) v (${awayCoach.teamType}) ${awayCoach.commonName}`;
+            const value = g.done ? `~~${ret}~~` : ret;
+            return { name: BLANK, value };
+        });
+        return this.MessageEmbed()
+            .setTitle(`Round ${round.id}`)
+            .addFields(gameFields);
+    }
+
+    /**
      * Creates the field object for a game.
      *
      * @method
