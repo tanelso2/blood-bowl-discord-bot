@@ -56,11 +56,14 @@ class League {
         return `<@${this.ownerId}>`;
     }
 
+    /**
+     * @return {Round}
+     */
     incrementRound() {
         const newRound = this.currentRound + 1;
         this.currentRound = newRound;
         this.save();
-        return newRound;
+        return this.getCurrentRound();
     }
 
     save() {
