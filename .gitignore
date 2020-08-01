@@ -107,3 +107,5 @@ config.json
 
 # Generated documentation
 docs/
+
+user-id.txt

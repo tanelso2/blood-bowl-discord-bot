@@ -1,49 +1,49 @@
 name: Pissmonger Test Tournament
-ownerId: 42069101
-currentRound: 2
+ownerId: '$f{user-id.txt:8675309}'
+currentRound: 3
 coaches:
   - id: 8675309
-    name: Dagoth Ur
-    teamName: PharaohSmith
-    teamType: Khemri
-    nickname: Thomas
+    name: Thou
+    teamName: Disgusting Bois
+    teamType: Nurgle
+    nickname: You
   - id: 42069101
-    name: Prince of Pizza
-    teamName: Chaos-something
-    teamType: Chaos
-    nickname: Steef
+    name: Abba
+    teamName: Waterloo Woodies
+    teamType: Wood Elf
+    nickname: ABBA
   - id: 898989898989
-    name: Para
-    teamName: TRVE KVLT
+    name: Freddie Mercury
+    teamName: Brohemian Rhapsobro
     teamType: Norse
-    nickname: Para
+    nickname: Mr. Dynamite
   - id: 420420420
-    name: dillor
+    name: "\U0001F635"
     teamName: It Ain't Ogre
     teamType: Ogre
-    nickname: dilllllor
+    nickname: "\U0001F480"
 schedule:
   - round: 1
     games:
       - home: It Ain't Ogre
-        away: PharaohSmith
+        away: Disgusting Bois
         done: true
-      - home: Chaos-something
-        away: TRVE KVLT
+      - home: Brohemian Rhapsobro
+        away: Waterloo Woodies
         done: false
   - round: 2
     games:
-      - home: PharaohSmith
-        away: TRVE KVLT
+      - home: Disgusting Bois
+        away: Brohemian Rhapsobro
         done: true
-      - home: It Ain't Ogre
-        away: Chaos-something
+      - home: Waterloo Woodies
+        away: It Ain't Ogre
         done: false
   - round: 3
     games:
       - home: It Ain't Ogre
-        away: TRVE KVLT
+        away: Brohemian Rhapsobro
         done: false
-      - home: PharaohSmith
-        away: Chaos-something
+      - home: Waterloo Woodies
+        away: Disgusting Bois
         done: false

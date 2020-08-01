@@ -1,6 +1,6 @@
 const { directory } = require('./directory.js');
 
-const pat = /\$\{([^ }]*)}/;
+const pat = /\$\{([^ }]*)}/g;
 
 function generateString(template) {
     const matches = template.match(pat);
