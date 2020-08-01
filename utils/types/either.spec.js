@@ -36,4 +36,32 @@ describe('Either', () => {
         });
 
     });
+
+    describe('on()', () => {
+        it('should fail if given more than 2 args', (done) => {
+            const testVal = Either.Left('Hello');
+            try {
+                testVal.on(
+                    (pat1) => {},
+                    (pat2) => {},
+                    (pat3) => {}
+                );
+                throw new Error("Should be unreachable");
+            } catch(e) {
+                done();
+            }
+        });
+
+        it('should fail if given less than 2 args', (done) => {
+            const testVal = Either.Left('Hello');
+            try {
+                testVal.on(
+                    (pat1) => {}
+                );
+                throw new Error("Should be unreachable");
+            } catch(e) {
+                done();
+            }
+        });
+    });
 });

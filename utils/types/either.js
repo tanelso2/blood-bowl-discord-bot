@@ -1,4 +1,10 @@
-class Either {
+const { PatternMatchable } = require('./pattern.js');
+
+class Either extends PatternMatchable {
+    constructor() {
+        super(2);
+    }
+
     static Left(value) {
         return new Left(value);
     }
@@ -8,10 +14,10 @@ class Either {
     }
 
     on(leftFunc, rightFunc) {
+        PatternMatchable.on(this, arguments);
         this.onLeft(leftFunc);
         this.onRight(rightFunc);
     }
-
 }
 
 class Left extends Either {
