@@ -29,6 +29,9 @@ function advanceRound(message, user) {
         return message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
     } else {
         const newRound = league.incrementRound();
+        if (newRound == null) {
+            return message.reply("I cannae do dat captain!, this is the last rund I knae about!")
+        }
 
         return message.reply(
             `round has been advanced.`,

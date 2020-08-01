@@ -57,10 +57,14 @@ class League {
     }
 
     /**
-     * @return {Round}
+     * @return {Option<Round>}
      */
     incrementRound() {
+        const numRounds = this.schedule.length;
         const newRound = this.currentRound + 1;
+        if (newRound > numRounds) {
+            return null;
+        }
         this.currentRound = newRound;
         this.save();
         return this.getCurrentRound();
