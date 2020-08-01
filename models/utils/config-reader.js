@@ -4,6 +4,8 @@ const { Either } = require('./either.js');
 
 const filePattern = /^\$f{(.*)}$/
 
+const defaultPattern = /^(.*):(.*)$/
+
 /**
  * 
  * @param {String} value 
@@ -16,16 +18,27 @@ function processConfigValue(value) {
         return Either.Left(value);
     }
 
-    const fileName = matches[1];
+    const [fileName, defaultValue] = splitValueAndDefault(matches[1]);
     try {
         const fileContents = readFileSync(fileName, {encoding: "utf-8"});
         if (!fileContents) {
-            return Either.Right(`Could not get fileContents of ${fileName}`);
+            if (defaultValue) {
+                return Either.Left(defaultValue);
+            }
+            throw new Error(`Could not get fileContents of ${fileName}`);
         }
         return Either.Left(fileContents.trim());
     } catch(e) {
         return Either.Right(e.message);
     }
+}
+
+function splitValueAndDefault(raw) {
+    const matches = raw.match(defaultPattern);
+    if (!matches) {
+        return [ raw, null ];
+    }
+    return [ matches[1], matches[2] ];
 }
 
 module.exports = { processConfigValue };

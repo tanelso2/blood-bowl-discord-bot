@@ -1,5 +1,5 @@
 name: Pissmonger Test Tournament
-ownerId: '$f{user-id.txt}'
+ownerId: '$f{user-id.txt:8675309}'
 currentRound: 3
 coaches:
   - id: 8675309
