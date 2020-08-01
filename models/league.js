@@ -12,10 +12,10 @@ class League {
 
         //OwnerId
         this.ownerIdRaw = data.ownerId || data.ownerID;
-        const ownerIdOrError = processConfigValue(this.ownerIdRaw);
-        logger.debug(`ownerIdOrError = ${ownerIdOrError}`);
-        ownerIdOrError.onLeft((v) => this.ownerId = v);
-        ownerIdOrError.onRight((v) => {throw v;});
+        processConfigValue(this.ownerIdRaw).on(
+            (v) => this.ownerId = v, 
+            (e) => {throw e;}
+        );
 
         this.currentRound = data.currentRound;
         this.coaches = data.coaches.map((d) => new Coach(d));
