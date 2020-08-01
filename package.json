@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --recursive \"**/*.spec*.js\" --ignore \"node_modules/**/*\"",
+    "test": "LOG_LEVEL=debug mocha --recursive \"**/*.spec*.js\" --ignore \"node_modules/**/*\"",
     "dev": "LOG_LEVEL=debug node . ./sample-league.yaml | ./node_modules/.bin/pino-pretty",
     "lint": "eslint --fix-dry-run .",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
