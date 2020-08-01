@@ -22,13 +22,13 @@ function processConfigValue(value) {
     try {
         const fileContents = readFileSync(fileName, {encoding: "utf-8"});
         if (!fileContents) {
-            if (defaultValue) {
-                return Either.Left(defaultValue);
-            }
             throw new Error(`Could not get fileContents of ${fileName}`);
         }
         return Either.Left(fileContents.trim());
     } catch(e) {
+        if (defaultValue) {
+            return Either.Left(defaultValue);
+        }
         return Either.Right(e.message);
     }
 }
