@@ -21,7 +21,6 @@ function processConfigValue(value) {
         if (!fileContents) {
             return new Exception(`Could not get fileContents of ${fileName}`);
         }
-        logger.debug(`Read ${fileContents}`);
         return fileContents.trim();
     } catch(e) {
         return new Exception(e.message);

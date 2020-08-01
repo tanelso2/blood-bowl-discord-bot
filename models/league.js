@@ -9,9 +9,11 @@ const { processConfigValue } = require("./utils/config-reader.js");
 class League {
     constructor(data, leagueFile) {
         this.name = data.name;
+
+        //OwnerId
         this.ownerIdRaw = data.ownerId || data.ownerID;
-        logger.debug(`ownerIdRaw = ${this.ownerIdRaw}`)
         this.ownerId = processConfigValue(this.ownerIdRaw);
+
         this.currentRound = data.currentRound;
         this.coaches = data.coaches.map((d) => new Coach(d));
         this.schedule = data.schedule.map((d) => new Round(d, this.coaches));
