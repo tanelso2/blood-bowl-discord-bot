@@ -1,6 +1,6 @@
 name: Pissmonger Test Tournament
 ownerId: '$f{user-id.txt}'
-currentRound: 2
+currentRound: 3
 coaches:
   - id: 8675309
     name: Thou
@@ -18,10 +18,10 @@ coaches:
     teamType: Norse
     nickname: Mr. Dynamite
   - id: 420420420
-    name: 😵
+    name: "\U0001F635"
     teamName: It Ain't Ogre
     teamType: Ogre
-    nickname: 💀
+    nickname: "\U0001F480"
 schedule:
   - round: 1
     games:
