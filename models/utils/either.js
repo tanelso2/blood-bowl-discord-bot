@@ -1,43 +1,48 @@
+class Either {
+    static Left(value) {
+        return new Left(value);
+    }
 
+    static Right(value) {
+        return new Right(value);
+    }
 
-const Either = {
-    Left: makeLeft,
-    Right: makeRight
-};
+    on(leftFunc, rightFunc) {
+        this.onLeft(leftFunc);
+        this.onRight(rightFunc);
+    }
 
-function makeLeft(value) {
-    return new Left(value);
 }
 
-function makeRight(value) {
-    return new Right(value);
-}
-
-class Left {
+class Left extends Either {
     constructor(value) {
+        super();
         this.value = value;
     }
 
     onLeft(f) {
         f(this.value);
+        return this;
     }
 
     onRight(_) {
-        return;
+        return this;
     }
 }
 
-class Right {
+class Right extends Either {
     constructor(value) {
+        super();
         this.value = value;
     }
 
     onLeft(_) {
-        return;
+        return this;
     }
 
     onRight(f) {
         f(this.value);
+        return this;
     }
 }
 

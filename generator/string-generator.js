@@ -1,15 +1,20 @@
 const { directory } = require('./directory.js');
+const logger = require('../logger.js').child({ module: 'string-generator'});
 
 const pat = /\$\{([^ }]*)}/g;
 
 function generateString(template) {
-    const matches = template.match(pat);
-    if (!matches) {
+    const matches = [...template.matchAll(pat)].map(x => x[1]);
+    if (matches.length === 0) {
         // There is nothing to substitute
+        //logger.debug('No matches');
         return template;
     }
+    //logger.debug(matches);
 
-    const category = matches[1];
+    // Just grab the first one, the other matches will be 
+    // taken care of in the recursion
+    const category = matches[0];
     const categoryList = directory[category];
     if (!categoryList) {
         return template;
