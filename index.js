@@ -25,6 +25,9 @@ const formatter = new DiscordFormat(client);
 function advanceRound(message, user) {
     const league = getLeagueFromFile(leagueFile);
     if (user.id !== league.ownerId) {
+        logger.debug(`user_id = ${user.id}, owner_id = ${league.ownerId}`);
+        logger.debug(`typeof(user_id) = ${typeof(user.id)}`);
+        logger.debug(`typeof(owner_id) = ${typeof(league.ownerId)}`);
         const insult = insultGenerator.generateString("${insult}");
         return message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
     } else {

@@ -3,12 +3,15 @@ const yaml = require('js-yaml');
 const logger = require('../logger.js').child({ module: 'league' });
 const { Coach } = require('./coaches.js');
 const { Round } = require("./round.js");
+const { processConfigValue } = require("./utils/config-reader.js");
 
 /** A Blood Bowl league. */
 class League {
     constructor(data, leagueFile) {
         this.name = data.name;
-        this.ownerId = data.ownerId || data.ownerID;
+        this.ownerIdRaw = data.ownerId || data.ownerID;
+        logger.debug(`ownerIdRaw = ${this.ownerIdRaw}`)
+        this.ownerId = processConfigValue(this.ownerIdRaw);
         this.currentRound = data.currentRound;
         this.coaches = data.coaches.map((d) => new Coach(d));
         this.schedule = data.schedule.map((d) => new Round(d, this.coaches));
@@ -73,10 +76,12 @@ class League {
     }
 
     encode() {
-        const { name, ownerId, currentRound } = this;
+        const { name, ownerIdRaw, currentRound } = this;
         let { coaches, schedule } = this;
         coaches = coaches.map((c) => c.encode());
         schedule = schedule.map((r) => r.encode());
+
+        const ownerId = ownerIdRaw;
 
         return { name, ownerId, currentRound, coaches, schedule };
     }
