@@ -1,7 +1,9 @@
 const { directory } = require('./directory.js');
 const logger = require('../logger.js').child({ module: 'string-generator'});
 
-const pat = /\$\{([^ }]*)}/g;
+const singularPat = /\$\{([^ }]*)}/;
+const pat = new RegExp(singularPat, 'g');
+
 
 function generateString(template) {
     const matches = [...template.matchAll(pat)].map(x => x[1]);
@@ -21,7 +23,8 @@ function generateString(template) {
     }
 
     const randomElement = categoryList[Math.floor(Math.random() * categoryList.length)];
-    const newString = template.replace(pat, randomElement);
+    const newString = template.replace(singularPat, randomElement);
+    //logger.debug(`template = ${template}, newString = ${newString}`)
 
     // recurse
     return generateString(newString);
