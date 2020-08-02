@@ -1,6 +1,6 @@
 const { readFileSync } = require('fs');
 const logger = require('../../logger.js').child({ module: 'config-reader' });
-const { Either } = require('./either.js');
+const { Either } = require('../../utils/types/either.js');
 
 const filePattern = /^\$f{(.*)}$/
 

@@ -6,6 +6,7 @@ const logger = require('./logger.js').child({ module: 'index' });
 const { getLeagueFromFile } = require('./models/league.js');
 const insultGenerator = require('./generator/string-generator.js');
 const stringUtils = require('./utils/stringUtils.js');
+const { Option } = require('./utils/types/option.js');
 
 
 const leagueFile = process.argv[2];
@@ -143,8 +144,30 @@ function listCommands(message, _user) {
     return message.reply(`Available commands: \n${commandsString}`);
 }
 
-function findCommand(commandName) {
-    return commands.find((c) => c.name == commandName);
+/**
+ * @param {String} commandName
+ * @returns {Option<Command>}
+ */
+function findCommand(rawCommandName) {
+    function find(commandName) {
+        return commands.find((c) => c.name === commandName);
+    }
+
+    const exactMatch = find(rawCommandName);
+    if (exactMatch) {
+        return Option.Some(exactMatch);
+    } else if (!exactMatch && rawCommandName.endsWith('!')) {
+        const trimmedCommand = rawCommandName.slice(0, -1); // cut off the exclamation point
+        const bestFit = stringUtils.getSimilarString(trimmedCommand, commands.map(c => c.name));
+        if (bestFit) {
+            const fitMatch = find(bestFit);
+            if (fitMatch) {
+                return Option.Some(fitMatch);
+            }
+        }
+    }
+
+    return Option.None();
 }
 
 client.once('ready', () => {
@@ -158,7 +181,7 @@ client.on('message', message => {
         "ignoreDirect": false,
         "ignoreRoles": true,
         "ignoreEveryone": true
-    }
+    };
 
 
     if (message.mentions.has(client.user, mentionsOptions)) {
@@ -166,27 +189,21 @@ client.on('message', message => {
         //
         const command = message.content.split(/ +/)[1].toLowerCase();
 
-        const cmd = findCommand(command);
-
-        if(cmd) {
-            cmd.func(message, message.author);
-        } else {
-            if (command.endsWith('!')) {
-                const trimmedCommand = command.slice(0, -1); // cut off the exclamation point
-                const bestFit = stringUtils.getSimilarString(trimmedCommand, commands.map(c => c.name));
-                if (bestFit) {
-                    const bestFitCmd = findCommand(bestFit);
-                    bestFitCmd.func(message, message.author);
-                    return;
+        findCommand(command).on(
+            (cmd) => {
+                try {
+                    cmd.func(message, message.author);
+                } catch (e) {
+                    logger.info(e);
+                    message.channel.send(`Ooff I had a bit of a glitch there`);
                 }
+            },
+            () => {
+                const insult = insultGenerator.generateString("${insult}");
+                message.reply(`Dude I have no idea what you're trying to say\n${insult}`);
             }
-            const insult = insultGenerator.generateString("${insult}");
-            message.channel.send(`Dude I have no idea what you're trying to say\n${insult}`);
-        }
+        );
     }
-
-
 });
 
 client.login(config.token);
-
