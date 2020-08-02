@@ -148,20 +148,23 @@ function listCommands(message, _user) {
  * @param {String} commandName
  * @returns {Option<Command>}
  */
-function findCommand(commandName) {
-    const find = (c) => commands.find((c) => c.name === commandName)
-    const exactMatch = find(commandName);
+function findCommand(rawCommandName) {
+    function find(commandName) {
+        return commands.find((c) => c.name === commandName);
+    }
+
+    const exactMatch = find(rawCommandName);
     if (exactMatch) {
         return Option.Some(exactMatch);
-    }
-    else if (!exactMatch && commandName.endsWith('!')) {
-        const trimmedCommand = command.slice(0, -1); // cut off the exclamation point
+    } else if (!exactMatch && rawCommandName.endsWith('!')) {
+        const trimmedCommand = rawCommandName.slice(0, -1); // cut off the exclamation point
         const bestFit = stringUtils.getSimilarString(trimmedCommand, commands.map(c => c.name));
         if (bestFit) {
             const fitMatch = find(bestFit);
             if (fitMatch) {
                 return Option.Some(fitMatch);
             }
+        }
     }
 
     return Option.None();
@@ -178,7 +181,7 @@ client.on('message', message => {
         "ignoreDirect": false,
         "ignoreRoles": true,
         "ignoreEveryone": true
-    }
+    };
 
 
     if (message.mentions.has(client.user, mentionsOptions)) {
@@ -189,11 +192,11 @@ client.on('message', message => {
         findCommand(command).on(
             (cmd) => {
                 try {
-                    cmd.func(message, message.author)
+                    cmd.func(message, message.author);
                 } catch (e) {
                     logger.info(e);
                     message.channel.send(`Ooff I had a bit of a glitch there`);
-                };
+                }
             },
             () => {
                 const insult = insultGenerator.generateString("${insult}");
@@ -204,4 +207,3 @@ client.on('message', message => {
 });
 
 client.login(config.token);
-
