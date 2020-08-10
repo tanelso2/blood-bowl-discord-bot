@@ -185,9 +185,16 @@ client.on('message', message => {
 
 
     if (message.mentions.has(client.user, mentionsOptions)) {
+        // TEMPORARY
+        message.reply("Hey hey now, don't ask me to do anything, I have playoffs off. It's in my employment contract");
+        return;
+
+        /*eslint no-unreachable: "off"*/
+
         // Should only trigger if they mention bot user by name
         //
         const command = message.content.split(/ +/)[1].toLowerCase();
+
 
         findCommand(command).on(
             (cmd) => {
