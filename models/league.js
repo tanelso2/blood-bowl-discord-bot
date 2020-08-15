@@ -13,8 +13,8 @@ class League {
 
         //OwnerId
         this.ownerIdRaw = data.ownerId || data.ownerID;
-        processConfigValue(this.ownerIdRaw).on({
-            Left: (v) => this.ownerId = v,
+        this.ownerId = processConfigValue(this.ownerIdRaw).on({
+            Left: (v) => v,
             Right:(e) => {throw e;}
         });
 
