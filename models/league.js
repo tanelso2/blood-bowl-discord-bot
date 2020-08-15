@@ -4,6 +4,7 @@ const logger = require('../logger.js').child({ module: 'league' });
 const { Coach } = require('./coaches.js');
 const { Round } = require("./round.js");
 const { processConfigValue } = require("./utils/config-reader.js");
+const { Option } = require("../utils/types/option.js");
 
 /** A Blood Bowl league. */
 class League {
@@ -12,10 +13,10 @@ class League {
 
         //OwnerId
         this.ownerIdRaw = data.ownerId || data.ownerID;
-        processConfigValue(this.ownerIdRaw).on(
-            (v) => this.ownerId = v, 
-            (e) => {throw e;}
-        );
+        processConfigValue(this.ownerIdRaw).on({
+            Left: (v) => this.ownerId = v,
+            Right:(e) => {throw e;}
+        });
 
         this.currentRound = data.currentRound;
         this.coaches = data.coaches.map((d) => new Coach(d));
@@ -71,11 +72,11 @@ class League {
         const numRounds = this.schedule.length;
         const newRound = this.currentRound + 1;
         if (newRound > numRounds) {
-            return null;
+            return Option.None();
         }
         this.currentRound = newRound;
         this.save();
-        return this.getCurrentRound();
+        return Option.Some(this.getCurrentRound());
     }
 
     save() {

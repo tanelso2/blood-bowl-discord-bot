@@ -8,6 +8,7 @@ const insultGenerator = require('./generator/string-generator.js');
 const stringUtils = require('./utils/stringUtils.js');
 const { Option } = require('./utils/types/option.js');
 
+const VACATION_MODE = true;
 
 const leagueFile = process.argv[2];
 if (!leagueFile) {
@@ -29,17 +30,17 @@ function advanceRound(message, user) {
         const insult = insultGenerator.generateString("${insult}");
         return message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
     } else {
-        const newRound = league.incrementRound();
-        if (newRound == null) {
-            return message.reply("I cannae do dat captain!, this is the last rund I knae about!")
-        }
-
-        return message.reply(
-            `round has been advanced.`,
-            {
-                embed: formatter.roundAdvance(newRound),
-                disableMentions: 'all',
-            });
+        league.incrementRound().on({
+            None: () => message.reply("I cannae do dat captain!, this is the last rund I knae about!"),
+            Some: (newRound) => {
+                message.reply(
+                    `round has been advanced.`,
+                    {
+                        embed: formatter.roundAdvance(newRound),
+                        disableMentions: 'all',
+                    });
+            }
+        });
     }
 }
 
@@ -185,19 +186,18 @@ client.on('message', message => {
 
 
     if (message.mentions.has(client.user, mentionsOptions)) {
-        // TEMPORARY
-        message.reply("Hey hey now, don't ask me to do anything, I have playoffs off. It's in my employment contract");
-        return;
-
-        /*eslint no-unreachable: "off"*/
+        if (VACATION_MODE) {
+            message.reply("Hey hey now, don't ask me to do anything, I have playoffs off. It's in my employment contract");
+            return;
+        }
 
         // Should only trigger if they mention bot user by name
         //
         const command = message.content.split(/ +/)[1].toLowerCase();
 
 
-        findCommand(command).on(
-            (cmd) => {
+        findCommand(command).on({
+            Some: (cmd) => {
                 try {
                     cmd.func(message, message.author);
                 } catch (e) {
@@ -205,11 +205,11 @@ client.on('message', message => {
                     message.channel.send(`Ooff I had a bit of a glitch there`);
                 }
             },
-            () => {
+            None: () => {
                 const insult = insultGenerator.generateString("${insult}");
                 message.reply(`Dude I have no idea what you're trying to say\n${insult}`);
             }
-        );
+        });
     }
 });
 
