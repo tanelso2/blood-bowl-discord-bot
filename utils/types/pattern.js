@@ -55,7 +55,15 @@ class PatternMatchable {
             func = specificMatch[1];
         }
 
-        this.onMatch(func);
+        return this.onMatch(func);
+    }
+
+    /**
+     * @param {Function<a, b>} _
+     * @return {b}
+     */
+    onMatch(_) {
+        throw new Error(`UNDEFINED onMatch() for ${this.T}!!!`);
     }
 
     matches(patternName)  {
