@@ -2,7 +2,7 @@ const { PatternMatchable } = require('./pattern.js');
 
 class Option extends PatternMatchable {
     constructor() {
-        super(2);
+        super([Some, None]);
     }
 
     static Some(value) {
@@ -12,42 +12,20 @@ class Option extends PatternMatchable {
     static None() {
         return new None();
     }
-
-    on(someFunc, noneFunc) {
-        PatternMatchable.on(this, arguments);
-        this.onSome(someFunc);
-        this.onNone(noneFunc);
-    }
 }
 
 class Some extends Option {
     constructor(value) {
         super();
         this.value = value;
-    }
-
-    onSome(f) {
-        f(this.value);
-        return this;
-    }
-
-    onNone(_) {
-        return this;
+        this.onMatch = (f) => f(this.value);
     }
 }
 
 class None extends Option {
     constructor() {
         super();
-    }
-
-    onSome(_) {
-        return this;
-    }
-
-    onNone(f) {
-        f();
-        return this;
+        this.onMatch = (f) => f()
     }
 }
 

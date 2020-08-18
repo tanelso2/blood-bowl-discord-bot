@@ -1,6 +1,7 @@
 const { readFileSync } = require('fs');
 const logger = require('../../logger.js').child({ module: 'config-reader' });
 const { Either } = require('../../utils/types/either.js');
+const { Option } = require('../../utils/types/option.js');
 
 const filePattern = /^\$f{(.*)}$/
 
@@ -8,14 +9,29 @@ const defaultPattern = /^(.*):(.*)$/
 
 /**
  * 
- * @param {String} value 
+ * @param {String} rawValue
  * @returns {Either<String, Error>}
  */
-function processConfigValue(value) {
+function processConfigValue(rawValue) {
+    return processFileSubstitution(rawValue).on({
+       Left: (err) => Either.Right(err),
+       Right: (valueOpt) => valueOpt.on({
+            Some: (v) => Either.Left(v),
+            _: () => Either.Left(rawValue),
+        })
+    });
+}
+
+// type ProcessResult =
+
+/**
+ * @returns Either<Error, Option<String>>
+ */
+function processFileSubstitution(value) {
     const matches = value.match(filePattern);
     if (!matches) {
         // No file substitution to do
-        return Either.Left(value);
+        return Either.Right(Option.None());
     }
 
     const [fileName, defaultValue] = splitValueAndDefault(matches[1]);
@@ -24,12 +40,12 @@ function processConfigValue(value) {
         if (!fileContents) {
             throw new Error(`Could not get fileContents of ${fileName}`);
         }
-        return Either.Left(fileContents.trim());
+        return Either.Right(Option.Some(fileContents.trim()));
     } catch(e) {
         if (defaultValue) {
-            return Either.Left(defaultValue);
+            return Either.Right(Option.Some(defaultValue));
         }
-        return Either.Right(e.message);
+        return Either.Left(e);
     }
 }
 

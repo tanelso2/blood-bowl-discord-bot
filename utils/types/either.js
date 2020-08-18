@@ -2,7 +2,7 @@ const { PatternMatchable } = require('./pattern.js');
 
 class Either extends PatternMatchable {
     constructor() {
-        super(2);
+        super([Left, Right]);
     }
 
     static Left(value) {
@@ -12,27 +12,13 @@ class Either extends PatternMatchable {
     static Right(value) {
         return new Right(value);
     }
-
-    on(leftFunc, rightFunc) {
-        PatternMatchable.on(this, arguments);
-        this.onLeft(leftFunc);
-        this.onRight(rightFunc);
-    }
 }
 
 class Left extends Either {
     constructor(value) {
         super();
         this.value = value;
-    }
-
-    onLeft(f) {
-        f(this.value);
-        return this;
-    }
-
-    onRight(_) {
-        return this;
+        this.onMatch = (f) => f(this.value);
     }
 }
 
@@ -40,15 +26,7 @@ class Right extends Either {
     constructor(value) {
         super();
         this.value = value;
-    }
-
-    onLeft(_) {
-        return this;
-    }
-
-    onRight(f) {
-        f(this.value);
-        return this;
+        this.onMatch = (f) => f(this.value);
     }
 }
 
