@@ -1,23 +1,24 @@
 name: Pissmonger Test Tournament
+id: test
 ownerId: '$f{user-id.txt:8675309}'
 currentRound: 3
 coaches:
-  - id: 8675309
+  - id: '$f{user-id.txt:8675309}'
     name: Thou
     teamName: Disgusting Bois
     teamType: Nurgle
     nickname: You
-  - id: 42069101
+  - id: '42069101'
     name: Abba
     teamName: Waterloo Woodies
     teamType: Wood Elf
     nickname: ABBA
-  - id: 898989898989
+  - id: '898989898989'
     name: Freddie Mercury
     teamName: Brohemian Rhapsobro
     teamType: Norse
     nickname: Mr. Dynamite
-  - id: 420420420
+  - id: '420420420'
     name: "\U0001F635"
     teamName: It Ain't Ogre
     teamType: Ogre
