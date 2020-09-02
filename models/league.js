@@ -10,6 +10,7 @@ const { Option } = require("../utils/types/option.js");
 class League {
     constructor(data, leagueFile) {
         this.name = data.name;
+        this.id = data.id;
 
         //OwnerId
         this.ownerIdRaw = data.ownerId || data.ownerID;
@@ -34,6 +35,10 @@ class League {
         return this.schedule[this.currentRound - 1];
     }
 
+    matches(specifier) {
+        return specifier === this.id;
+    }
+
     /**
      * Finds all games that a user participates in this league.
      *
@@ -56,6 +61,10 @@ class League {
      */
     userInLeague(user) {
         return this.coaches.some((c) => c.id === user.id);
+    }
+
+    userInvolvedInLeague(user) {
+        return this.userInLeague(user) || this.ownerId === user.id;
     }
 
     /**
@@ -86,14 +95,14 @@ class League {
     }
 
     encode() {
-        const { name, ownerIdRaw, currentRound } = this;
+        const { id, name, ownerIdRaw, currentRound } = this;
         let { coaches, schedule } = this;
         coaches = coaches.map((c) => c.encode());
         schedule = schedule.map((r) => r.encode());
 
         const ownerId = ownerIdRaw;
 
-        return { name, ownerId, currentRound, coaches, schedule };
+        return { id, name, ownerId, currentRound, coaches, schedule };
     }
 }
 
