@@ -149,8 +149,8 @@ function makeCommand(name, func, description, requiresLeague) {
 }
 
 function listLeagues(message, _, __) {
-    const leagueIds = getAllLeagues().map(x => x.id).join(', ');
-    return message.channel.send(`These are all the leagues I know about: [${leagueIds}]`);
+    const leagueIds = getAllLeagues().map(x => x.name).join(',\n ');
+    return message.channel.send(`These are all the leagues I know about: \n${leagueIds}\n`);
 }
 
 const commands = [
