@@ -10,11 +10,11 @@ class Game {
         this.home = data.home;
         this.away = data.away;
         this.done = data.done || false; // false if not-exists
-        this.homeCoach = coaches.find(c => c.teamName === data.home);
-        this.awayCoach = coaches.find(c => c.teamName === data.away);
+        this.homeCoach = coaches.find(c => c.teamNameIsCloseEnough(data.home));
+        this.awayCoach = coaches.find(c => c.teamNameIsCloseEnough(data.away));
     }
 
-    /** @member {Array<Coach>} - Both coaches playing in this game. */
+    /** @member {Array<Coach>} - Both coaches playing in this game. Order not guaranteed. Results may vary */
     get coaches() {
         return [this.homeCoach, this.awayCoach];
     }

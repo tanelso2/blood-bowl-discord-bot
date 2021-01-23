@@ -1,4 +1,5 @@
 const { processConfigValue } = require("./utils/config-reader.js");
+const stringUtils = require('../utils/stringUtils.js');
 
 class Coach {
     static null() {
@@ -33,6 +34,10 @@ class Coach {
 
     get mentionString() {
         return `<@${this.id}>`;
+    }
+
+    teamNameIsCloseEnough(s) {
+        return stringUtils.getSimilarity(this.teamName, s) > 0.75;
     }
 
     encode() {
