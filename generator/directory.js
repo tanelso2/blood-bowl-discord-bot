@@ -1,6 +1,6 @@
 const badTeams = [
     "Ogres",
-    "Haflings",
+    "Halflings",
     "Goblins",
 ];
 
