@@ -1,5 +1,10 @@
 const levenshtien = require('damerau-levenshtein');
 
+function getSimilarity(x, y) {
+    const result = levenshtien(x, y);
+    return result.similarity;
+}
+
 function getSimilarString(s, dictionary) {
     const results = dictionary.map((word) => {
         const result = levenshtien(word, s);
@@ -20,4 +25,4 @@ function getSimilarString(s, dictionary) {
 }
 
 
-module.exports = { getSimilarString };
+module.exports = { getSimilarString, getSimilarity };

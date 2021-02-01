@@ -43,7 +43,7 @@ schedule:
   - round: 3
     games:
       - home: It Ain't Ogre
-        away: Brohemian Rhapsobro
+        away: Brohemian RhapsoBro
         done: false
       - home: Waterloo Woodies
         away: Disgusting Bois
