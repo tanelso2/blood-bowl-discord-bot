@@ -113,9 +113,14 @@ function announceGame(message, user, league) {
         return message.reply("you don't seem to be playing this round, smoothbrain.");
     }
 
+    const audienceString = league.getAudience().on({
+        Some: (x) => x,
+        None: () => 'here'
+    });
+
     const [homeCoach, awayCoach] = usersGame.coaches;
 
-    return message.channel.send(`@here - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
+    return message.channel.send(`@${audienceString} - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
 }
 
 function printInsult(message, _, __) {
