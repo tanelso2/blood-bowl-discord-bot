@@ -11,6 +11,7 @@ class League {
     constructor(data, leagueFile) {
         this.name = data.name;
         this.id = data.id;
+        this.audienceId = data.audienceId;
 
         //OwnerId
         this.ownerIdRaw = data.ownerId || data.ownerID;
@@ -33,6 +34,19 @@ class League {
      */
     getCurrentRound() {
         return this.schedule[this.currentRound - 1];
+    }
+
+    /**
+     * @return {Option<String>} - The name of the group to ping, or Nothing if none is specified
+     */
+    getAudience() {
+        const audienceId = this.audienceId;
+        
+        if (!audienceId) {
+            return Option.None();
+        }
+
+        return Option.Some(audienceId);
     }
 
     matches(specifier) {
@@ -96,13 +110,17 @@ class League {
 
     encode() {
         const { id, name, ownerIdRaw, currentRound } = this;
-        let { coaches, schedule } = this;
+        let { coaches, schedule, audienceId } = this;
         coaches = coaches.map((c) => c.encode());
         schedule = schedule.map((r) => r.encode());
 
+        if (!audienceId) {
+            audienceId = null
+        }
+
         const ownerId = ownerIdRaw;
 
-        return { id, name, ownerId, currentRound, coaches, schedule };
+        return { audienceId, id, name, ownerId, currentRound, coaches, schedule };
     }
 }
 
