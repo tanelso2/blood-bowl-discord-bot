@@ -114,13 +114,13 @@ function announceGame(message, user, league) {
     }
 
     const audienceString = league.getAudience().on({
-        Some: (x) => x,
-        None: () => 'here'
+        Some: (roleId) => `<@&${roleId}>`,
+        None: () => '@here'
     });
 
     const [homeCoach, awayCoach] = usersGame.coaches;
 
-    return message.channel.send(`@${audienceString} - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
+    return message.channel.send(`${audienceString} - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
 }
 
 function printInsult(message, _, __) {
