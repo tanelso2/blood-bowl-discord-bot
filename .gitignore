@@ -109,3 +109,5 @@ config.json
 docs/
 
 user-id.txt
+
+output.yaml
