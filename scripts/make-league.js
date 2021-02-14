@@ -11,7 +11,7 @@ const os = require('os');
 const fs = require('fs').promises;
 
 async function query(message) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
         readline.question(message + ': ', (answer) => {
             resolve(answer);
         });
@@ -24,11 +24,9 @@ async function okPrompt() {
         case 'y':
         case 'Y':
             return true;
-            break;
         case 'n':
         case 'N':
             return false;
-            break;
         default:
             console.log(`I don't understand, try again`);
             return await okPrompt();
@@ -152,14 +150,4 @@ async function main() {
     readline.close();
 }
 
-async function currentTest() {
-    // const hello = await editObjectInEditor({a: 'a'}, JSON.stringify, JSON.parse);
-    // console.log(`HELLO I HAVE READ OUT ${JSON.stringify(hello)}`);
-    const teams = ['a', 'b', 'c', 'd'];
-    const rounds = await makeRounds(teams);
-    console.log(`${JSON.stringify(rounds)}`);
-    readline.close();
-}
-
 main();
-//currentTest();
