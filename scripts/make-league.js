@@ -28,7 +28,7 @@ async function okPrompt() {
         case 'N':
             return false;
         default:
-            console.log(`I don't understand, try again`);
+            console.log(`y or n, it's not that hard! Fucking figure it out`);
             return await okPrompt();
     }
 }
@@ -78,7 +78,7 @@ async function queryCoach() {
     console.log(`This team looks like ${JSON.stringify(retVal)}`);
     const ok = await okPrompt();
     if (!ok) {
-        console.log(`Ok, let's try inputting that again`);
+        console.log(`Oh did you make a mistake? Fucking meatbags. Fine I'll just throw away all the work we just did and start over. All because you fucked up. You piece of shit`);
         return await queryCoach();
     }
     return retVal;
