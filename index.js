@@ -43,12 +43,31 @@ function getLeagues(message, user) {
 const client = new Discord.Client();
 const formatter = new DiscordFormat(client);
 
-/*
+/**
+ * Advances the league round and posts the new round in channel.
+ *
+ * The new round announcement message will be pinned and any prior announcements will be unpinned.
+ *
  * Example output:
  *  @owner, round has been advanced
  *  <embed>
  */
 function advanceRound(message, user, league) {
+
+    // Unpins *all* other messages by this bot, but until any other messages are expected to be
+    // pinned, this is easier than persisting message ids.
+    function unpinOtherMessages(latestMessage) {
+        return latestMessage.channel.messages.fetchPinned()
+            .then(pinned_messages =>
+                Promise.all(
+                    pinned_messages
+                        .filter(message => message.author.id === client.user.id)
+                        .filter(message => message.id !== latestMessage.id)
+                        .mapValues(message => message.unpin())
+                )
+            );
+    }
+
     if (user.id !== league.ownerId) {
         const insult = insultGenerator.generateString("${insult}");
         return message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
@@ -56,11 +75,18 @@ function advanceRound(message, user, league) {
         league.incrementRound().on({
             None: () => message.reply("I cannae do dat captain!, this is the last rund I knae about!"),
             Some: (newRound) => {
-                message.reply(
-                    `round has been advanced.`,
-                    {
-                        embed: formatter.roundAdvance(newRound),
-                        disableMentions: 'all',
+                message
+                    .reply(
+                        `round has been advanced.`,
+                        {
+                            embed: formatter.roundAdvance(newRound),
+                            disableMentions: 'all',
+                        }
+                    )
+                    .then(reply => reply.pin())
+                    .then(reply => unpinOtherMessages(reply))
+                    .catch(reason => {
+                        logger.error(reason);
                     });
             }
         });
