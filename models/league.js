@@ -41,7 +41,7 @@ class League {
      */
     getAudience() {
         const audienceId = this.audienceId;
-        
+
         if (!audienceId) {
             return Option.None();
         }
