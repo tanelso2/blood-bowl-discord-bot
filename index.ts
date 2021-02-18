@@ -146,20 +146,18 @@ async function printSchedule(message: Discord.Message, user: Discord.User, leagu
 
 async function announceGame(message: Discord.Message, user: Discord.User, league: League) {
     const usersGame = league.getCurrentRound().findUserGame(user);
+    return usersGame.on({
+        Some: (game: Game) => {
+            const audienceString = league.getAudience().on({
+                Some: (roleId) => `<@&${roleId}>`,
+                None: () => '@here'
+            });
+            const [homeCoach, awayCoach] = game.coaches;
 
-
-    if (!usersGame) {
-        return message.reply("you don't seem to be playing this round, smoothbrain.");
-    }
-
-    const audienceString = league.getAudience().on({
-        Some: (roleId) => `<@&${roleId}>`,
-        None: () => '@here'
+            return message.channel.send(`${audienceString} - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
+        },
+        None: () => message.reply("you don't seem to be playing this round, smoothbrain."),
     });
-
-    const [homeCoach, awayCoach] = usersGame.coaches;
-
-    return message.channel.send(`${audienceString} - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
 }
 
 async function printInsult(message: Discord.Message, _: Discord.User, __: League) {
@@ -171,17 +169,21 @@ async function printInsult(message: Discord.Message, _: Discord.User, __: League
 async function markGameDone(message: Discord.Message, user: Discord.User, league: League) {
     const currentRound = league.getCurrentRound();
     const usersGame = currentRound.findUserGame(user);
-    if (!usersGame) {
-        const insult = insultGenerator.generateString("${insult}");
-        return message.reply(`You don't appear to be playing this round...\n${insult}`);
-    }
-    usersGame.done = true;
-    league.save();
+    return usersGame.on({
+        Some: (game: Game) => {
+            game.done = true;
+            league.save();
 
-    const numUnfinishedGames = currentRound.getUnfinishedGames().length;
-    const opponent = usersGame.getOpponent(user);
-    const isOrAre = numUnfinishedGames === 1 ? "is" : "are";
-    return message.reply(`Gotcha. Your game against ${opponent.commonName} has been recorded. There ${isOrAre} ${numUnfinishedGames} left in the round.`);
+            const numUnfinishedGames = currentRound.getUnfinishedGames().length;
+            const opponent = game.getOpponent(user);
+            const isOrAre = numUnfinishedGames === 1 ? "is" : "are";
+            return message.reply(`Gotcha. Your game against ${opponent.commonName} has been recorded. There ${isOrAre} ${numUnfinishedGames} left in the round.`);
+        },
+        None: () => {
+            const insult = insultGenerator.generateString("${insult}");
+            return message.reply(`You don't appear to be playing this round...\n${insult}`);
+        }
+    });
 }
 
 function printRound(message: Discord.Message, _: Discord.User, league: League) {

@@ -1,5 +1,6 @@
 import { Game, GameData } from './game';
 import { Coach } from './coach';
+import { Option } from "../utils/types/option";
 import Discord from 'discord.js';
 
 export interface RoundData {
@@ -27,12 +28,12 @@ export class Round implements RoundData {
      * Finds all games that a user participates in this round.
      *
      * @param {Discord.User} user - The user whose games will be found.
-     * @return {Game} - The game in this round that user plays in. 
+     * @return {Option<Game>} - The game in this round that user plays in, or None.
      * If the user is in multiple games in a round, this method has undefined behavior
-     * 
+     *
      */
-    findUserGame(user: Discord.User): Game {
-        return this.games.find((game) => game.coaches.some((coach) => coach.id === user.id)) as Game;
+    findUserGame(user: Discord.User): Option<Game> {
+        return Option.fromJsBullshit(this.games.find((game) => game.coaches.some((coach) => coach.id === user.id)));
     }
 
     getUnfinishedGames(): Game[] {

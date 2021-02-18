@@ -90,7 +90,10 @@ export class League implements LeagueData {
         if (!this.userInLeague(user)) {
             return [];
         }
-        return this.schedule.map((round) => round.findUserGame(user));
+        return this.schedule
+            .map((round) => round.findUserGame(user))
+            .filter((game_or_none) => game_or_none.isSome())
+            .map((game) => game.unwrap());
     }
 
     /**
