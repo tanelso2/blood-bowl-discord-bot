@@ -20,6 +20,31 @@ export class Option<a> extends PatternMatchable {
             return Option.Some(x);
         }
     }
+
+    /**
+     * Unwraps the value if Some, else if None throws.
+     */
+    unwrap(): a {
+        throw new Error("Used a raw Option!");
+    }
+
+    /**
+     * Returns if the option contains a value.
+     *
+     * @return {bool}
+     */
+    isSome(): boolean {
+        throw new Error("Used a raw Option!");
+    }
+
+    /**
+     * Returns if the option contains no value.
+     *
+     * @return {bool}
+     */
+    isNone(): boolean {
+        throw new Error("Used a raw Option!");
+    }
 }
 
 class Some<a> extends Option<a> {
@@ -29,11 +54,35 @@ class Some<a> extends Option<a> {
         this.value = value;
         this.onMatch = (f: (x: a) => any) => f(this.value);
     }
+
+    unwrap(): a {
+        return this.value;
+    }
+
+    isSome(): boolean {
+        return true;
+    }
+
+    isNone(): boolean {
+        return false;
+    }
 }
 
 class None<_> extends Option<_> {
     constructor() {
         super();
         this.onMatch = (f: () => any) => f()
+    }
+
+    unwrap<_>(): _ {
+        throw new Error("Unwrapped a None!");
+    }
+
+    isSome(): boolean {
+        return false;
+    }
+
+    isNone(): boolean {
+        return true;
     }
 }
