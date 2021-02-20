@@ -217,7 +217,7 @@ function listCommands(message:Discord.Message, _: Discord.User, __: League) {
  * @param {String} rawCommandName
  * @returns {Option<Command>}
  */
-function findCommand(rawCommandName: string) {
+function findCommand(rawCommandName: string): Option<Command> {
     function find(commandName: string) {
         return commands.find((c: Command) => c.name === commandName);
     }
@@ -253,7 +253,7 @@ client.on('message', message => {
     };
 
 
-    if (message.mentions.has(client.user, mentionsOptions)) {
+    if (message.mentions.has(client.user!, mentionsOptions)) {
         if (VACATION_MODE) {
             message.reply("Hey hey now, don't ask me to do anything, I have playoffs off. It's in my employment contract");
             return;
@@ -265,10 +265,11 @@ client.on('message', message => {
 
 
         findCommand(command).on({
-            Some: (cmd) => {
+            Some: (cmd: Command) => {
                 try {
                     if (!cmd.requiresLeague) {
-                        return cmd.func(message, message.author);
+                        const func = cmd.func as ((message: Discord.Message, user: Discord.User) => any);
+                        return func(message, message.author);
                     }
                     const leagues = getLeagues(message, message.author);
                     if (leagues.length === 0) {
@@ -281,7 +282,7 @@ client.on('message', message => {
                         cmd.func(message, message.author, leagues[0]);
                     }
                 } catch (e) {
-                    logger.info(e);
+                    LOGGER.info(e);
                     message.channel.send(`Ooff I had a bit of a glitch there`);
                 }
             },
