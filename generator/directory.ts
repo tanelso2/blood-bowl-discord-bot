@@ -90,9 +90,13 @@ const colors = [
     "light ${colour}"
 ];
 
-const numbersFromOneToFive = [...Array(5).keys()].map(x => (x + 1).toString());
+const numbersFromOneToFive = ["1", "2", "3", "4", "5"];
 
-const directory = {
+export interface Directory {
+    [x: string]: string[];
+}
+
+export const directory: Directory = {
     "badTeam": badTeams,
     "bodyPart": bodyParts,
     "clothing": clothing,
@@ -107,5 +111,3 @@ const directory = {
     "numberFrom1To5": numbersFromOneToFive,
     "uselessItem": uselessItems,
 };
-
-module.exports = { directory };

@@ -1,14 +1,30 @@
-const fs = require('fs');
-const yaml = require('js-yaml');
-const logger = require('../logger.js').child({ module: 'league' });
-const { Coach } = require('./coaches.js');
-const { Round } = require("./round.js");
-const { processConfigValue } = require("./utils/config-reader.js");
-const { Option } = require("../utils/types/option.js");
+import * as fs from 'fs';
+import * as yaml from 'js-yaml';
+import Discord from 'discord.js';
+
+import { logger } from '../logger';
+
+import { Coach } from './coach';
+import { Round } from "./round";
+import { Game } from './game';
+import { processConfigValue } from "./utils/config-reader";
+import { Option } from "../utils/types/option";
+
+const LOGGER = logger.child({module: 'league'});
 
 /** A Blood Bowl league. */
-class League {
-    constructor(data, leagueFile) {
+export class League {
+    name: string;
+    id: string;
+    audienceId: string;
+    ownerIdRaw: string;
+    ownerId: string;
+    currentRound: number;
+    coaches: Coach[];
+    schedule: Round[];
+    leagueFile: string;
+
+    constructor(data: any, leagueFile: string) {
         this.name = data.name;
         this.id = data.id;
         this.audienceId = data.audienceId;
@@ -16,30 +32,30 @@ class League {
         //OwnerId
         this.ownerIdRaw = data.ownerId || data.ownerID;
         this.ownerId = processConfigValue(this.ownerIdRaw).on({
-            Left: (v) => v,
-            Right:(e) => {throw e;}
+            Left: (v: string) => v,
+            Right:(e: Error) => {throw e;}
         });
 
         this.currentRound = data.currentRound;
-        this.coaches = data.coaches.map((d) => new Coach(d));
-        this.schedule = data.schedule.map((d) => new Round(d, this.coaches));
+        this.coaches = data.coaches.map((d: any) => new Coach(d));
+        this.schedule = data.schedule.map((d: any) => new Round(d, this.coaches));
         this.leagueFile = leagueFile;
 
         // Ensure rounds are ordered by round number
-        this.schedule.sort((l, r) => l.id - r.id);
+        this.schedule.sort((l: Round, r: Round) => l.id - r.id);
     }
 
     /**
      * @return {Round} - The active round.
      */
-    getCurrentRound() {
+    getCurrentRound(): Round {
         return this.schedule[this.currentRound - 1];
     }
 
     /**
      * @return {Option<String>} - The name of the group to ping, or Nothing if none is specified
      */
-    getAudience() {
+    getAudience(): Option<string> {
         const audienceId = this.audienceId;
 
         if (!audienceId) {
@@ -49,7 +65,7 @@ class League {
         return Option.Some(audienceId);
     }
 
-    matches(specifier) {
+    matches(specifier: string): boolean {
         return specifier === this.id;
     }
 
@@ -59,7 +75,7 @@ class League {
      * @param {Discord.User} user - The user whose games will be found.
      * @return {Array<Game>} - All games that user plays in.
      */
-    findUserGames(user) {
+    findUserGames(user: Discord.User): Game[] {
         logger.debug(`fetching games for ${user.username}(${user.id})`);
         if (!this.userInLeague(user)) {
             return [];
@@ -73,25 +89,25 @@ class League {
      * @param {Discord.User} user
      * @return {bool}
      */
-    userInLeague(user) {
+    userInLeague(user: Discord.User): boolean {
         return this.coaches.some((c) => c.id === user.id);
     }
 
-    userInvolvedInLeague(user) {
+    userInvolvedInLeague(user: Discord.User): boolean {
         return this.userInLeague(user) || this.ownerId === user.id;
     }
 
     /**
      * @member {String} - The Discord mention string of the league owner.
      */
-    get ownerMentionString() {
+    get ownerMentionString(): string {
         return `<@${this.ownerId}>`;
     }
 
     /**
      * @return {Option<Round>}
      */
-    incrementRound() {
+    incrementRound(): Option<Round> {
         const numRounds = this.schedule.length;
         const newRound = this.currentRound + 1;
         if (newRound > numRounds) {
@@ -102,32 +118,28 @@ class League {
         return Option.Some(this.getCurrentRound());
     }
 
-    save() {
+    save(): void {
         console.log(this.encode());
-        const yamlStr = yaml.safeDump(this.encode());
+        const yamlStr = yaml.dump(this.encode());
         fs.writeFileSync(this.leagueFile, yamlStr, 'utf8');
     }
 
-    encode() {
+    encode(): any {
         const { id, name, ownerIdRaw, currentRound } = this;
         let { coaches, schedule, audienceId } = this;
         coaches = coaches.map((c) => c.encode());
         schedule = schedule.map((r) => r.encode());
 
-        if (!audienceId) {
-            audienceId = null
-        }
-
         const ownerId = ownerIdRaw;
 
-        return { audienceId, id, name, ownerId, currentRound, coaches, schedule };
+        return { id, name, ownerId, currentRound, coaches, schedule,
+            audienceId: audienceId || null
+        };
     }
 }
 
-function getLeagueFromFile(leagueFile) {
-    const content = fs.readFileSync(leagueFile);
-    const data = yaml.safeLoad(content);
+export function getLeagueFromFile(leagueFile: string): League {
+    const content = fs.readFileSync(leagueFile, 'utf-8');
+    const data = yaml.load(content);
     return new League(data, leagueFile);
 }
-
-module.exports = { League, getLeagueFromFile };

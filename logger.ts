@@ -1,4 +1,6 @@
-const logger = require('pino')(
+import pino from 'pino';
+
+export const logger = pino(
   {
     level: process.env.LOG_LEVEL || 'info',
     prettyPrint: {
@@ -8,5 +10,3 @@ const logger = require('pino')(
       messageFormat: '({module}) {msg}'
     }
   });
-
-module.exports = logger

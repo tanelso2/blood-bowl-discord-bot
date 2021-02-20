@@ -1,14 +1,17 @@
-const Discord = require('discord.js');
+import Discord from 'discord.js';
+import { Game } from '../models/game';
+import { Round } from '../models/round';
 
 const BLANK = '\u200b';
 
 /** Formats league structures for Discord. */
-class DiscordFormat {
+export class DiscordFormat {
+    private client: Discord.Client;
 
     /**
      * @param {Discord.Client} client
      */
-    constructor(client) {
+    constructor(client: Discord.Client) {
         this.client = client;
     }
 
@@ -18,7 +21,7 @@ class DiscordFormat {
      * @param {Round} newRound
      * @return {Discord.MessageEmbed}
      */
-    roundAdvance(newRound) {
+    roundAdvance(newRound: Round): Discord.MessageEmbed {
         return this.MessageEmbed()
             .setTitle(`Round ${newRound.id} Matchups`)
             .addFields(newRound.games.map(this.makeMatchupField, this));
@@ -30,7 +33,7 @@ class DiscordFormat {
      * @param {Round} round
      * @return {Discord.MessageEmbed}
      */
-    roundStatus(round) {
+    roundStatus(round: Round): Discord.MessageEmbed {
         const gameFields = round.games.map((g) => {
             const { homeCoach, awayCoach } = g;
             const ret = `${homeCoach.commonName} (${homeCoach.teamType}) v (${awayCoach.teamType}) ${awayCoach.commonName}`;
@@ -50,7 +53,7 @@ class DiscordFormat {
      * @param {Game} - The game to create an embed field for.
      * @return {Object} - The embed field to add for this game.
      */
-    makeMatchupField(game) {
+    makeMatchupField(game: Game): any {
         const home = game.homeCoach;
         const away = game.awayCoach;
 
@@ -69,7 +72,7 @@ class DiscordFormat {
      * @param {Game} game
      * @return {Discord.MessageEmbed}
      */
-    static game(game) {
+    static game(game: Game): Discord.MessageEmbed {
         return this.MessageEmbed()
             .setTitle(`${game.homeCoach.teamName} v ${game.awayCoach.teamName}`)
             .addFields(
@@ -149,5 +152,3 @@ class DiscordFormat {
         return `${border}\n${s}${border}`;
     }
 }
-
-module.exports = { DiscordFormat };

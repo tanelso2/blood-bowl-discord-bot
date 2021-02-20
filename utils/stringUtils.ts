@@ -1,11 +1,11 @@
 const levenshtien = require('damerau-levenshtein');
 
-function getSimilarity(x, y) {
+export function getSimilarity(x: string, y: string): number {
     const result = levenshtien(x, y);
     return result.similarity;
 }
 
-function getSimilarString(s, dictionary) {
+export function getSimilarString(s: string, dictionary: string[]): string | undefined {
     const results = dictionary.map((word) => {
         const result = levenshtien(word, s);
         const similarity = result.similarity;
@@ -24,5 +24,3 @@ function getSimilarString(s, dictionary) {
     return bestFit;
 }
 
-
-module.exports = { getSimilarString, getSimilarity };

@@ -1,14 +1,19 @@
-const { Game } = require('./game.js')
+import { Game } from './game';
+import { Coach } from './coach';
+import Discord from 'discord.js';
 
 /** One round of a League. */
-class Round {
+export class Round {
+    id: number;
+    games: Game[];
+
     /**
      * @param {Object} data - Yaml representation of a round.
      * @param {Array<Coach>} coaches
      */
-    constructor(data, coaches) {
+    constructor(data: any, coaches: Coach[]) {
         this.id = data.round;
-        this.games = data.games.map((d) => new Game(d, coaches));
+        this.games = data.games.map((d: any) => new Game(d, coaches));
     }
 
     /**
@@ -19,19 +24,17 @@ class Round {
      * If the user is in multiple games in a round, this method has undefined behavior
      * 
      */
-    findUserGame(user) {
-        return this.games.find((game) => game.coaches.some((coach) => coach.id === user.id));
+    findUserGame(user: Discord.User): Game {
+        return this.games.find((game) => game.coaches.some((coach) => coach.id === user.id)) as Game;
     }
 
-    getUnfinishedGames() {
+    getUnfinishedGames(): Game[] {
         return this.games.filter((game) => !game.done);
     }
 
-    encode() {
+    encode(): any {
         const round = this.id;
         const games = this.games.map((g) => g.encode());
         return { round, games };
     }
 }
-
-module.exports = { Round };

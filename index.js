@@ -1,8 +1,8 @@
 const process = require('process');
 const Discord = require('discord.js');
-const config = require('./config.json');
+const config = require('../config.json');
 const { DiscordFormat } = require('./formatting/discordFormat.js');
-const logger = require('./logger.js').child({ module: 'index' });
+const logger = require('./logger.js').logger.child({ module: 'index' });
 const { getLeagueFromFile } = require('./models/league.js');
 const insultGenerator = require('./generator/string-generator.js');
 const stringUtils = require('./utils/stringUtils.js');

@@ -111,3 +111,6 @@ docs/
 user-id.txt
 
 output.yaml
+
+# Build output
+build/
