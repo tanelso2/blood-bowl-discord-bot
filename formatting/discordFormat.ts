@@ -1,6 +1,7 @@
 import Discord from 'discord.js';
 import { Game } from '../models/game';
 import { Round } from '../models/round';
+import { Coach } from '../models/coach';
 
 const BLANK = '\u200b';
 
@@ -72,7 +73,8 @@ export class DiscordFormat {
      * @param {Game} game
      * @return {Discord.MessageEmbed}
      */
-    static game(game: Game): Discord.MessageEmbed {
+    game(game: Game): Discord.MessageEmbed {
+        const getCoach = this.coach;
         return this.MessageEmbed()
             .setTitle(`${game.homeCoach.teamName} v ${game.awayCoach.teamName}`)
             .addFields(
@@ -80,8 +82,8 @@ export class DiscordFormat {
                 {name: 'Away', value: game.awayCoach.teamName, inline: true},
             )
             .addFields(
-                {name: 'Coach', value: this.coach(game.homeCoach), inline: true},
-                {name: 'Coach', value: this.coach(game.awayCoach), inline: true},
+                {name: 'Coach', value: getCoach(game.homeCoach), inline: true},
+                {name: 'Coach', value: getCoach(game.awayCoach), inline: true},
             );
     }
 
@@ -91,7 +93,7 @@ export class DiscordFormat {
      * @param {Coach} coach
      * @return {String}
      */
-    coach(coach) {
+    coach(coach: Coach): string {
         return coach.mentionString;
     }
 
@@ -101,19 +103,15 @@ export class DiscordFormat {
      * @param {Coach} coach
      * @return {String}
      */
-    coachAndTeam(coach) {
+    coachAndTeam(coach: Coach): string {
         return `${coach.commonName.padEnd(12)} - ${coach.teamName.padEnd(16)} (${coach.teamType})`
     }
 
     /**
      * Creates the response for a user's upcoming games.
-     *
-     * @param {Discord.User} user
-     * @param {Array<Game>} usersGames - Matches in this league for the user in order.
-     * @return {String}
      */
-    usersSchedule(user, usersGames, currentRoundNumber) {
-        const formatLeader = function (roundId) {
+    usersSchedule(user: Discord.User, usersGames: Game[], currentRoundNumber: number): string {
+        const formatLeader = function (roundId: number) {
             const caret = roundId === currentRoundNumber ? '>' : ' ';
             return `${caret}${roundId.toString().padStart(2)}.`;
         }
@@ -121,12 +119,12 @@ export class DiscordFormat {
         // OK I still hate JS, 'this' binding is broken so just capture it here
         const formatCoachAndTeam = this.coachAndTeam;
 
-        const formatOpponent = function (game) {
+        const formatOpponent = function (game: Game) {
             const opponent = game.getOpponent(user);
             return formatCoachAndTeam(opponent);
         }
 
-        const formatMatch = (roundId, game) => `${formatLeader(roundId)} ${formatOpponent(game)}`;
+        const formatMatch = (roundId: number, game: Game) => `${formatLeader(roundId)} ${formatOpponent(game)}`;
 
         const result = Array.from(usersGames.entries(), ([idx, game]) => formatMatch(idx + 1, game)).join('\n');
         return this.makeCodeBlock(result);
@@ -137,17 +135,18 @@ export class DiscordFormat {
      *
      * @return {Discord.MessageEmbed}
      */
-    MessageEmbed() {
+    MessageEmbed(): Discord.MessageEmbed {
+        const currentUser = this.client.user as Discord.User;
         return new Discord.MessageEmbed()
             .setColor('RED')
-            .setAuthor(this.client.user.username, this.client.user.displayAvatarURL())
+            .setAuthor(currentUser.username, currentUser.displayAvatarURL())
             .setTimestamp();
     }
 
     /**
      * Wraps content in a code block.
      */
-    makeCodeBlock(s) {
+    makeCodeBlock(s: string): string {
         const border = '```';
         return `${border}\n${s}${border}`;
     }

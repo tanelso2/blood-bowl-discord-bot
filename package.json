@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc --project ./",
-    "test": "LOG_LEVEL=debug mocha --recursive \"**/*.spec*.js\" --ignore \"node_modules/**/*\"",
+    "test": "npm run build && LOG_LEVEL=debug mocha --recursive \"build/**/*.spec*.js\" --ignore \"node_modules/**/*\"",
     "dev": "npm run build && LOG_LEVEL=debug node ./build/ ./sample-league.yaml | npx pino-pretty",
     "lint": "eslint --fix-dry-run .",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
