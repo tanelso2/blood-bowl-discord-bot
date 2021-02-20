@@ -1,6 +1,6 @@
 import * as process from 'process';
+import { readFileSync } from 'fs';
 import Discord from 'discord.js';
-import config from './config.json';
 import { DiscordFormat } from './formatting/discordFormat';
 import { logger } from './logger';
 import { getLeagueFromFile, League} from './models/league';
@@ -8,6 +8,10 @@ import { Game } from './models/game';
 import * as insultGenerator from './generator/string-generator';
 import * as stringUtils from './utils/stringUtils';
 import { Option } from './utils/types/option';
+
+const configFile = './config.json';
+
+const config: any = JSON.parse(readFileSync(configFile, 'utf-8'));
 
 const LOGGER = logger.child({module:'index'});
 
