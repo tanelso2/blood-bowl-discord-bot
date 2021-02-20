@@ -1,16 +1,23 @@
-const { ErrorList } = require('../errorList');
+import { ErrorList } from '../errorList';
 
 const ANY = "_";
 
-class PatternMatchable {
+interface PatternDoing<a> {
+    [x: string]: (...args: any[]) => a
+}
 
-    constructor(ctrs) {
+export class PatternMatchable {
+    private ctrs: any[];
+    private options: string[];
+    private T: string;
+
+    constructor(ctrs: any[]) {
         this.ctrs = ctrs;
         this.options = this.ctrs.map(x => x.name);
         this.T = this.constructor.name;
     }
 
-    _isExhaustive(patterns) {
+    _isExhaustive<a>(patterns: PatternDoing<a>): null | Error {
         const patternNames = Object.entries(patterns).map(([p, _]) => p);
         if (patternNames.includes(ANY)) {
             // wildcard is always completely exhaustive
@@ -25,7 +32,7 @@ class PatternMatchable {
         return new Error(`Could not find patterns for ${failures}`);
     }
 
-    _containsUnknowns(patterns) {
+    _containsUnknowns<a>(patterns: PatternDoing<a>): null | Error {
         const patternNames = Object.entries(patterns).map(([p, _]) => p)
         const failures = patternNames.filter(p => p !== ANY && !this.options.includes(p))
         if (failures.length === 0) {
@@ -35,7 +42,7 @@ class PatternMatchable {
         return new Error(`Excess patterns found: ${failures}`)
     }
 
-    on(patterns) {
+    on<a>(patterns: PatternDoing<a>): a {
         const errs = new ErrorList(
             this._isExhaustive(patterns),
             this._containsUnknowns(patterns)
@@ -62,11 +69,11 @@ class PatternMatchable {
      * @param {Function<a, b>} _
      * @return {b}
      */
-    onMatch(_) {
+    onMatch<a,b>(_: (...args: any[]) => b): b {
         throw new Error(`UNDEFINED onMatch() for ${this.T}!!!`);
     }
 
-    matches(patternName)  {
+    matches(patternName: string): boolean  {
         return patternName === this.T || patternName === ANY;
     }
 }

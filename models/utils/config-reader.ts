@@ -1,7 +1,6 @@
-const { readFileSync } = require('fs');
-const logger = require('../../logger.js').child({ module: 'config-reader' });
-const { Either } = require('../../utils/types/either.js');
-const { Option } = require('../../utils/types/option.js');
+import { readFileSync } from 'fs';
+import { Either } from '../../utils/types/either';
+import { Option } from '../../utils/types/option';
 
 const filePattern = /^\$f{(.*)}$/
 
@@ -12,11 +11,11 @@ const defaultPattern = /^(.*):(.*)$/
  * @param {String} rawValue
  * @returns {Either<String, Error>}
  */
-function processConfigValue(rawValue) {
+export function processConfigValue(rawValue: string): Either<string, Error> {
     return processFileSubstitution(rawValue).on({
-       Left: (err) => Either.Right(err),
-       Right: (valueOpt) => valueOpt.on({
-            Some: (v) => Either.Left(v),
+       Left: (err: Error) => Either.Right(err),
+       Right: (valueOpt: Option<string>) => valueOpt.on({
+            Some: (v: string) => Either.Left(v),
             _: () => Either.Left(rawValue),
         })
     });
@@ -27,7 +26,7 @@ function processConfigValue(rawValue) {
 /**
  * @returns Either<Error, Option<String>>
  */
-function processFileSubstitution(value) {
+function processFileSubstitution(value: string): Either<Error, Option<String>> {
     const matches = value.match(filePattern);
     if (!matches) {
         // No file substitution to do
@@ -36,7 +35,7 @@ function processFileSubstitution(value) {
 
     const [fileName, defaultValue] = splitValueAndDefault(matches[1]);
     try {
-        const fileContents = readFileSync(fileName, {encoding: "utf-8"});
+        const fileContents = readFileSync(fileName as string, {encoding: "utf-8"});
         if (!fileContents) {
             throw new Error(`Could not get fileContents of ${fileName}`);
         }
@@ -49,7 +48,7 @@ function processFileSubstitution(value) {
     }
 }
 
-function splitValueAndDefault(raw) {
+function splitValueAndDefault(raw: string): (string | null)[] {
     const matches = raw.match(defaultPattern);
     if (!matches) {
         return [ raw, null ];

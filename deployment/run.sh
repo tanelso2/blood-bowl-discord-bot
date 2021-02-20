@@ -2,4 +2,6 @@
 
 npm install
 
-node index.js league.yaml
+npm run build
+
+node build/index.js league.yaml

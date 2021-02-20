@@ -1,12 +1,19 @@
-const process = require('process');
-const Discord = require('discord.js');
-const config = require('./config.json');
-const { DiscordFormat } = require('./formatting/discordFormat.js');
-const logger = require('./logger.js').child({ module: 'index' });
-const { getLeagueFromFile } = require('./models/league.js');
-const insultGenerator = require('./generator/string-generator.js');
-const stringUtils = require('./utils/stringUtils.js');
-const { Option } = require('./utils/types/option.js');
+import * as process from 'process';
+import { readFileSync } from 'fs';
+import Discord from 'discord.js';
+import { DiscordFormat } from './formatting/discordFormat';
+import { logger } from './logger';
+import { getLeagueFromFile, League} from './models/league';
+import { Game } from './models/game';
+import * as insultGenerator from './generator/string-generator';
+import * as stringUtils from './utils/stringUtils';
+import { Option } from './utils/types/option';
+
+const configFile = './config.json';
+
+const config: any = JSON.parse(readFileSync(configFile, 'utf-8'));
+
+const LOGGER = logger.child({module:'index'});
 
 const VACATION_MODE = false;
 
@@ -20,7 +27,7 @@ if (leagueFiles.length === 0) {
  *
  * @returns {League[]}
  */
-function getAllLeagues() {
+function getAllLeagues(): League[] {
     return leagueFiles.map(getLeagueFromFile);
 }
 
@@ -32,7 +39,7 @@ function getAllLeagues() {
  * @param user
  * @returns {League[]}
  */
-function getLeagues(message, user) {
+function getLeagues(message: Discord.Message, user: Discord.User): League[] {
     const leagueSpecifier = message.content.split(/ +/)[2];
     // TODO: Check if leagueSpecifier is one the bot knows about
     return getAllLeagues()
@@ -52,16 +59,16 @@ const formatter = new DiscordFormat(client);
  *  @owner, round has been advanced
  *  <embed>
  */
-function advanceRound(message, user, league) {
+function advanceRound(message: Discord.Message, user: Discord.User, league: League) {
 
     // Unpins *all* other messages by this bot, but until any other messages are expected to be
     // pinned, this is easier than persisting message ids.
-    function unpinOtherMessages(latestMessage) {
+    function unpinOtherMessages(latestMessage: Discord.Message): Promise<any> {
         return latestMessage.channel.messages.fetchPinned()
             .then(pinned_messages =>
                 Promise.all(
                     pinned_messages
-                        .filter(message => message.author.id === client.user.id)
+                        .filter(message => message.author.id === client.user!.id)
                         .filter(message => message.id !== latestMessage.id)
                         .mapValues(message => message.unpin())
                 )
@@ -72,7 +79,7 @@ function advanceRound(message, user, league) {
         const insult = insultGenerator.generateString("${insult}");
         return message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
     } else {
-        league.incrementRound().on({
+        league.incrementRound().on<any>({
             None: () => message.reply("I cannae do dat captain!, this is the last rund I knae about!"),
             Some: (newRound) => {
                 message
@@ -86,7 +93,7 @@ function advanceRound(message, user, league) {
                     .then(reply => reply.pin())
                     .then(reply => unpinOtherMessages(reply))
                     .catch(reason => {
-                        logger.error(reason);
+                        LOGGER.error(reason);
                     });
             }
         });
@@ -97,11 +104,11 @@ function advanceRound(message, user, league) {
  * Example output:
  *  @user you are playing @opponent this round
  */
-function findOpponent(message, user, league) {
-    const userInGame = (game) => game.coaches.some((c) => c.id === user.id);
+function findOpponent(message: Discord.Message, user: Discord.User, league: League) {
+    const userInGame = (game: Game) => game.coaches.some((c) => c.id === user.id);
     const usersGame = league.getCurrentRound().games.find(userInGame);
 
-    if (!usersGame) {
+    if (usersGame === undefined) {
         const insult = insultGenerator.generateString("${insult}");
         return message.reply(`you don't seem to be playing this round, smoothbrain.\n${insult}`);
     }
@@ -120,7 +127,7 @@ function findOpponent(message, user, league) {
  *  3. etc....
  *  ```
  */
-function printSchedule(message, user, league) {
+function printSchedule(message: Discord.Message, user: Discord.User, league: League) {
     const matches = league.findUserGames(user);
     if (matches.length) {
         const schedule = formatter.usersSchedule(user, matches, league.currentRound);
@@ -131,7 +138,7 @@ function printSchedule(message, user, league) {
     return message.reply(`you don't seem to be playing this round, smoothbrain.\n${insult}`);
 }
 
-function announceGame(message, user, league) {
+function announceGame(message: Discord.Message, user: Discord.User, league: League) {
     const usersGame = league.getCurrentRound().findUserGame(user);
 
 
@@ -149,12 +156,12 @@ function announceGame(message, user, league) {
     return message.channel.send(`${audienceString} - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
 }
 
-function printInsult(message, _, __) {
+function printInsult(message: Discord.Message, _: Discord.User, __: League) {
     const insult = insultGenerator.generateString("${insult}");
     message.reply(insult);
 }
 
-function markGameDone(message, user, league) {
+function markGameDone(message: Discord.Message, user: Discord.User, league: League) {
     const currentRound = league.getCurrentRound();
     const usersGame = currentRound.findUserGame(user);
     if (!usersGame) {
@@ -169,22 +176,30 @@ function markGameDone(message, user, league) {
     return message.reply(`Gotcha. Your game against ${opponent.commonName} has been recorded. There are ${numUnfinishedGames} left in the round.`);
 }
 
-function printRound(message, _, league) {
-    const currentRound = league.getCurrentRound();
-    const roundStatus = formatter.roundStatus(currentRound);
+function printRound(message: Discord.Message, _: Discord.User, league: League) {
+    const currentRound = league.getCurrentRound(); const roundStatus = formatter.roundStatus(currentRound);
     return message.reply("", { embed: roundStatus });
 }
 
-function makeCommand(name, func, description, requiresLeague) {
+type CommandFunc = (message: Discord.Message, user: Discord.User, league: League) => any;
+
+interface Command {
+    name: string;
+    func: CommandFunc;
+    description: string;
+    requiresLeague: boolean;
+}
+
+function makeCommand(name: string, func: CommandFunc, description: string, requiresLeague: boolean): Command {
     return { name, func, description, requiresLeague };
 }
 
-function listLeagues(message, _, __) {
+function listLeagues(message: Discord.Message, _: Discord.User, __: League) {
     const leagueIds = getAllLeagues().map(x => x.name).join(',\n ');
     return message.channel.send(`These are all the leagues I know about: \n${leagueIds}\n`);
 }
 
-const commands = [
+const commands: Command[] = [
     makeCommand('advance', advanceRound, 'Advance to the next round (only usable by the league owner)', true),
     makeCommand('announce', announceGame, 'Announce that your game for this current round is starting', true),
     makeCommand('done', markGameDone, 'Mark your game for this round as done', true),
@@ -196,7 +211,7 @@ const commands = [
     makeCommand('schedule', printSchedule, 'Display your schedule for this league', true)
 ];
 
-function listCommands(message, _, __) {
+function listCommands(message:Discord.Message, _: Discord.User, __: League) {
     const commandList = commands.map((c) => `**${c.name}** - ${c.description}`);
     const commandsString = commandList.join('\n');
     return message.reply(`Available commands: \n${commandsString}`);
@@ -206,9 +221,9 @@ function listCommands(message, _, __) {
  * @param {String} rawCommandName
  * @returns {Option<Command>}
  */
-function findCommand(rawCommandName) {
-    function find(commandName) {
-        return commands.find((c) => c.name === commandName);
+function findCommand(rawCommandName: string): Option<Command> {
+    function find(commandName: string) {
+        return commands.find((c: Command) => c.name === commandName);
     }
 
     const exactMatch = find(rawCommandName);
@@ -242,7 +257,7 @@ client.on('message', message => {
     };
 
 
-    if (message.mentions.has(client.user, mentionsOptions)) {
+    if (message.mentions.has(client.user!, mentionsOptions)) {
         if (VACATION_MODE) {
             message.reply("Hey hey now, don't ask me to do anything, I have playoffs off. It's in my employment contract");
             return;
@@ -254,10 +269,11 @@ client.on('message', message => {
 
 
         findCommand(command).on({
-            Some: (cmd) => {
+            Some: (cmd: Command) => {
                 try {
                     if (!cmd.requiresLeague) {
-                        return cmd.func(message, message.author);
+                        const func = cmd.func as ((message: Discord.Message, user: Discord.User) => any);
+                        return func(message, message.author);
                     }
                     const leagues = getLeagues(message, message.author);
                     if (leagues.length === 0) {
@@ -270,7 +286,7 @@ client.on('message', message => {
                         cmd.func(message, message.author, leagues[0]);
                     }
                 } catch (e) {
-                    logger.info(e);
+                    LOGGER.info(e);
                     message.channel.send(`Ooff I had a bit of a glitch there`);
                 }
             },

@@ -1,21 +1,30 @@
-const logger = require('../logger.js').child({ module: 'game' });
-const { Coach } = require('./coaches.js');
+import { logger } from '../logger';
+import { Coach } from './coach';
+import Discord from 'discord.js';
+
+const LOGGER = logger.child({module: 'game'});
 
 /** One match up in a Round. */
-class Game {
+export class Game {
+    home: string;
+    away: string;
+    done: boolean;
+    homeCoach: Coach;
+    awayCoach: Coach;
+
     /**
      * @param {Object} data - Yaml representation of a game.
      */
-    constructor(data, coaches) {
+    constructor(data: any, coaches: Coach[]) {
         this.home = data.home;
         this.away = data.away;
         this.done = data.done || false; // false if not-exists
-        this.homeCoach = coaches.find(c => c.teamNameIsCloseEnough(data.home));
-        this.awayCoach = coaches.find(c => c.teamNameIsCloseEnough(data.away));
+        this.homeCoach = coaches.find(c => c.teamNameIsCloseEnough(data.home)) || Coach.null();
+        this.awayCoach = coaches.find(c => c.teamNameIsCloseEnough(data.away)) || Coach.null();
     }
 
     /** @member {Array<Coach>} - Both coaches playing in this game. Order not guaranteed. Results may vary */
-    get coaches() {
+    get coaches(): Coach[] {
         return [this.homeCoach, this.awayCoach];
     }
 
@@ -25,19 +34,17 @@ class Game {
      * @param {Discord.User} user
      * @return {Coach}
      */
-    getOpponent(user) {
+    getOpponent(user: Discord.User): Coach {
         const opponentOrUndef = this.coaches.find((c) => c.id !== user.id);
         if (opponentOrUndef) {
             return opponentOrUndef;
         }
-        logger.error(`unknown opponent of ${user.id}`);
+        LOGGER.error(`unknown opponent of ${user.id}`);
         return Coach.null();
     }
 
-    encode() {
+    encode(): any {
         const { home, away, done } = this;
         return { home, away, done };
     }
 }
-
-module.exports = { Game };

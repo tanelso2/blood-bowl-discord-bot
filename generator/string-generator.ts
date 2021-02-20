@@ -1,11 +1,11 @@
-const { directory } = require('./directory.js');
-const logger = require('../logger.js').child({ module: 'string-generator'});
+import { directory } from './directory';
+import { logger } from '../logger';
 
 const singularPat = /\$\{([^ }]*)}/;
-const pat = new RegExp(singularPat, 'g');
+export const pat = new RegExp(singularPat, 'g');
 
 
-function generateString(template) {
+export function generateString(template: string): string {
     const matches = [...template.matchAll(pat)].map(x => x[1]);
     if (matches.length === 0) {
         // There is nothing to substitute
@@ -29,5 +29,3 @@ function generateString(template) {
     // recurse
     return generateString(newString);
 }
-
-module.exports = { generateString, pat };

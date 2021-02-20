@@ -1,14 +1,18 @@
-const Discord = require('discord.js');
+import Discord from 'discord.js';
+import { Game } from '../models/game';
+import { Round } from '../models/round';
+import { Coach } from '../models/coach';
 
 const BLANK = '\u200b';
 
 /** Formats league structures for Discord. */
-class DiscordFormat {
+export class DiscordFormat {
+    private client: Discord.Client;
 
     /**
      * @param {Discord.Client} client
      */
-    constructor(client) {
+    constructor(client: Discord.Client) {
         this.client = client;
     }
 
@@ -18,7 +22,7 @@ class DiscordFormat {
      * @param {Round} newRound
      * @return {Discord.MessageEmbed}
      */
-    roundAdvance(newRound) {
+    roundAdvance(newRound: Round): Discord.MessageEmbed {
         return this.MessageEmbed()
             .setTitle(`Round ${newRound.id} Matchups`)
             .addFields(newRound.games.map(this.makeMatchupField, this));
@@ -30,7 +34,7 @@ class DiscordFormat {
      * @param {Round} round
      * @return {Discord.MessageEmbed}
      */
-    roundStatus(round) {
+    roundStatus(round: Round): Discord.MessageEmbed {
         const gameFields = round.games.map((g) => {
             const { homeCoach, awayCoach } = g;
             const ret = `${homeCoach.commonName} (${homeCoach.teamType}) v (${awayCoach.teamType}) ${awayCoach.commonName}`;
@@ -50,7 +54,7 @@ class DiscordFormat {
      * @param {Game} - The game to create an embed field for.
      * @return {Object} - The embed field to add for this game.
      */
-    makeMatchupField(game) {
+    makeMatchupField(game: Game): any {
         const home = game.homeCoach;
         const away = game.awayCoach;
 
@@ -69,7 +73,8 @@ class DiscordFormat {
      * @param {Game} game
      * @return {Discord.MessageEmbed}
      */
-    static game(game) {
+    game(game: Game): Discord.MessageEmbed {
+        const getCoach = this.coach;
         return this.MessageEmbed()
             .setTitle(`${game.homeCoach.teamName} v ${game.awayCoach.teamName}`)
             .addFields(
@@ -77,8 +82,8 @@ class DiscordFormat {
                 {name: 'Away', value: game.awayCoach.teamName, inline: true},
             )
             .addFields(
-                {name: 'Coach', value: this.coach(game.homeCoach), inline: true},
-                {name: 'Coach', value: this.coach(game.awayCoach), inline: true},
+                {name: 'Coach', value: getCoach(game.homeCoach), inline: true},
+                {name: 'Coach', value: getCoach(game.awayCoach), inline: true},
             );
     }
 
@@ -88,7 +93,7 @@ class DiscordFormat {
      * @param {Coach} coach
      * @return {String}
      */
-    coach(coach) {
+    coach(coach: Coach): string {
         return coach.mentionString;
     }
 
@@ -98,19 +103,15 @@ class DiscordFormat {
      * @param {Coach} coach
      * @return {String}
      */
-    coachAndTeam(coach) {
+    coachAndTeam(coach: Coach): string {
         return `${coach.commonName.padEnd(12)} - ${coach.teamName.padEnd(16)} (${coach.teamType})`
     }
 
     /**
      * Creates the response for a user's upcoming games.
-     *
-     * @param {Discord.User} user
-     * @param {Array<Game>} usersGames - Matches in this league for the user in order.
-     * @return {String}
      */
-    usersSchedule(user, usersGames, currentRoundNumber) {
-        const formatLeader = function (roundId) {
+    usersSchedule(user: Discord.User, usersGames: Game[], currentRoundNumber: number): string {
+        const formatLeader = function (roundId: number) {
             const caret = roundId === currentRoundNumber ? '>' : ' ';
             return `${caret}${roundId.toString().padStart(2)}.`;
         }
@@ -118,12 +119,12 @@ class DiscordFormat {
         // OK I still hate JS, 'this' binding is broken so just capture it here
         const formatCoachAndTeam = this.coachAndTeam;
 
-        const formatOpponent = function (game) {
+        const formatOpponent = function (game: Game) {
             const opponent = game.getOpponent(user);
             return formatCoachAndTeam(opponent);
         }
 
-        const formatMatch = (roundId, game) => `${formatLeader(roundId)} ${formatOpponent(game)}`;
+        const formatMatch = (roundId: number, game: Game) => `${formatLeader(roundId)} ${formatOpponent(game)}`;
 
         const result = Array.from(usersGames.entries(), ([idx, game]) => formatMatch(idx + 1, game)).join('\n');
         return this.makeCodeBlock(result);
@@ -134,20 +135,19 @@ class DiscordFormat {
      *
      * @return {Discord.MessageEmbed}
      */
-    MessageEmbed() {
+    MessageEmbed(): Discord.MessageEmbed {
+        const currentUser = this.client.user as Discord.User;
         return new Discord.MessageEmbed()
             .setColor('RED')
-            .setAuthor(this.client.user.username, this.client.user.displayAvatarURL())
+            .setAuthor(currentUser.username, currentUser.displayAvatarURL())
             .setTimestamp();
     }
 
     /**
      * Wraps content in a code block.
      */
-    makeCodeBlock(s) {
+    makeCodeBlock(s: string): string {
         const border = '```';
         return `${border}\n${s}${border}`;
     }
 }
-
-module.exports = { DiscordFormat };
