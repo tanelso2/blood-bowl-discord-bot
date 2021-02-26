@@ -1,4 +1,4 @@
-import { ErrorList } from '../errorList';
+import { ErrorList } from '@utils/errorList';
 
 const ANY = "_";
 

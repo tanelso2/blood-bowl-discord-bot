@@ -66,6 +66,12 @@
     /* Advanced Options */
     "skipLibCheck": true,                     /* Skip type checking of declaration files. */
     "forceConsistentCasingInFileNames": true,  /* Disallow inconsistently-cased references to the same file. */
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+        "@formatting/*": ["formatting/*"],
+        "@generator/*": ["generator/*"],
+        "@models/*": ["models/*"],
+        "@utils/*": ["utils/*"]
+    }
   }
 }
