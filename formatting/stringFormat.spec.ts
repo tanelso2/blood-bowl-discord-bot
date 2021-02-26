@@ -4,8 +4,8 @@ import { League } from '../models/league';
 import { StringFormat } from './stringFormat';
 
 const leagueFile = './sample-league.yaml';
-const data = yaml.safeLoad(readFileSync(leagueFile));
-const testLeague = new League(data);
+const data = yaml.load(readFileSync(leagueFile, 'utf-8'));
+const testLeague = new League(data, leagueFile);
 
 describe('StringFormat', () => {
     describe('#coach()', () => {
