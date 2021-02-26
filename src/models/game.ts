@@ -1,5 +1,7 @@
 import { logger } from '@core/logger';
 import { Coach } from './coach';
+import { Option } from '../utils/types/option.js';
+import { Either } from '../utils/types/either.js';
 import Discord from 'discord.js';
 
 const LOGGER = logger.child({module: 'game'});
@@ -17,6 +19,7 @@ export class Game implements GameData {
     done: boolean;
     homeCoach: Coach;
     awayCoach: Coach;
+    winner: Option<string>;
 
     constructor(data: GameData, coaches: Coach[]) {
         this.home = data.home;
@@ -24,6 +27,7 @@ export class Game implements GameData {
         this.done = data.done || false; // false if not-exists
         this.homeCoach = coaches.find(c => c.teamNameIsCloseEnough(data.home)) || Coach.null();
         this.awayCoach = coaches.find(c => c.teamNameIsCloseEnough(data.away)) || Coach.null();
+        this.winner = Option.None();
     }
 
     /** @member {Array<Coach>} - Both coaches playing in this game. Order not guaranteed. Results may vary */
@@ -38,16 +42,34 @@ export class Game implements GameData {
      * @return {Coach}
      */
     getOpponent(user: Discord.User): Coach {
-        const opponentOrUndef = this.coaches.find((c) => c.id !== user.id);
-        if (opponentOrUndef) {
-            return opponentOrUndef;
-        }
-        LOGGER.error(`unknown opponent of ${user.id}`);
-        return Coach.null();
+        const opponent = Option.fromJsBullshit(this.coaches.find((c) => c.id !== user.id));
+        return opponent.on({
+            Some: (opponent) => opponent,
+            None: () => {
+                LOGGER.error(`unknown opponent of ${user.id}`);
+                throw new Error(`unknown opponent of ${user.id}`);
+            },
+        });
+    }
+
+    /**
+     * @param {Discord.User} user - The winner of the matchup.
+     */
+    declareWinner(user: Discord.User) {
+        const winningCoach = Option.fromJsBullshit(this.coaches.find((c) => c.id === user.id));
+        return winningCoach.on({
+            Some: (coach) => {
+                this.winner = Option.Some(coach.teamName);
+                this.done = true;
+            },
+            None: () => {
+                throw new Error(`could not find ${user} in coaches`);
+            },
+        });
     }
 
     encode(): GameData {
-        const { home, away, done } = this;
-        return { home, away, done };
+        const { home, away, done, winner } = this;
+        return { home, away, done, winner };
     }
 }

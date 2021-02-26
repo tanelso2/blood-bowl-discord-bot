@@ -120,8 +120,7 @@ async function findOpponent(message: Discord.Message, user: Discord.User, league
     }
 
     const opponent = usersGame.getOpponent(user);
-    const response = `you are playing ${formatter.coach(opponent)} this round.`;
-    return message.reply(response);
+    return message.reply(`you are playing ${formatter.coach(opponent)} this round.`);
 }
 
 /*
@@ -167,22 +166,45 @@ async function printInsult(message: Discord.Message, _: Discord.User, __: League
 }
 
 async function markGameDone(message: Discord.Message, user: Discord.User, league: League) {
-    const currentRound = league.getCurrentRound();
-    const usersGame = currentRound.findUserGame(user);
-    return usersGame.on({
-        Some: (game: Game) => {
-            game.done = true;
-            league.save();
+    function markDone(finishedGame: Game) {
+        finishedGame.done = true;
+        league.save();
+    }
 
-            const numUnfinishedGames = currentRound.getUnfinishedGames().length;
-            const opponent = game.getOpponent(user);
-            const isOrAre = numUnfinishedGames === 1 ? "is" : "are";
-            return message.reply(`Gotcha. Your game against ${opponent.commonName} has been recorded. There ${isOrAre} ${numUnfinishedGames} left in the round.`);
+    function respond(finishedGame: Game) {
+        const numUnfinishedGames = currentRound.getUnfinishedGames().length;
+        const opponent = finishedGame.getOpponent(user);
+        const isOrAre = numUnfinishedGames === 1 ? "is" : "are";
+        return message.reply(`Gotcha. Your game against ${opponent.commonName} has been recorded. ` +
+                             `There ${isOrAre} ${numUnfinishedGames} left in the round.`);
+    }
+
+    function insult() {
+        const insult = insultGenerator.generateString("${insult}");
+        return message.reply(`You don't appear to be playing this round...\n${insult}`);
+    }
+
+    const currentRound = league.getCurrentRound();
+    return currentRound.findUserGame(user).on({
+        Some: (game) => {
+            markDone(game);
+            return respond(game);
         },
-        None: () => {
-            const insult = insultGenerator.generateString("${insult}");
-            return message.reply(`You don't appear to be playing this round...\n${insult}`);
-        }
+        None: () => insult(),
+    });
+}
+
+function declareWinner(message: Discord.Message, user: Discord.User, league: League) {
+    const currentRound = league.getCurrentRound();
+    return currentRound.findUserGame(user).on({
+        Some: (finishedGame) => {
+            finishedGame.declareWinner(user);
+            league.save();
+            const opponent = finishedGame.unwrap().getOpponent(user);
+            const slight = insultGenerator.generateString("${slight}");
+            return message.reply(`Nice, recorded your win against ${opponent.commonName}, that ${slight}.`);
+        },
+        None: () => message.reply(insultGenerator.generateString("You don't appear to be playing this round...${slight}")),
     });
 }
 
@@ -245,7 +267,11 @@ const commands: Command[] = [
     makeCommand('opponent', findOpponent, 'Display and tag your current opponent', true),
     makeCommand('round', printRound, 'Print the status of the current round', true),
     makeCommand('schedule', printSchedule, 'Display your schedule for this league', true),
+<<<<<<< HEAD
     makeCommand('odds', calculateOdds, 'Calculate the odds of an event', false)
+=======
+    makeCommand('winner', declareWinner, 'Declare yourself the winner of your game this round', true),
+>>>>>>> 21cefff (Implement declareWinner functionality)
 ];
 
 function listCommands(message:Discord.Message, _: Discord.User, __: League) {
