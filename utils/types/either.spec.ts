@@ -1,13 +1,4 @@
-const should = require('should');
-const sinon = require('sinon');
-require('should-sinon');
-
-const { Either } = require('./either.js');
-
-afterEach(() => {
-    // Restore the default sandbox here
-    sinon.restore();
-});
+import { Either } from './either';
 
 describe('Either', () => {
     describe('on()', () => {
@@ -56,13 +47,13 @@ describe('Either', () => {
         });
 
         it('Should do _ branch if no better match is found', (done) => {
-            const testEither = Either.Left();
+            const testEither = Either.Left(undefined);
             testEither.on({
                 Right: () => {throw new Error("Should be unreachable");},
-                _: () => Either.Right().on({
+                _: () => Either.Right(undefined).on({
                     Left: () => {throw new Error("Should be unreachable");},
-                    _: () => Either.Right().on({
-                        _: () => Either.Left().on({
+                    _: () => Either.Right(undefined).on({
+                        _: () => Either.Left(undefined).on({
                             _: () => done()
                         }),
                     }),
