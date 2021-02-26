@@ -4,13 +4,39 @@ const badTeams = [
     "Goblins",
 ];
 
+const slights = [
+    "${meanDescription} ${meanNoun}",
+];
+
+const meanDescriptions = [
+    "${meanAdjective}",
+    "${meanAdjective}, ${meanDescription}",
+];
+
+const meanAdjectives = [
+    "${dumbSynonym}",
+    "${badTeam}-playing",
+    "tryharding",
+    "sweaty",
+    "berry-picking",
+];
+
+const meanNouns = [
+    "moron",
+    "dumdum",
+    "smoothbrain",
+    "idiot",
+    "fool",
+    "coward",
+];
+
 const insults = [
     "Jeez, you're dumber than someone who plays ${badTeam} on purpose",
     "Nuffle utters a curse: '${curse}!'",
     "A CURSE UPON YOU: ${curse}",
     "You're so ${dumbSynonym} you put your ${clothing} on your ${bodyPart}",
     "Jeez you're more worthless than some ${container} filled with ${uselessItem}",
-]
+];
 
 const uselessItems = [
     "my hopes and dreams",
@@ -22,6 +48,7 @@ const dumbSynonyms = [
     "smoothbrained",
     "idiotic",
     "pants-on-head stupid",
+    "foolish",
 ];
 
 const clothing = [
@@ -40,6 +67,7 @@ const curses = [
     "May you only be left with ${numberFrom1To5} players standing at the end of your next game",
     "May all your GFIs fail!",
     "May all your block dice come up ${notGoodBlockDice}",
+    "May your MVP be dead",
 ];
 
 const notGoodBlockDice = [
@@ -110,4 +138,8 @@ export const directory: Directory = {
     "notGoodBlockDice": notGoodBlockDice,
     "numberFrom1To5": numbersFromOneToFive,
     "uselessItem": uselessItems,
+    "slight": slights,
+    "meanNoun": meanNouns,
+    "meanAdjective": meanAdjectives,
+    "meanDescription": meanDescriptions,
 };
