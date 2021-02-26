@@ -1,5 +1,5 @@
 import { directory } from './directory';
-import { logger } from '../logger';
+import { logger } from '@core/logger';
 
 const singularPat = /\$\{([^ }]*)}/;
 export const pat = new RegExp(singularPat, 'g');

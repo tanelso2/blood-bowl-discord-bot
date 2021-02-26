@@ -1,5 +1,5 @@
 import { generateString } from './string-generator';
-import { logger } from '../logger';
+import { logger } from '@core/logger';
 
 describe('generateString()', () => {
     it('should return something different', () => {

@@ -1,4 +1,4 @@
-import { logger } from '../logger';
+import { logger } from '@core/logger';
 import { Coach } from './coach';
 import Discord from 'discord.js';
 

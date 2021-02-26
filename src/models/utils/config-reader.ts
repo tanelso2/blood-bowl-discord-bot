@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
-import { Either } from '@utils/types/either';
-import { Option } from '@utils/types/option';
+import { Either } from '@core/types/either';
+import { Option } from '@core/types/option';
 
 const filePattern = /^\$f{(.*)}$/
 

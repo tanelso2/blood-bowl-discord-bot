@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 import Discord from 'discord.js';
 
-import { logger } from '../logger';
-import { Option } from '@utils/types/option';
+import { logger } from '@core/logger';
+import { Option } from '@core/types/option';
 
 import { Coach } from './coach';
 import { Round } from './round';
