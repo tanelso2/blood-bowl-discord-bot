@@ -1,13 +1,4 @@
-const should = require('should');
-const sinon = require('sinon');
-require('should-sinon');
-
-const { processConfigValue } = require('./config-reader.js');
-
-afterEach(() => {
-    // Restore the default sandbox here
-    sinon.restore();
-});
+import { processConfigValue } from './config-reader';
 
 describe('processConfigValue', () => {
     it('Should return a number as-is', () => {

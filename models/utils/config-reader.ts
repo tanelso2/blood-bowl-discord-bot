@@ -7,7 +7,7 @@ const filePattern = /^\$f{(.*)}$/
 const defaultPattern = /^(.*):(.*)$/
 
 /**
- * 
+ *
  * @param {String} rawValue
  * @returns {Either<String, Error>}
  */
@@ -55,5 +55,3 @@ function splitValueAndDefault(raw: string): (string | null)[] {
     }
     return [ matches[1], matches[2] ];
 }
-
-module.exports = { processConfigValue };

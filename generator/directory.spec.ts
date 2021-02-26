@@ -1,14 +1,5 @@
-const should = require('should');
-const sinon = require('sinon');
-require('should-sinon');
-
-const { directory } = require('./directory.js');
-const { pat } = require('./string-generator.js');
-
-afterEach(() => {
-    // Restore the default sandbox here
-    sinon.restore();
-});
+import { directory } from './directory';
+import { pat } from './string-generator';
 
 describe('Directory', () => {
     /**

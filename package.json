@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc --project ./",
-    "test": "npm run build && LOG_LEVEL=debug mocha --recursive \"build/**/*.spec*.js\" --ignore \"node_modules/**/*\"",
+    "test": "LOG_LEVEL=debug ts-mocha --file ./tests/init \"**/*.spec*.ts\" --ignore \"node_modules/**/*\"",
     "dev": "npm run build && LOG_LEVEL=debug node ./build/ ./sample-league.yaml | npx pino-pretty",
     "lint": "eslint --fix-dry-run .",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
@@ -35,13 +35,14 @@
     "typescript": "^4.1.5"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.15",
+    "@types/mocha": "^8.2.1",
+    "chai": "^4.3.0",
     "docdash": "^1.2.0",
     "eslint": "^7.2.0",
     "jsdoc": "^3.6.4",
     "mocha": "^8.3.0",
     "pino-pretty": "^4.0.0",
-    "should": "^13.2.3",
-    "should-sinon": "0.0.6",
-    "sinon": "^9.0.2"
+    "ts-mocha": "^8.0.0"
   }
 }

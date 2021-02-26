@@ -1,21 +1,11 @@
-const should = require('should');
-const sinon = require('sinon');
-require('should-sinon');
-
-const fs = require('fs');
-const yaml = require('js-yaml');
-const { League } = require('../models/league.js');
-const { StringFormat } = require('./stringFormat.js');
-
+import { readFileSync } from 'fs';
+import * as yaml from 'js-yaml';
+import { League } from '../models/league';
+import { StringFormat } from './stringFormat';
 
 const leagueFile = './sample-league.yaml';
-const data = yaml.safeLoad(fs.readFileSync(leagueFile));
-const testLeague = new League(data);
-
-afterEach(() => {
-    // Restore the default sandbox here
-    sinon.restore();
-});
+const data = yaml.load(readFileSync(leagueFile, 'utf-8'));
+const testLeague = new League(data, leagueFile);
 
 describe('StringFormat', () => {
     describe('#coach()', () => {
@@ -31,8 +21,8 @@ describe('StringFormat', () => {
 
         it('should include both coachs\' team types', () => {
             StringFormat.game(g).should
-                .containEql(g.homeCoach.teamType)
-                .containEql(g.awayCoach.teamType);
+                .contain(g.homeCoach.teamType)
+                .contain(g.awayCoach.teamType);
         });
     });
 
@@ -40,13 +30,13 @@ describe('StringFormat', () => {
         const round = testLeague.schedule[0];
 
         it('should include round number in title', () => {
-            StringFormat.round(round).should.containEql(round.id);
+            StringFormat.round(round).should.contain(round.id);
         });
     });
 
     describe('#league()', () => {
         it('should include league name', () => {
-            StringFormat.league(testLeague).should.containEql(testLeague.name);
+            StringFormat.league(testLeague).should.contain(testLeague.name);
         });
     });
 });
