@@ -9,6 +9,10 @@ import { Coach, CoachData } from './coach';
 import { Round, RoundData } from './round';
 import { Game } from './game';
 import { processConfigValue } from './utils/config-reader';
+import { PatternMatchable } from '../utils/types/pattern.js';
+import { Option } from "../utils/types/option";
+import { Either } from '../utils/types/either';
+import { Result } from "../utils/types/result";
 
 const LOGGER = logger.child({module: 'league'});
 
@@ -20,6 +24,54 @@ export interface LeagueData {
     currentRound: number;
     coaches: CoachData[];
     schedule: RoundData[];
+}
+
+class LeagueType extends PatternMatchable {
+    constructor() {
+        super([RoundRobin, Tournament]);
+    }
+
+    static RoundRobin() {
+        return new RoundRobin();
+    }
+
+    static Tournament() {
+        return new Tournament();
+    }
+}
+
+class RoundRobin extends LeagueType {
+    constructor() {
+        super();
+    }
+}
+
+class Tournament extends LeagueType {
+    constructor() {
+        super();
+    }
+}
+
+class LeagueFactory {
+    data: any;
+    leagueFile: string;
+
+    constructor(data: any, leagueFile: string) {
+        this.data = data;
+        this.leagueFile = leagueFile;
+    }
+
+    doit(): League {
+        const leagueType = parseLeagueType(this.data.type).on({
+            Ok: (type: LeagueType) => type,
+            Err: (err) => { throw err; }
+        });
+
+        return leagueType.on({
+            RoundRobin: () => new League(this.data, this.leagueFile),
+            Tournament: () => new League(this.data, this.leagueFile),
+        });
+    }
 }
 
 /** A Blood Bowl league. */
@@ -39,7 +91,7 @@ export class League implements LeagueData {
         this.id = data.id;
         this.audienceId = data.audienceId;
 
-        //OwnerId
+        // OwnerId
         this.ownerIdRaw = data.ownerId;
         this.ownerId = processConfigValue(this.ownerIdRaw).on({
             Left: (v: string) => v,
@@ -118,7 +170,7 @@ export class League implements LeagueData {
     }
 
     /**
-     * @return {Option<Round>}
+     * @return {Option<Round>} - The next round or None if there are no more.
      */
     incrementRound(): Option<Round> {
         const numRounds = this.schedule.length;
@@ -153,8 +205,49 @@ export class League implements LeagueData {
     }
 }
 
+class RoundRobinSeason extends League {}
+class TournamentSeason extends League {
+
+    /**
+     * Finds all games that a user participates in this league.
+     *
+     * By nature of single elimination, this only searches the current round.
+     *
+     * @param {Discord.User} user - The user whose games will be found.
+     * @return {Array<Game>} - All games that user plays in.
+     */
+    findUserGames(user: Discord.User): Game[] {
+        if (!this.userInLeague(user)) {
+            return [];
+        }
+
+        return this.getCurrentRound().findUserGame(user).on({
+            Some: (game) => [game],
+            None: () => [],
+        });
+    }
+
+    // TODO this must return Either<Option<Round>, Err>
+    // errors can occur when not all rounds reported winners to gen the next round
+    incrementRound(): Option<Round> {
+        // TODO games must declare winners too!
+        return Option.None();
+    }
+}
+
 export function getLeagueFromFile(leagueFile: string): League {
     const content = fs.readFileSync(leagueFile, 'utf-8');
     const data = yaml.load(content) as LeagueData;
     return new League(data, leagueFile);
+}
+
+function parseLeagueType(type_string: string): Result<LeagueType> {
+    switch (type_string) {
+        case "round-robin":
+            return Result.Ok(LeagueType.RoundRobin());
+        case "tournament":
+            return Result.Ok(LeagueType.Tournament());
+        default:
+            return Result.Err(new Error(`Unknown league type ${type_string}`));
+    }
 }
