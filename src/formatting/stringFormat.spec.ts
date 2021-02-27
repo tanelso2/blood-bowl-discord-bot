@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import * as yaml from 'js-yaml';
-import { League } from '../models/league';
+import { League } from '@models/league';
 import { StringFormat } from './stringFormat';
 
 const leagueFile = './sample-league.yaml';

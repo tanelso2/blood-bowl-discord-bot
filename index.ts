@@ -1,13 +1,15 @@
+import 'module-alias/register';
+
 import * as process from 'process';
 import { readFileSync } from 'fs';
 import Discord from 'discord.js';
-import { DiscordFormat } from './formatting/discordFormat';
-import { logger } from './logger';
-import { getLeagueFromFile, League} from './models/league';
-import { Game } from './models/game';
-import * as insultGenerator from './generator/string-generator';
-import * as stringUtils from './utils/stringUtils';
-import { Option } from './utils/types/option';
+import { DiscordFormat } from '@formatting/discordFormat';
+import { logger } from '@core/logger';
+import { getLeagueFromFile, League} from '@models/league';
+import { Game } from '@models/game';
+import * as insultGenerator from '@generator/string-generator';
+import * as stringUtils from '@utils/stringUtils';
+import { Option } from '@core/types/option';
 
 const configFile = './config.json';
 

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc --project ./",
-    "test": "LOG_LEVEL=debug ts-mocha --file ./tests/init \"**/*.spec*.ts\" --ignore \"node_modules/**/*\"",
+    "test": "LOG_LEVEL=debug ts-mocha --paths --file ./src/tests/init \"**/*.spec*.ts\" --ignore \"node_modules/**/*\"",
     "dev": "npm run build && LOG_LEVEL=debug node ./build/ ./sample-league.yaml | npx pino-pretty",
     "lint": "eslint --fix-dry-run .",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json"
@@ -30,6 +30,7 @@
     "damerau-levenshtein": "^1.0.6",
     "discord.js": "^12.2.0",
     "js-yaml": "^3.14.0",
+    "module-alias": "^2.2.2",
     "pino": "^6.3.2",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.5"
@@ -44,5 +45,12 @@
     "mocha": "^8.3.0",
     "pino-pretty": "^4.0.0",
     "ts-mocha": "^8.0.0"
+  },
+  "_moduleAliases": {
+    "@core": "build/src/core",
+    "@formatting": "build/src/formatting",
+    "@generator": "build/src/generator",
+    "@models": "build/src/models",
+    "@utils": "build/src/utils"
   }
 }

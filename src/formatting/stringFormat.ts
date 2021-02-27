@@ -1,6 +1,6 @@
-import { League } from '../models/league';
-import { Round } from '../models/round';
-import { Game } from '../models/game';
+import { League } from '@models/league';
+import { Round } from '@models/round';
+import { Game } from '@models/game';
 import { Coach } from '../models/coach';
 
 // Currently unused in favor of DiscordFormat, but useful for debugging

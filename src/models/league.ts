@@ -2,13 +2,13 @@ import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 import Discord from 'discord.js';
 
-import { logger } from '../logger';
+import { logger } from '@core/logger';
+import { Option } from '@core/types/option';
 
 import { Coach } from './coach';
-import { Round } from "./round";
+import { Round } from './round';
 import { Game } from './game';
-import { processConfigValue } from "./utils/config-reader";
-import { Option } from "../utils/types/option";
+import { processConfigValue } from './utils/config-reader';
 
 const LOGGER = logger.child({module: 'league'});
 

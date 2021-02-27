@@ -1,7 +1,7 @@
 import Discord from 'discord.js';
-import { Game } from '../models/game';
-import { Round } from '../models/round';
-import { Coach } from '../models/coach';
+import { Game } from '@models/game';
+import { Round } from '@models/round';
+import { Coach } from '@models/coach';
 
 const BLANK = '\u200b';
 

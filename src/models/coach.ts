@@ -1,5 +1,5 @@
 import { processConfigValue } from "./utils/config-reader";
-import * as stringUtils from '../utils/stringUtils';
+import * as stringUtils from '@utils/stringUtils';
 
 export class Coach {
     idRaw: string;
