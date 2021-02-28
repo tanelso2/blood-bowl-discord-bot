@@ -4,18 +4,21 @@ import Discord from 'discord.js';
 
 const LOGGER = logger.child({module: 'game'});
 
+export interface GameData {
+    home: string;
+    away: string;
+    done?: boolean;
+}
+
 /** One match up in a Round. */
-export class Game {
+export class Game implements GameData {
     home: string;
     away: string;
     done: boolean;
     homeCoach: Coach;
     awayCoach: Coach;
 
-    /**
-     * @param {Object} data - Yaml representation of a game.
-     */
-    constructor(data: any, coaches: Coach[]) {
+    constructor(data: GameData, coaches: Coach[]) {
         this.home = data.home;
         this.away = data.away;
         this.done = data.done || false; // false if not-exists
@@ -43,7 +46,7 @@ export class Game {
         return Coach.null();
     }
 
-    encode(): any {
+    encode(): GameData {
         const { home, away, done } = this;
         return { home, away, done };
     }

@@ -1,13 +1,23 @@
 import { processConfigValue } from "./utils/config-reader";
+import { Option } from '@core/types/option';
 import * as stringUtils from '@utils/stringUtils';
 
-export class Coach {
+export interface CoachData {
+    id: string;
+    name: string;
+    teamName: string;
+    teamType: string;
+    nickname?: string | undefined;
+}
+
+export class Coach implements CoachData {
     idRaw: string;
     id: string;
     name: string;
     teamName: string;
     teamType: string;
-    nickname: string;
+    nickname?: string | undefined;
+    nicknameOpt: Option<string>;
 
     static null(): Coach {
         return new Coach({
@@ -19,7 +29,7 @@ export class Coach {
         });
     }
 
-    constructor(data: any) {
+    constructor(data: CoachData) {
         this.idRaw = data.id;
         this.id = processConfigValue(this.idRaw).on({
            Left: (v: string) => v,
@@ -28,15 +38,15 @@ export class Coach {
         this.name = data.name;
         this.teamName = data.teamName;
         this.teamType = data.teamType;
-        this.nickname = data.nickname || null;
+        this.nickname = data.nickname || undefined;
+        this.nicknameOpt = Option.ofNullable(this.nickname);
     }
 
     get commonName(): string {
-        if (this.nickname) {
-            return this.nickname;
-        } else {
-            return this.name;
-        }
+        return this.nicknameOpt.on({
+            Some: (nickname: string) => nickname,
+            None: () => this.name,
+        });
     }
 
     get mentionString(): string {
@@ -47,7 +57,7 @@ export class Coach {
         return stringUtils.getSimilarity(this.teamName, s) > 0.75;
     }
 
-    encode(): any {
+    encode(): CoachData {
         const { idRaw, name, teamName, teamType, nickname } = this;
         const id = idRaw;
         return { id, name, teamName, teamType, nickname };

@@ -1,10 +1,10 @@
 import { readFileSync } from 'fs';
 import * as yaml from 'js-yaml';
-import { League } from '@models/league';
+import { League, LeagueData } from '@models/league';
 import { StringFormat } from './stringFormat';
 
 const leagueFile = './sample-league.yaml';
-const data = yaml.load(readFileSync(leagueFile, 'utf-8'));
+const data = yaml.load(readFileSync(leagueFile, 'utf-8')) as LeagueData;
 const testLeague = new League(data, leagueFile);
 
 describe('StringFormat', () => {

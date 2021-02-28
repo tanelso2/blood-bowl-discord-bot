@@ -13,7 +13,11 @@ import { Option } from '@core/types/option';
 
 const configFile = './config.json';
 
-const config: any = JSON.parse(readFileSync(configFile, 'utf-8'));
+interface DiscordAuthConfig {
+    token: string;
+}
+
+const config: DiscordAuthConfig = JSON.parse(readFileSync(configFile, 'utf-8'));
 
 const LOGGER = logger.child({module:'index'});
 
@@ -65,24 +69,23 @@ function advanceRound(message: Discord.Message, user: Discord.User, league: Leag
 
     // Unpins *all* other messages by this bot, but until any other messages are expected to be
     // pinned, this is easier than persisting message ids.
-    function unpinOtherMessages(latestMessage: Discord.Message): Promise<any> {
+    function unpinOtherMessages(latestMessage: Discord.Message): Promise<Discord.Message[]> {
         return latestMessage.channel.messages.fetchPinned()
-            .then(pinned_messages =>
-                Promise.all(
+            .then(pinned_messages => Promise.all(
                     pinned_messages
-                        .filter(message => message.author.id === client.user!.id)
+                        .filter((message: Discord.Message) => message.author.id === client.user!.id)
                         .filter(message => message.id !== latestMessage.id)
-                        .mapValues(message => message.unpin())
-                )
-            );
+                        .mapValues((message: Discord.Message) => message.unpin())
+                        .array()
+            ));
     }
 
     if (user.id !== league.ownerId) {
         const insult = insultGenerator.generateString("${insult}");
-        return message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
+        message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
     } else {
-        league.incrementRound().on<any>({
-            None: () => message.reply("I cannae do dat captain!, this is the last rund I knae about!"),
+        league.incrementRound().on<void>({
+            None: () => {message.reply("I cannae do dat captain!, this is the last rund I knae about!")},
             Some: (newRound) => {
                 message
                     .reply(
@@ -183,7 +186,7 @@ function printRound(message: Discord.Message, _: Discord.User, league: League) {
     return message.reply("", { embed: roundStatus });
 }
 
-type CommandFunc = (message: Discord.Message, user: Discord.User, league: League) => any;
+type CommandFunc = (message: Discord.Message, user: Discord.User, league: League) => void;
 
 interface Command {
     name: string;
