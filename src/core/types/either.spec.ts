@@ -6,7 +6,7 @@ describe('Either', () => {
             const testVal = Either.Left('Hello');
             try {
                 testVal.on({
-                    Left: (pat1) => {},
+                    Left: (_) => {},
                     Right: (_) => {},
                     Up: (_) => {},
                 });
@@ -20,7 +20,7 @@ describe('Either', () => {
             const testVal = Either.Left('Hello');
             try {
                 testVal.on({
-                    Left: (pat1) => {},
+                    Left: (_) => {},
                 });
             } catch(e) {
                 done();

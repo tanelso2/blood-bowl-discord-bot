@@ -5,6 +5,11 @@ import { Coach } from '@models/coach';
 
 const BLANK = '\u200b';
 
+interface MatchupField {
+    name: string;
+    value: string;
+}
+
 /** Formats league structures for Discord. */
 export class DiscordFormat {
     private client: Discord.Client;
@@ -46,6 +51,7 @@ export class DiscordFormat {
             .addFields(gameFields);
     }
 
+
     /**
      * Creates the field object for a game.
      *
@@ -54,7 +60,7 @@ export class DiscordFormat {
      * @param {Game} - The game to create an embed field for.
      * @return {Object} - The embed field to add for this game.
      */
-    makeMatchupField(game: Game): any {
+    makeMatchupField(game: Game): MatchupField {
         const home = game.homeCoach;
         const away = game.awayCoach;
 

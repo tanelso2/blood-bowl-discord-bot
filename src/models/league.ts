@@ -5,18 +5,28 @@ import Discord from 'discord.js';
 import { logger } from '@core/logger';
 import { Option } from '@core/types/option';
 
-import { Coach } from './coach';
-import { Round } from './round';
+import { Coach, CoachData } from './coach';
+import { Round, RoundData } from './round';
 import { Game } from './game';
 import { processConfigValue } from './utils/config-reader';
 
 const LOGGER = logger.child({module: 'league'});
 
-/** A Blood Bowl league. */
-export class League {
+export interface LeagueData {
     name: string;
     id: string;
-    audienceId: string;
+    audienceId?: string | undefined;
+    ownerId: string;
+    currentRound: number;
+    coaches: CoachData[];
+    schedule: RoundData[];
+}
+
+/** A Blood Bowl league. */
+export class League implements LeagueData {
+    name: string;
+    id: string;
+    audienceId: string | undefined;
     ownerIdRaw: string;
     ownerId: string;
     currentRound: number;
@@ -24,21 +34,21 @@ export class League {
     schedule: Round[];
     leagueFile: string;
 
-    constructor(data: any, leagueFile: string) {
+    constructor(data: LeagueData, leagueFile: string) {
         this.name = data.name;
         this.id = data.id;
         this.audienceId = data.audienceId;
 
         //OwnerId
-        this.ownerIdRaw = data.ownerId || data.ownerID;
+        this.ownerIdRaw = data.ownerId;
         this.ownerId = processConfigValue(this.ownerIdRaw).on({
             Left: (v: string) => v,
             Right:(e: Error) => {throw e;}
         });
 
         this.currentRound = data.currentRound;
-        this.coaches = data.coaches.map((d: any) => new Coach(d));
-        this.schedule = data.schedule.map((d: any) => new Round(d, this.coaches));
+        this.coaches = data.coaches.map((d) => new Coach(d));
+        this.schedule = data.schedule.map((d) => new Round(d, this.coaches));
         this.leagueFile = leagueFile;
 
         // Ensure rounds are ordered by round number
@@ -124,22 +134,24 @@ export class League {
         fs.writeFileSync(this.leagueFile, yamlStr, 'utf8');
     }
 
-    encode(): any {
-        const { id, name, ownerIdRaw, currentRound } = this;
-        let { coaches, schedule, audienceId } = this;
-        coaches = coaches.map((c) => c.encode());
-        schedule = schedule.map((r) => r.encode());
+    encode(): LeagueData {
+        const { id, name, ownerIdRaw, currentRound, coaches, schedule } = this;
+        let {  audienceId } = this;
+        const coachesData = coaches.map((c) => c.encode());
+        const scheduleData = schedule.map((r) => r.encode());
 
         const ownerId = ownerIdRaw;
 
-        return { id, name, ownerId, currentRound, coaches, schedule,
-            audienceId: audienceId || null
+        return { id, name, ownerId, currentRound,
+            coaches: coachesData,
+            schedule: scheduleData,
+            audienceId: audienceId || undefined 
         };
     }
 }
 
 export function getLeagueFromFile(leagueFile: string): League {
     const content = fs.readFileSync(leagueFile, 'utf-8');
-    const data = yaml.load(content);
+    const data = yaml.load(content) as LeagueData;
     return new League(data, leagueFile);
 }

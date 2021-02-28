@@ -1,4 +1,5 @@
 import { generateString } from './string-generator';
+import { Counter } from '@core/types/counter';
 import { logger } from '@core/logger';
 
 describe('generateString()', () => {
@@ -12,7 +13,7 @@ describe('generateString()', () => {
         it("should not replace all fields", () => {
             const test = "${dumbSynonym} you put your ${clothing} on ${bodyPart}";
             const result = generateString(test);
-            const wordCount: any = {};
+            const wordCount: Counter = {};
             result.split(/\s/).forEach((word: string) => {
                 wordCount[word] = wordCount[word] ? wordCount[word] + 1 : 1;
                 if (wordCount[word] > 2) {
