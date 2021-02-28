@@ -41,6 +41,22 @@ async function okPrompt(): Promise<boolean> {
     }
 }
 
+async function pickOne(choices: string[]): Promise<string> {
+    const sorted = choices.sort();
+    sorted.forEach((v, idx) => {
+        console.log(`[${idx}] ${v}`);
+    });
+    const response = await query("Choose one");
+    try {
+        const responseNum = parseInt(response);
+        return choices[responseNum];
+    } catch (err) {
+        console.log(`Wow you did something wrong you idiot. Try again`);
+        return await pickOne(choices);
+    }
+
+}
+
 /**
  * Interrupts current script,
  * opens file in $EDITOR,
@@ -62,8 +78,8 @@ function openFileInEditor(filename: string) {
  * @returns: 'b
  */
 async function editObjectInEditor<a,b>(
-    obj: a, 
-    toText: (x: a) => string, 
+    obj: a,
+    toText: (x: a) => string,
     fromText: (x: string) => b
     ): Promise<b> {
     const text = toText(obj);
@@ -106,7 +122,7 @@ function roundToText(teams: string[]): string {
     return pairings.map((x) => `${x[0]}\n${x[1]}`).join(separator);
 }
 
-type GameMock = string[];
+type GameMock = string[]; // Just two team names
 type RoundMock = GameMock[];
 
 function textToRound(text: string): RoundMock {
@@ -135,12 +151,19 @@ async function queryCoaches(numCoaches: number): Promise<CoachData[]> {
     return coaches;
 }
 
+async function pickOwnerId(coaches: CoachData[]): Promise<string> {
+    console.log('The owner of the league is');
+    const ownerName = await pickOne(coaches.map(x => x.name));
+    return coaches.find(x => x.name === ownerName)!.id;
+}
+
 async function main() {
     const name = await query('League name');
     const id = await query('League id');
     const numCoaches = parseInt(await query('Number of coaches'));
     const audienceId = await query('The group id of the discord group that should be notified when games start');
     const coaches = await queryCoaches(numCoaches);
+    const ownerId = await pickOwnerId(coaches);
     const teamNames = coaches.map(x => x.teamName);
     const rounds = await makeRounds(teamNames);
     const schedule: RoundData[] = rounds.map((round, idx) => {
@@ -152,7 +175,7 @@ async function main() {
     // TODO: ownerId select
     const data: LeagueData = {
         name, id,
-        ownerId: 'TODO',
+        ownerId,
         currentRound: 1,
         audienceId: audienceId || undefined,
         coaches,
