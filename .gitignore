@@ -114,3 +114,6 @@ output.yaml
 
 # Build output
 build/
+
+# IDE directory
+.idea/

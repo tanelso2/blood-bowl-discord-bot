@@ -1,16 +1,24 @@
-const { League } = require('../models/league.js');
+#!/usr/bin/env npx ts-node
+import 'module-alias/register';
 
-const readline = require('readline').createInterface({
+import * as process from 'process';
+import * as rd from 'readline';
+import * as path from 'path';
+import * as os from 'os';
+import { promises as fs } from 'fs';
+import { execSync } from 'child_process';
+
+import { CoachData } from '@models/coach';
+import { League, LeagueData } from '@models/league';
+import { RoundData } from '@models/round';
+
+
+const readline = rd.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
-const exec = require('child_process').execSync;
-const path = require('path');
-const os = require('os');
-const fs = require('fs').promises;
-
-async function query(message) {
+async function query(message: string): Promise<string> {
     return new Promise((resolve, _) => {
         readline.question(message + ': ', (answer) => {
             resolve(answer);
@@ -18,7 +26,7 @@ async function query(message) {
     });
 }
 
-async function okPrompt() {
+async function okPrompt(): Promise<boolean> {
     const response = await query("Is this ok? [y/n]");
     switch (response) {
         case 'y':
@@ -39,12 +47,12 @@ async function okPrompt() {
  * waits for user to exit $EDITOR,
  * then resumes current script
  */
-function openFileInEditor(filename) {
+function openFileInEditor(filename: string) {
     const editor = process.env['EDITOR'];
-    const opts = {
-        stdio: 'inherit'
-    };
-    return exec(`${editor} ${filename}`, opts);
+    return execSync(`${editor} ${filename}`, {
+        stdio: 'inherit',
+        encoding: 'utf-8'
+    });
 }
 
 /**
@@ -53,7 +61,11 @@ function openFileInEditor(filename) {
  * @param fromText: string -> 'b
  * @returns: 'b
  */
-async function editObjectInEditor(obj, toText, fromText) {
+async function editObjectInEditor<a,b>(
+    obj: a, 
+    toText: (x: a) => string, 
+    fromText: (x: string) => b
+    ): Promise<b> {
     const text = toText(obj);
     const randomName = `tmp-${Math.floor(Math.random() * Math.floor(1000))}`;
     const tmpFile = path.join(os.tmpdir(), randomName);
@@ -68,7 +80,7 @@ async function editObjectInEditor(obj, toText, fromText) {
     return fromText(result);
 }
 
-async function queryCoach() {
+async function queryCoach(): Promise<CoachData> {
     const name = await query('coach name');
     const nickname = await query('nickname');
     const id = await query('coach id');
@@ -86,7 +98,7 @@ async function queryCoach() {
 
 const separator = `\n---------\n`;
 
-function roundToText(teams) {
+function roundToText(teams: string[]): string {
     const pairings = [];
     for (let i = 0; i < teams.length; i += 2) {
         pairings.push([teams[i], teams[i+1]]);
@@ -94,12 +106,15 @@ function roundToText(teams) {
     return pairings.map((x) => `${x[0]}\n${x[1]}`).join(separator);
 }
 
-function textToRound(text) {
+type GameMock = string[];
+type RoundMock = GameMock[];
+
+function textToRound(text: string): RoundMock {
     const pairingStrings = text.split(separator);
     return pairingStrings.map(x => x.trim()).map(x => x.split('\n'));
 }
 
-async function makeRounds(teamNames) {
+async function makeRounds(teamNames: string[]): Promise<RoundMock[]> {
     const rounds = [];
     for (let i = 0; i < teamNames.length-1; i++) {
         console.log(`Round ${i}`);
@@ -110,7 +125,7 @@ async function makeRounds(teamNames) {
     return rounds;
 }
 
-async function queryCoaches(numCoaches) {
+async function queryCoaches(numCoaches: number): Promise<CoachData[]> {
     const coaches = [];
     for (let i = 0; i < numCoaches; i++) {
         console.log(`~~~Coach number ${i}~~~`);
@@ -128,18 +143,18 @@ async function main() {
     const coaches = await queryCoaches(numCoaches);
     const teamNames = coaches.map(x => x.teamName);
     const rounds = await makeRounds(teamNames);
-    const schedule = rounds.map((round, idx) => {
+    const schedule: RoundData[] = rounds.map((round, idx) => {
         const games = round.map((x) => {
             return {home: x[0], away: x[1], done: false};
         });
         return {round: idx+1, games};
     });
     // TODO: ownerId select
-    const data = {
+    const data: LeagueData = {
         name, id,
         ownerId: 'TODO',
         currentRound: 1,
-        audienceId,
+        audienceId: audienceId || undefined,
         coaches,
         schedule
     };
