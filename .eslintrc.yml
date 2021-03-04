@@ -24,8 +24,20 @@ rules:
   semi:
     - error
     - always
+  prefer-const:
+    - error
+  prefer-arrow-callback:
+    - error
+  no-var:
+    - error
   '@typescript-eslint/no-unused-vars':
     - error
-    - varsIgnorePattern: "_*"
-      argsIgnorePattern: "_*"
-  '@typescript-eslint/no-empty-function': 'off'
+    - varsIgnorePattern: "^_"
+      argsIgnorePattern: "^_"
+  '@typescript-eslint/no-empty-function': off
+overrides:
+ - files:
+     - "*.spec.ts"
+   rules:
+     '@typescript-eslint/no-unused-vars': off
+     no-undef: off
