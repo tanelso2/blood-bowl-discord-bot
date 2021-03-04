@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PatternMatchable } from './pattern';
 
 export class Either<a,b> extends PatternMatchable {

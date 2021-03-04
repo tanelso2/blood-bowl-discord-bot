@@ -55,7 +55,7 @@ describe('Directory', () => {
     **/
 
     it('should have entries for all possible substitutions', () => {
-        for (const [key, paths] of Object.entries(directory)) {
+        for (const [_, paths] of Object.entries(directory)) {
             for (const path of paths) {
                 const matches = [...path.matchAll(pat)].map(x => x[1]);
                 for (const match of matches) {

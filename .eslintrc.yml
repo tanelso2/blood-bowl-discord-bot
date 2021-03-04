@@ -1,22 +1,31 @@
 env:
-  node: true
   es2020: true
-extends: 'eslint:recommended'
+  node: true
+extends:
+  - 'eslint:recommended'
+  - 'plugin:@typescript-eslint/eslint-recommended'
+  - 'plugin:@typescript-eslint/recommended'
+parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaVersion: 11
+  sourceType: module
+plugins:
+  - '@typescript-eslint'
 rules:
-  no-var:
+  indent:
     - error
-  prefer-const:
+    - 4
+  linebreak-style:
     - error
-  prefer-arrow-callback:
+    - unix
+  quotes:
     - error
-  no-unused-vars:
+    - single
+  semi:
     - error
-    - varsIgnorePattern: "logger"
-      argsIgnorePattern: "^_"
-overrides:
-- files: ["*.spec.*js"]
-  rules:
-    no-unused-vars: off
-    no-undef: off
+    - always
+  '@typescript-eslint/no-unused-vars':
+    - error
+    - varsIgnorePattern: "_*"
+      argsIgnorePattern: "_*"
+  '@typescript-eslint/no-empty-function': 'off'
