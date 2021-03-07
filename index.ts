@@ -178,7 +178,8 @@ function markGameDone(message: Discord.Message, user: Discord.User, league: Leag
 
     const numUnfinishedGames = currentRound.getUnfinishedGames().length;
     const opponent = usersGame.getOpponent(user);
-    return message.reply(`Gotcha. Your game against ${opponent.commonName} has been recorded. There are ${numUnfinishedGames} left in the round.`);
+    const isOrAre = numUnfinishedGames === 1 ? "is" : "are";
+    return message.reply(`Gotcha. Your game against ${opponent.commonName} has been recorded. There ${isOrAre} ${numUnfinishedGames} left in the round.`);
 }
 
 function printRound(message: Discord.Message, _: Discord.User, league: League) {
