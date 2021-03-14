@@ -1,5 +1,9 @@
 #!/bin/bash -x
 
+export PATH="$HOME/.local/bin:$PATH"
+
+nvm use
+
 npm install
 
 npm run build
