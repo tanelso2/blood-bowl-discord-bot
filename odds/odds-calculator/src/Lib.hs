@@ -42,7 +42,8 @@ simulateTimeline (r:rs) ms =
 
 
 equalChances :: [Double] -> Double
-equalChances cs = sum $ map (*(1.0/(fromIntegral (length cs)))) cs
+equalChances cs = sum $ map (*chance) cs
+    where chance = 1.0 / (fromIntegral (length cs))
 
 -- nextAction resets Rerolled modifier
 nextAction :: [Roll] -> [Modifier] -> Double
