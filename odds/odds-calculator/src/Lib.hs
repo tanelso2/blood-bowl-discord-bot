@@ -10,12 +10,14 @@ module Lib
 
 import Data.Foldable
 
--- TODO: Throw and Catch rolls
 data Roll = DodgeRoll Int -- a dodge roll with difficulty <x>-up
     | PickupRoll Int -- a pickup roll with difficulty <x>-up
-    | GFIRoll
+    | ThrowRoll Int -- a throw with difficulty <x>-up
+    | CatchRoll Int -- a catch with difficulty <x>-up
+    | GFIRoll -- a GFI
     deriving (Show)
 
+-- TODO: Pro
 data Modifier = 
     Dodge --dodging player has dodge skill 
     | HasReroll -- player has a reroll they can use
@@ -23,6 +25,9 @@ data Modifier =
     | Blizzard --there's a blizzard
     | SureFeet -- player has Sure Feet skill
     | SureHands -- player has Sure Hands skill
+    | Pass -- player has Pass skill
+    | Catch -- player has Catch skill
+    | Loner -- player has Loner skill
     deriving (Show, Eq)
 
 mkScenario :: [Roll] -> [Modifier] -> Scenario
@@ -43,7 +48,14 @@ simulateTimeline (r:rs) ms =
         DodgeRoll x -> equalChances $ map (simulateDodgeRoll rs ms x) [1..6]
         GFIRoll -> equalChances $ map (simulateGFIRoll rs ms) [1..6]
         PickupRoll x -> equalChances $ map (simulatePickupRoll rs ms x) [1..6]
+        ThrowRoll x -> equalChances $ map (simulateThrowRoll rs ms x) [1..6]
+        CatchRoll x -> equalChances $ map (simulateCatchRoll rs ms x) [1..6]
 
+useTeamReroll :: [Roll] -> [Modifier] -> Roll -> Double
+useTeamReroll rs ms x
+    | Loner `elem` ms = equalChances [doReroll, 0.0]
+    | otherwise = doReroll
+    where doReroll = simulateTimeline (x:rs) $ (Rerolled):(remove HasReroll ms)
 
 equalChances :: [Double] -> Double
 equalChances cs = sum $ map (*chance) cs
@@ -64,7 +76,31 @@ simulateDodgeRoll rs ms target roll
   | Dodge `elem` ms = simulateTimeline ((DodgeRoll target):rs) $ (Rerolled):(remove Dodge ms)
   -- if player has reroll, use up reroll
   | hasReroll ms =
-      simulateTimeline ((DodgeRoll target):rs) $ (Rerolled):(remove HasReroll ms)
+      useTeamReroll rs ms (DodgeRoll target)
+  -- failure, probability is 0
+  | otherwise = 0.0
+
+simulateCatchRoll :: [Roll] -> [Modifier] -> Int -> Int -> Double
+simulateCatchRoll rs ms target roll
+  -- success, proceed on
+  | roll >= target = nextAction rs ms
+  -- if catch skill, automatic reroll, use up catch 
+  | Catch `elem` ms = simulateTimeline ((CatchRoll target):rs) $ (Rerolled):(remove Catch ms)
+  -- if player has reroll, use up reroll
+  | hasReroll ms =
+      useTeamReroll rs ms $ CatchRoll target
+  -- failure, probability is 0
+  | otherwise = 0.0
+
+simulateThrowRoll :: [Roll] -> [Modifier] -> Int -> Int -> Double
+simulateThrowRoll rs ms target roll
+  -- success, proceed on
+  | roll >= target = nextAction rs ms
+  -- if pass skill, automatic reroll, use up pass 
+  | Pass `elem` ms = simulateTimeline ((ThrowRoll target):rs) $ (Rerolled):(remove Pass ms)
+  -- if player has reroll, use up reroll
+  | hasReroll ms =
+      useTeamReroll rs ms $ ThrowRoll target
   -- failure, probability is 0
   | otherwise = 0.0
 
@@ -76,7 +112,7 @@ simulatePickupRoll rs ms target roll
   | SureHands `elem` ms = simulateTimeline ((PickupRoll target):rs) $ (Rerolled):(remove SureHands ms)
   -- if player has reroll, use up reroll
   | hasReroll ms =
-      simulateTimeline ((PickupRoll target):rs) $ (Rerolled):(remove HasReroll ms)
+      useTeamReroll rs ms $ PickupRoll target
   -- failure, probability is 0
   | otherwise = 0.0
 

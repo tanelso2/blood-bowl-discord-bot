@@ -43,6 +43,10 @@ parseModifier = choice $ map try [
     , constMod "sh" SureHands
     , constMod "sure feet" SureFeet
     , constMod "sure hands" SureHands
+    , constMod "pass" Pass
+    , constMod "catch" Catch
+    , constMod "loner" Loner
+    , constMod "loser" Loner
     ]
 
 constMod :: String -> Modifier -> Parser Modifier
@@ -59,6 +63,8 @@ parseRoll = choice $ map try
     parseDodgeRoll
     , parseGFI
     , parsePickupRoll
+    , parseThrowRoll
+    , parseCatchRoll
     ]
 
 -- e.g. 4+d for a four-up dodge
@@ -80,6 +86,24 @@ parsePickupRoll = (do
     return $ PickupRoll $ read [targetDigit]
     )
     <?> "[2-6]+p - pickup roll"
+
+parseThrowRoll :: Parser Roll
+parseThrowRoll = (do
+    targetDigit <- oneOf ['2'..'6']
+    char '+'
+    char 't'
+    return $ ThrowRoll $ read [targetDigit]
+    )
+    <?> "[2-6]+t - throw roll"
+
+parseCatchRoll :: Parser Roll
+parseCatchRoll = (do
+    targetDigit <- oneOf ['2'..'6']
+    char '+'
+    char 'c'
+    return $ CatchRoll $ read [targetDigit]
+    )
+    <?> "[2-6]+c - catch roll"
 
 
 parseGFI :: Parser Roll
