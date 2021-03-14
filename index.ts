@@ -10,6 +10,7 @@ import { Game } from '@models/game';
 import * as insultGenerator from '@generator/string-generator';
 import * as stringUtils from '@utils/stringUtils';
 import { Option } from '@core/types/option';
+import * as childProcess from 'child_process';
 
 const configFile = './config.json';
 
@@ -65,7 +66,7 @@ const formatter = new DiscordFormat(client);
  *  @owner, round has been advanced
  *  <embed>
  */
-function advanceRound(message: Discord.Message, user: Discord.User, league: League) {
+async function advanceRound(message: Discord.Message, user: Discord.User, league: League) {
 
     // Unpins *all* other messages by this bot, but until any other messages are expected to be
     // pinned, this is easier than persisting message ids.
@@ -109,7 +110,7 @@ function advanceRound(message: Discord.Message, user: Discord.User, league: Leag
  * Example output:
  *  @user you are playing @opponent this round
  */
-function findOpponent(message: Discord.Message, user: Discord.User, league: League) {
+async function findOpponent(message: Discord.Message, user: Discord.User, league: League) {
     const userInGame = (game: Game) => game.coaches.some((c) => c.id === user.id);
     const usersGame = league.getCurrentRound().games.find(userInGame);
 
@@ -132,7 +133,7 @@ function findOpponent(message: Discord.Message, user: Discord.User, league: Leag
  *  3. etc....
  *  ```
  */
-function printSchedule(message: Discord.Message, user: Discord.User, league: League) {
+async function printSchedule(message: Discord.Message, user: Discord.User, league: League) {
     const matches = league.findUserGames(user);
     if (matches.length) {
         const schedule = formatter.usersSchedule(user, matches, league.currentRound);
@@ -143,7 +144,7 @@ function printSchedule(message: Discord.Message, user: Discord.User, league: Lea
     return message.reply(`you don't seem to be playing this round, smoothbrain.\n${insult}`);
 }
 
-function announceGame(message: Discord.Message, user: Discord.User, league: League) {
+async function announceGame(message: Discord.Message, user: Discord.User, league: League) {
     const usersGame = league.getCurrentRound().findUserGame(user);
 
 
@@ -161,12 +162,13 @@ function announceGame(message: Discord.Message, user: Discord.User, league: Leag
     return message.channel.send(`${audienceString} - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
 }
 
-function printInsult(message: Discord.Message, _: Discord.User, __: League) {
+async function printInsult(message: Discord.Message, _: Discord.User, __: League) {
+    LOGGER.debug(`printInsult called`);
     const insult = insultGenerator.generateString("${insult}");
     message.reply(insult);
 }
 
-function markGameDone(message: Discord.Message, user: Discord.User, league: League) {
+async function markGameDone(message: Discord.Message, user: Discord.User, league: League) {
     const currentRound = league.getCurrentRound();
     const usersGame = currentRound.findUserGame(user);
     if (!usersGame) {
@@ -187,7 +189,7 @@ function printRound(message: Discord.Message, _: Discord.User, league: League) {
     return message.reply("", { embed: roundStatus });
 }
 
-type CommandFunc = (message: Discord.Message, user: Discord.User, league: League) => void;
+type CommandFunc = (message: Discord.Message, user: Discord.User, league: League) => Promise<any>;
 
 interface Command {
     name: string;
@@ -205,6 +207,32 @@ function listLeagues(message: Discord.Message, _: Discord.User, __: League) {
     return message.channel.send(`These are all the leagues I know about: \n${leagueIds}\n`);
 }
 
+
+async function calculateOdds(message: Discord.Message, _: Discord.User, __: League) {
+    const oddsString = message.toString().split(' ').slice(2).join(' ');
+    LOGGER.debug(`Using '${oddsString}' as input to calculator`);
+    const opts: childProcess.SpawnOptions = {
+        stdio: 'pipe'
+    };
+    const execName = `odds-calculator-exe`;
+    const p = childProcess.spawn(execName, [], opts)
+    p.stdin?.write(oddsString);
+    p.stdin?.write(`\n`);
+    const stdout = await stringUtils.streamToString(p.stdout!!);
+    const stderr = await stringUtils.streamToString(p.stderr!!);
+    p.on('close', (code: number) => {
+        LOGGER.debug(`code is ${code}`);
+        LOGGER.debug(`stdout from process is ${stdout}`);
+        LOGGER.debug(`stderr from process is ${stderr}`);
+        if (code !== 0) {
+            message.reply(`Your input made my calculator barf nonsense at me: \n\`\`\`${stderr}\`\`\``)
+        } else {
+            message.reply(`DEBUG: \`\`\`${stderr}\`\`\`${stdout}`);
+        }
+    });
+
+}
+
 const commands: Command[] = [
     makeCommand('advance', advanceRound, 'Advance to the next round (only usable by the league owner)', true),
     makeCommand('announce', announceGame, 'Announce that your game for this current round is starting', true),
@@ -214,7 +242,8 @@ const commands: Command[] = [
     makeCommand('list', listLeagues, 'List all the leagues the bot knows about', false),
     makeCommand('opponent', findOpponent, 'Display and tag your current opponent', true),
     makeCommand('round', printRound, 'Print the status of the current round', true),
-    makeCommand('schedule', printSchedule, 'Display your schedule for this league', true)
+    makeCommand('schedule', printSchedule, 'Display your schedule for this league', true),
+    makeCommand('odds', calculateOdds, 'Calculate the odds of an event', false)
 ];
 
 function listCommands(message:Discord.Message, _: Discord.User, __: League) {
@@ -253,9 +282,7 @@ client.once('ready', () => {
     console.log('Ready!');
 });
 
-
-client.on('message', message => {
-
+async function handleMessage(message: Discord.Message) {
     const mentionsOptions = {
         "ignoreDirect": false,
         "ignoreRoles": true,
@@ -302,6 +329,12 @@ client.on('message', message => {
             }
         });
     }
+
+}
+
+
+client.on('message', message => {
+    handleMessage(message);
 });
 
 client.login(config.token);

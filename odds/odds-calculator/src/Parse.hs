@@ -50,13 +50,14 @@ parseRollCommandTerm = do
 parseRoll :: Parser Roll
 parseRoll = parseDodgeRoll <|> parseGFI
 
--- 4+d for a four-up dodge
+-- e.g. 4+d for a four-up dodge
 parseDodgeRoll :: Parser Roll
-parseDodgeRoll = do
-    targetDigit <- oneOf ['2'..'6'] <?> "Dodge roll needs value in range [2,6]"
+parseDodgeRoll = (do
+    targetDigit <- oneOf ['2'..'6']
     char '+'
     char 'd'
-    return $ DodgeRoll $ read [targetDigit]
+    return $ DodgeRoll $ read [targetDigit]) <?> "[2-6]+d - dodgeRoll"
+
 
 parseGFI :: Parser Roll
 parseGFI = (string "gfi") >> return GFIRoll

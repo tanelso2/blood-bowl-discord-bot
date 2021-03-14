@@ -1,3 +1,5 @@
+import { Stream } from 'stream';
+
 const levenshtien = require('damerau-levenshtein');
 
 export function getSimilarity(x: string, y: string): number {
@@ -24,3 +26,11 @@ export function getSimilarString(s: string, dictionary: string[]): string | unde
     return bestFit;
 }
 
+export async function streamToString (stream: Stream): Promise<string> {
+    const chunks: Buffer[] = [];
+    return new Promise((resolve, reject) => {
+        stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+        stream.on('error', (err) => reject(err));
+        stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    });
+}

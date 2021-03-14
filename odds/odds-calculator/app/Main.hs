@@ -1,6 +1,7 @@
 module Main where
 
 import Text.ParserCombinators.Parsec
+import System.Exit
 import System.IO
 
 import Lib
@@ -12,11 +13,12 @@ main = do
     either handleFailure handleSuccess $ parse parseScenario "" (input::String)
 
 handleFailure x = do
-    putStrLn "ERROR"
-    print x
+    hPutStrLn stderr $ "ERROR"
+    hPutStrLn stderr $ show x
+    exitWith $ ExitFailure 1
 
 handleSuccess :: Scenario -> IO ()
 handleSuccess scenario = do
     hPutStrLn stderr $ "Scenario parsed as " ++ (show scenario)
     percentage <- return $ percentOdds scenario
-    putStrLn $ "The chance of that is " ++ show percentage
+    putStrLn $ "The chance of that is `" ++ show percentage ++ "`"

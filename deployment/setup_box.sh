@@ -6,6 +6,12 @@ apt-get update
 curl -sL https://deb.nodesource.com/setup_12.x | bash -
 apt-get install -y nodejs
 
+# Install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+
+# Install Haskell stack
+apt-get install -y haskell-stack
+
 BB_DIR=/opt/bb_bot
 
 git clone https://github.com/tanelso2/blood-bowl-discord-bot "${BB_DIR}"
