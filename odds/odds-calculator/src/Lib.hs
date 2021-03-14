@@ -128,7 +128,7 @@ simulateGFIRoll rs ms roll
       simulateTimeline (GFIRoll:rs) $ (Rerolled):(filter (/=SureFeet) ms)
   -- if player has reroll, use up reroll
   | hasReroll ms =
-      simulateTimeline (GFIRoll:rs) $ (Rerolled):(filter (/=HasReroll) ms)
+      useTeamReroll rs ms GFIRoll
   -- failure, probability is 0
   | otherwise = 0.0
   where target = getGFITarget ms
