@@ -4,7 +4,7 @@ module Lib
     , Modifier(..)
     , mkScenario
     , percentOdds
-    , simulateDodgeRoll
+    , simulateD6Roll
     , simulateTimeline
     ) where
 
@@ -17,9 +17,8 @@ data Roll = DodgeRoll Int -- a dodge roll with difficulty <x>-up
     | GFIRoll -- a GFI
     deriving (Show)
 
--- TODO: Pro
-data Modifier = 
-    Dodge --dodging player has dodge skill 
+data Modifier =
+    Dodge --dodging player has dodge skill
     | HasReroll -- player has a reroll they can use
     | Rerolled --has this action been rerolled once already due to automatic reroll?
     | Blizzard --there's a blizzard
@@ -28,6 +27,7 @@ data Modifier =
     | Pass -- player has Pass skill
     | Catch -- player has Catch skill
     | Loner -- player has Loner skill
+    | Pro -- player has Pro skill
     deriving (Show, Eq)
 
 mkScenario :: [Roll] -> [Modifier] -> Scenario
@@ -45,11 +45,12 @@ simulateTimeline :: [Roll] -> [Modifier] -> Double
 simulateTimeline [] _ = 1.0
 simulateTimeline (r:rs) ms =
     case r of
-        DodgeRoll x -> d6Roll $ simulateDodgeRoll rs ms x
-        GFIRoll -> d6Roll $ simulateGFIRoll rs ms
-        PickupRoll x -> d6Roll $ simulatePickupRoll rs ms x
-        ThrowRoll x -> d6Roll $ simulateThrowRoll rs ms x
-        CatchRoll x -> d6Roll $ simulateCatchRoll rs ms x
+        DodgeRoll x -> d6Roll $ simulateD6Roll (return Dodge) r rs ms x
+        GFIRoll -> d6Roll $ simulateD6Roll (return SureFeet) r rs ms (getGFITarget ms)
+        PickupRoll x -> d6Roll $ simulateD6Roll (return SureHands) r rs ms x
+        ThrowRoll x -> d6Roll $ simulateD6Roll (return Pass) r rs ms x
+        CatchRoll x -> d6Roll $ simulateD6Roll (return Catch) r rs ms x
+
 
 d6Roll :: (Int -> Double) -> Double
 d6Roll simulateFunc = equalChances $ map simulateFunc [1..6]
@@ -71,73 +72,32 @@ nextAction rs ms = simulateTimeline rs $ remove Rerolled ms
 remove :: (Eq a) => a -> [a] -> [a]
 remove x xs = filter (/=x) xs
 
-simulateDodgeRoll :: [Roll] -> [Modifier] -> Int -> Int -> Double
-simulateDodgeRoll rs ms target roll
+simulateD6Roll :: Maybe Modifier -> Roll -> [Roll] -> [Modifier] -> Int -> Int -> Double
+-- simulateD6Roll autoRerollSkill currentRoll rs ms target roll = probability
+simulateD6Roll maybeAutoSkill currentRoll rs ms target roll
   -- success, proceed on
   | roll >= target = nextAction rs ms
-  -- if dodge skill, automatic reroll, use up dodge
-  | Dodge `elem` ms = simulateTimeline ((DodgeRoll target):rs) $ (Rerolled):(remove Dodge ms)
+  -- if autoReroll skill, automatic reroll, use up skill
+  | hasAutoRerollSkill ms maybeAutoSkill = simulateTimeline (currentRoll:rs) $ (Rerolled):(removeSkill ms maybeAutoSkill)
+  | hasPro ms = error "NOIMPL"
   -- if player has reroll, use up reroll
-  | hasReroll ms =
-      useTeamReroll rs ms (DodgeRoll target)
+  | hasReroll ms = useTeamReroll rs ms currentRoll
   -- failure, probability is 0
   | otherwise = 0.0
 
-simulateCatchRoll :: [Roll] -> [Modifier] -> Int -> Int -> Double
-simulateCatchRoll rs ms target roll
-  -- success, proceed on
-  | roll >= target = nextAction rs ms
-  -- if catch skill, automatic reroll, use up catch 
-  | Catch `elem` ms = simulateTimeline ((CatchRoll target):rs) $ (Rerolled):(remove Catch ms)
-  -- if player has reroll, use up reroll
-  | hasReroll ms =
-      useTeamReroll rs ms $ CatchRoll target
-  -- failure, probability is 0
-  | otherwise = 0.0
+hasPro :: [Modifier] -> Bool
+hasPro ms = Pro `elem` ms
 
-simulateThrowRoll :: [Roll] -> [Modifier] -> Int -> Int -> Double
-simulateThrowRoll rs ms target roll
-  -- success, proceed on
-  | roll >= target = nextAction rs ms
-  -- if pass skill, automatic reroll, use up pass 
-  | Pass `elem` ms = simulateTimeline ((ThrowRoll target):rs) $ (Rerolled):(remove Pass ms)
-  -- if player has reroll, use up reroll
-  | hasReroll ms =
-      useTeamReroll rs ms $ ThrowRoll target
-  -- failure, probability is 0
-  | otherwise = 0.0
+removeSkill :: [Modifier] -> Maybe Modifier -> [Modifier]
+removeSkill ms maybeSkill = maybe ms (\x -> (remove x ms)) maybeSkill
 
-simulatePickupRoll :: [Roll] -> [Modifier] -> Int -> Int -> Double
-simulatePickupRoll rs ms target roll
-  -- success, proceed on
-  | roll >= target = nextAction rs ms
-  -- if SureHands skill, automatic reroll, use up Sure Hands
-  | SureHands `elem` ms = simulateTimeline ((PickupRoll target):rs) $ (Rerolled):(remove SureHands ms)
-  -- if player has reroll, use up reroll
-  | hasReroll ms =
-      useTeamReroll rs ms $ PickupRoll target
-  -- failure, probability is 0
-  | otherwise = 0.0
+hasAutoRerollSkill :: [Modifier] -> Maybe Modifier -> Bool
+hasAutoRerollSkill ms maybeSkill = maybe False (\x -> x `elem` ms) maybeSkill
 
 hasReroll :: [Modifier] -> Bool
 hasReroll ms = HasReroll `elem` ms && (not $ Rerolled `elem` ms)
-
-simulateGFIRoll :: [Roll] -> [Modifier] -> Int -> Double
-simulateGFIRoll rs ms roll
-  -- success, proceed on
-  | roll >= target = nextAction rs ms
-  -- if Sure Feet skill, automatic reroll, use up SureFeet
-  | SureFeet `elem` ms =
-      simulateTimeline (GFIRoll:rs) $ (Rerolled):(filter (/=SureFeet) ms)
-  -- if player has reroll, use up reroll
-  | hasReroll ms =
-      useTeamReroll rs ms GFIRoll
-  -- failure, probability is 0
-  | otherwise = 0.0
-  where target = getGFITarget ms
 
 getGFITarget :: [Modifier] -> Int
 getGFITarget ms
     | Blizzard `elem` ms = 3
     | otherwise = 2
-     
