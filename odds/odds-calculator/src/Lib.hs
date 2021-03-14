@@ -45,11 +45,14 @@ simulateTimeline :: [Roll] -> [Modifier] -> Double
 simulateTimeline [] _ = 1.0
 simulateTimeline (r:rs) ms =
     case r of
-        DodgeRoll x -> equalChances $ map (simulateDodgeRoll rs ms x) [1..6]
-        GFIRoll -> equalChances $ map (simulateGFIRoll rs ms) [1..6]
-        PickupRoll x -> equalChances $ map (simulatePickupRoll rs ms x) [1..6]
-        ThrowRoll x -> equalChances $ map (simulateThrowRoll rs ms x) [1..6]
-        CatchRoll x -> equalChances $ map (simulateCatchRoll rs ms x) [1..6]
+        DodgeRoll x -> d6Roll $ simulateDodgeRoll rs ms x
+        GFIRoll -> d6Roll $ simulateGFIRoll rs ms
+        PickupRoll x -> d6Roll $ simulatePickupRoll rs ms x
+        ThrowRoll x -> d6Roll $ simulateThrowRoll rs ms x
+        CatchRoll x -> d6Roll $ simulateCatchRoll rs ms x
+
+d6Roll :: (Int -> Double) -> Double
+d6Roll simulateFunc = equalChances $ map simulateFunc [1..6]
 
 useTeamReroll :: [Roll] -> [Modifier] -> Roll -> Double
 useTeamReroll rs ms x
