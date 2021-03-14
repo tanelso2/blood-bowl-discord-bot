@@ -26,12 +26,14 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Parse
   other-modules:
       Paths_odds_calculator
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
+    , parsec
   default-language: Haskell2010
 
 executable odds-calculator-exe
@@ -44,6 +46,7 @@ executable odds-calculator-exe
   build-depends:
       base >=4.7 && <5
     , odds-calculator
+    , parsec
   default-language: Haskell2010
 
 test-suite odds-calculator-test
@@ -57,4 +60,5 @@ test-suite odds-calculator-test
   build-depends:
       base >=4.7 && <5
     , odds-calculator
+    , parsec
   default-language: Haskell2010
