@@ -35,12 +35,18 @@ parseModifierCommandTerm = do
     return $ ModTerm modifier
 
 parseModifier :: Parser Modifier
-parseModifier = 
-    (string "dodge" >> return Dodge)
-    <|> (string "reroll" >> return HasReroll)
-    <|> (string "blizzard" >> return Blizzard)
-    <|> (string "sure feet" >> return SureFeet)
-    <|> (string "sf" >> return SureFeet)
+parseModifier = choice $ map try [
+    constMod "blizzard" Blizzard
+    , constMod "dodge" Dodge
+    , constMod "reroll" HasReroll
+    , constMod "sf" SureFeet
+    , constMod "sh" SureHands
+    , constMod "sure feet" SureFeet
+    , constMod "sure hands" SureHands
+    ]
+
+constMod :: String -> Modifier -> Parser Modifier
+constMod s x = (string s >> return x)
 
 parseRollCommandTerm :: Parser CommandTerm
 parseRollCommandTerm = do
@@ -48,7 +54,12 @@ parseRollCommandTerm = do
     return $ RollTerm roll
 
 parseRoll :: Parser Roll
-parseRoll = parseDodgeRoll <|> parseGFI
+parseRoll = choice $ map try 
+    [
+    parseDodgeRoll
+    , parseGFI
+    , parsePickupRoll
+    ]
 
 -- e.g. 4+d for a four-up dodge
 parseDodgeRoll :: Parser Roll
@@ -56,7 +67,19 @@ parseDodgeRoll = (do
     targetDigit <- oneOf ['2'..'6']
     char '+'
     char 'd'
-    return $ DodgeRoll $ read [targetDigit]) <?> "[2-6]+d - dodgeRoll"
+    return $ DodgeRoll $ read [targetDigit]
+    ) 
+    <?> "[2-6]+d - dodgeRoll"
+
+parsePickupRoll :: Parser Roll
+parsePickupRoll = (do
+    targetDigit <- oneOf ['2'..'6']
+    char '+'
+    char 'p'
+    optional $ char 'u'
+    return $ PickupRoll $ read [targetDigit]
+    )
+    <?> "[2-6]+p - pickup roll"
 
 
 parseGFI :: Parser Roll

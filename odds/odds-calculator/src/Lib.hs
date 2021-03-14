@@ -10,7 +10,9 @@ module Lib
 
 import Data.Foldable
 
+-- TODO: Throw and Catch rolls
 data Roll = DodgeRoll Int -- a dodge roll with difficulty <x>-up
+    | PickupRoll Int -- a pickup roll with difficulty <x>-up
     | GFIRoll
     deriving (Show)
 
@@ -20,6 +22,7 @@ data Modifier =
     | Rerolled --has this action been rerolled once already due to automatic reroll?
     | Blizzard --there's a blizzard
     | SureFeet -- player has Sure Feet skill
+    | SureHands -- player has Sure Hands skill
     deriving (Show, Eq)
 
 mkScenario :: [Roll] -> [Modifier] -> Scenario
@@ -39,6 +42,7 @@ simulateTimeline (r:rs) ms =
     case r of
         DodgeRoll x -> equalChances $ map (simulateDodgeRoll rs ms x) [1..6]
         GFIRoll -> equalChances $ map (simulateGFIRoll rs ms) [1..6]
+        PickupRoll x -> equalChances $ map (simulatePickupRoll rs ms x) [1..6]
 
 
 equalChances :: [Double] -> Double
@@ -47,17 +51,32 @@ equalChances cs = sum $ map (*chance) cs
 
 -- nextAction resets Rerolled modifier
 nextAction :: [Roll] -> [Modifier] -> Double
-nextAction rs ms = simulateTimeline rs $ filter (/=Rerolled) ms
+nextAction rs ms = simulateTimeline rs $ remove Rerolled ms
+
+remove :: (Eq a) => a -> [a] -> [a]
+remove x xs = filter (/=x) xs
 
 simulateDodgeRoll :: [Roll] -> [Modifier] -> Int -> Int -> Double
 simulateDodgeRoll rs ms target roll
   -- success, proceed on
   | roll >= target = nextAction rs ms
   -- if dodge skill, automatic reroll, use up dodge
-  | Dodge `elem` ms = simulateTimeline ((DodgeRoll target):rs) $ (Rerolled):(filter (/=Dodge) ms)
+  | Dodge `elem` ms = simulateTimeline ((DodgeRoll target):rs) $ (Rerolled):(remove Dodge ms)
   -- if player has reroll, use up reroll
   | hasReroll ms =
-      simulateTimeline ((DodgeRoll target):rs) $ (Rerolled):(filter (/=HasReroll) ms)
+      simulateTimeline ((DodgeRoll target):rs) $ (Rerolled):(remove HasReroll ms)
+  -- failure, probability is 0
+  | otherwise = 0.0
+
+simulatePickupRoll :: [Roll] -> [Modifier] -> Int -> Int -> Double
+simulatePickupRoll rs ms target roll
+  -- success, proceed on
+  | roll >= target = nextAction rs ms
+  -- if SureHands skill, automatic reroll, use up Sure Hands
+  | SureHands `elem` ms = simulateTimeline ((PickupRoll target):rs) $ (Rerolled):(remove SureHands ms)
+  -- if player has reroll, use up reroll
+  | hasReroll ms =
+      simulateTimeline ((PickupRoll target):rs) $ (Rerolled):(remove HasReroll ms)
   -- failure, probability is 0
   | otherwise = 0.0
 
