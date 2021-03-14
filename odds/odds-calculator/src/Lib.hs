@@ -10,7 +10,7 @@ module Lib
 
 import Data.Foldable
 
-data Roll = DodgeRoll Int
+data Roll = DodgeRoll Int -- a dodge roll with difficulty <x>-up
     | GFIRoll
     deriving (Show)
 
