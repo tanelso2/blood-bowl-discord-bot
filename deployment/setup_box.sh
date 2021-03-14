@@ -6,11 +6,11 @@ apt-get update
 curl -sL https://deb.nodesource.com/setup_12.x | bash -
 apt-get install -y nodejs
 
-# Install nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
 
 # Install Haskell stack
 apt-get install -y haskell-stack
+
+stack upgrade --force-download
 
 BB_DIR=/opt/bb_bot
 
@@ -44,3 +44,10 @@ bb_bot ALL=NOPASSWD: /opt/bb_bot/deployment/update.sh
 
 EOF
 chmod 0440 "${SUDOERS_FILE}"
+
+# Install nvm for root
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+
+# Install nvm for bb_bot
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | sudo -u bb_bot bash
+
