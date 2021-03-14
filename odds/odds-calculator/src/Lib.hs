@@ -2,6 +2,7 @@ module Lib
     ( Scenario
     , Roll(..)
     , Modifier(..)
+    , emptyScenario
     , mkScenario
     , percentOdds
     , simulateD6Roll
@@ -15,6 +16,7 @@ data Roll = DodgeRoll Int -- a dodge roll with difficulty <x>-up
     | ThrowRoll Int -- a throw with difficulty <x>-up
     | CatchRoll Int -- a catch with difficulty <x>-up
     | GFIRoll -- a GFI
+    | ProRoll Roll -- a Pro Roll to reroll a <roll>
     deriving (Show)
 
 data Modifier =
@@ -38,6 +40,11 @@ data Scenario = Scenario {
     , modifiers :: [Modifier]
 } deriving (Show)
 
+emptyScenario = Scenario { 
+    rolls = [], 
+    modifiers = []
+}
+
 percentOdds :: Scenario -> Double
 percentOdds (Scenario { rolls = rs, modifiers = ms}) = simulateTimeline rs ms
 
@@ -50,7 +57,16 @@ simulateTimeline (r:rs) ms =
         PickupRoll x -> d6Roll $ simulateD6Roll (return SureHands) r rs ms x
         ThrowRoll x -> d6Roll $ simulateD6Roll (return Pass) r rs ms x
         CatchRoll x -> d6Roll $ simulateD6Roll (return Catch) r rs ms x
+        ProRoll r -> d6Roll $ simulateProRoll rs ms r
 
+simulateProRoll :: [Roll] -> [Modifier] -> Roll -> Int -> Double
+simulateProRoll rs ms r roll
+    -- use up pro, queue up rerolling the roll, and add Rerolled to this action
+    | roll >= 4 = simulateTimeline (r:rs) $ Rerolled:(remove Pro ms)
+    -- Try to reroll the pro roll
+    | hasReroll ms = useTeamReroll rs ms (ProRoll r)
+    -- failure
+    | otherwise = 0.0
 
 d6Roll :: (Int -> Double) -> Double
 d6Roll simulateFunc = equalChances $ map simulateFunc [1..6]
@@ -77,9 +93,10 @@ simulateD6Roll :: Maybe Modifier -> Roll -> [Roll] -> [Modifier] -> Int -> Int -
 simulateD6Roll maybeAutoSkill currentRoll rs ms target roll
   -- success, proceed on
   | roll >= target = nextAction rs ms
+  -- Pro comes before all other skills
+  | hasPro ms = simulateTimeline ((ProRoll currentRoll):rs) $ (remove Pro ms)
   -- if autoReroll skill, automatic reroll, use up skill
   | hasAutoRerollSkill ms maybeAutoSkill = simulateTimeline (currentRoll:rs) $ (Rerolled):(removeSkill ms maybeAutoSkill)
-  | hasPro ms = error "NOIMPL"
   -- if player has reroll, use up reroll
   | hasReroll ms = useTeamReroll rs ms currentRoll
   -- failure, probability is 0
@@ -92,10 +109,13 @@ removeSkill :: [Modifier] -> Maybe Modifier -> [Modifier]
 removeSkill ms maybeSkill = maybe ms (\x -> (remove x ms)) maybeSkill
 
 hasAutoRerollSkill :: [Modifier] -> Maybe Modifier -> Bool
-hasAutoRerollSkill ms maybeSkill = maybe False (\x -> x `elem` ms) maybeSkill
+hasAutoRerollSkill ms maybeSkill = maybe False (\x -> x `elem` ms && notRerolled ms) maybeSkill
+
+notRerolled :: [Modifier] -> Bool
+notRerolled ms = not $ Rerolled `elem` ms
 
 hasReroll :: [Modifier] -> Bool
-hasReroll ms = HasReroll `elem` ms && (not $ Rerolled `elem` ms)
+hasReroll ms = HasReroll `elem` ms && notRerolled ms
 
 getGFITarget :: [Modifier] -> Int
 getGFITarget ms
