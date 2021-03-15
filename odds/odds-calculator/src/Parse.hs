@@ -47,6 +47,7 @@ parseModifier = choice $ map try [
     , constMod "catch" Catch
     , constMod "loner" Loner
     , constMod "loser" Loner
+    , constMod "pro" Pro
     ]
 
 constMod :: String -> Modifier -> Parser Modifier
