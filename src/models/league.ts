@@ -200,7 +200,7 @@ export class League implements LeagueData {
         return { id, name, ownerId, currentRound,
             coaches: coachesData,
             schedule: scheduleData,
-            audienceId: audienceId || undefined 
+            audienceId: audienceId || undefined
         };
     }
 }
