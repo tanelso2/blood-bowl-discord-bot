@@ -1,7 +1,7 @@
 import { logger } from '@core/logger';
 import { Coach } from './coach';
-import { Option } from '../utils/types/option.js';
-import { Either } from '../utils/types/either.js';
+import { Option } from '@core/types/option';
+import { Either } from '@core/types/either';
 import Discord from 'discord.js';
 
 const LOGGER = logger.child({module: 'game'});

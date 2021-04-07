@@ -4,15 +4,14 @@ import Discord from 'discord.js';
 
 import { logger } from '@core/logger';
 import { Option } from '@core/types/option';
+import { Either } from '@core/types/either';
+import { Result } from '@core/types/result';
+import { PatternMatchable } from '@core/types/pattern';
 
 import { Coach, CoachData } from './coach';
 import { Round, RoundData } from './round';
 import { Game } from './game';
 import { processConfigValue } from './utils/config-reader';
-import { PatternMatchable } from '../utils/types/pattern.js';
-import { Option } from "../utils/types/option";
-import { Either } from '../utils/types/either';
-import { Result } from "../utils/types/result";
 
 const LOGGER = logger.child({module: 'league'});
 

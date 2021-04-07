@@ -1,6 +1,6 @@
 import { Game, GameData } from './game';
 import { Coach } from './coach';
-import { Option } from "../utils/types/option";
+import { Option } from "@core/types/option";
 import Discord from 'discord.js';
 
 export interface RoundData {
