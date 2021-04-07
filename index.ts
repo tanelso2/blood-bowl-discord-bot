@@ -267,11 +267,8 @@ const commands: Command[] = [
     makeCommand('opponent', findOpponent, 'Display and tag your current opponent', true),
     makeCommand('round', printRound, 'Print the status of the current round', true),
     makeCommand('schedule', printSchedule, 'Display your schedule for this league', true),
-<<<<<<< HEAD
     makeCommand('odds', calculateOdds, 'Calculate the odds of an event', false)
-=======
     makeCommand('winner', declareWinner, 'Declare yourself the winner of your game this round', true),
->>>>>>> 21cefff (Implement declareWinner functionality)
 ];
 
 function listCommands(message:Discord.Message, _: Discord.User, __: League) {
