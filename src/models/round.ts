@@ -33,7 +33,7 @@ export class Round implements RoundData {
      *
      */
     findUserGame(user: Discord.User): Option<Game> {
-        return Option.fromJsBullshit(this.games.find((game) => game.coaches.some((coach) => coach.id === user.id)));
+        return Option.ofNullable(this.games.find((game) => game.coaches.some((coach) => coach.id === user.id)));
     }
 
     getUnfinishedGames(): Game[] {

@@ -42,7 +42,7 @@ export class Game implements GameData {
      * @return {Coach}
      */
     getOpponent(user: Discord.User): Coach {
-        const opponent = Option.fromJsBullshit(this.coaches.find((c) => c.id !== user.id));
+        const opponent = Option.ofNullable(this.coaches.find((c) => c.id !== user.id));
         return opponent.on({
             Some: (opponent) => opponent,
             None: () => {
@@ -56,7 +56,7 @@ export class Game implements GameData {
      * @param {Discord.User} user - The winner of the matchup.
      */
     declareWinner(user: Discord.User) {
-        const winningCoach = Option.fromJsBullshit(this.coaches.find((c) => c.id === user.id));
+        const winningCoach = Option.ofNullable(this.coaches.find((c) => c.id === user.id));
         return winningCoach.on({
             Some: (coach) => {
                 this.winner = Option.Some(coach.teamName);
