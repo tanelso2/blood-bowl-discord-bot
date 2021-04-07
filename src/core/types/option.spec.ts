@@ -1,9 +1,9 @@
 import { Option } from './option';
 
 describe('Option', () => {
-    describe('fromJsBullshit()', () => {
+    describe('ofNullable()', () => {
         it('should transform null into None', () => {
-            Option.fromJsBullshit(null).on({
+            Option.ofNullable(null).on({
                 Some: (_) => {
                     throw new Error("Should not generate Some(null)")
                 },
@@ -12,7 +12,7 @@ describe('Option', () => {
         });
 
         it('should transform undefined into None', () => {
-            Option.fromJsBullshit(undefined).on({
+            Option.ofNullable(undefined).on({
                 Some: (_) => {
                     throw new Error("Should not generate Some(null)")
                 },
@@ -21,7 +21,7 @@ describe('Option', () => {
         });
 
         it('should transform NaN into None', () => {
-            Option.fromJsBullshit(NaN).on({
+            Option.ofNullable(NaN).on({
                 Some: (_) => {
                     throw new Error("Should not generate Some(null)")
                 },
@@ -30,19 +30,19 @@ describe('Option', () => {
         });
 
         it('should transform other falsy values into Some', () => {
-            Option.fromJsBullshit(false).on({
+            Option.ofNullable(false).on({
                 Some: (_) => {},
                 None: () => {
                     throw new Error("Should not generate None")
                 }
             });
-            Option.fromJsBullshit(0).on({
+            Option.ofNullable(0).on({
                 Some: (_) => {},
                 None: () => {
                     throw new Error("Should not generate None")
                 }
             });
-            Option.fromJsBullshit('').on({
+            Option.ofNullable('').on({
                 Some: (_) => {},
                 None: () => {
                     throw new Error("Should not generate None")
