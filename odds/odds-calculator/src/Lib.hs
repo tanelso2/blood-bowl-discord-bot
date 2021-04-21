@@ -11,6 +11,29 @@ module Lib
 
 import Data.Foldable
 
+type Timeline = [Result]
+
+likelihood :: Timeline -> Double
+likelihood [] = 1.0
+likelihood (r:rs) =
+    case r of
+        -- so far all of them are d6 rolls
+        RollResult _ _ -> (1.0/6.0)*(likelihood rs) 
+
+data Result = RollResult Roll Int
+    | EndResult
+
+--d6 :: [Roll] -> [Modifier] -> (Int -> [Timeline]) -> ([Timeline] -> a) -> a
+
+-- calculateTimelines :: [Roll] -> [Modifier] -> [Timeline]
+-- calculateTimelines [] _ = [EndResult]
+-- calculateTimelines (r:rs) ms =
+--     case r of
+--         DodgeRoll x -> (do
+--             rolls <- [1..6]
+
+
+
 data Roll = DodgeRoll Int -- a dodge roll with difficulty <x>-up
     | PickupRoll Int -- a pickup roll with difficulty <x>-up
     | ThrowRoll Int -- a throw with difficulty <x>-up
@@ -93,17 +116,17 @@ simulateD6Roll :: Maybe Modifier -> Roll -> [Roll] -> [Modifier] -> Int -> Int -
 simulateD6Roll maybeAutoSkill currentRoll rs ms target roll
   -- success, proceed on
   | roll >= target = nextAction rs ms
-  -- Pro comes before all other skills
-  | hasPro ms = simulateTimeline ((ProRoll currentRoll):rs) $ (remove Pro ms)
   -- if autoReroll skill, automatic reroll, use up skill
   | hasAutoRerollSkill ms maybeAutoSkill = simulateTimeline (currentRoll:rs) $ (Rerolled):(removeSkill ms maybeAutoSkill)
   -- if player has reroll, use up reroll
   | hasReroll ms = useTeamReroll rs ms currentRoll
+  -- Pro comes after all other skills, it helps less than them
+  | hasPro ms = simulateTimeline ((ProRoll currentRoll):rs) $ (remove Pro ms)
   -- failure, probability is 0
   | otherwise = 0.0
 
 hasPro :: [Modifier] -> Bool
-hasPro ms = Pro `elem` ms
+hasPro ms = Pro `elem` ms && notRerolled ms
 
 removeSkill :: [Modifier] -> Maybe Modifier -> [Modifier]
 removeSkill ms maybeSkill = maybe ms (\x -> (remove x ms)) maybeSkill

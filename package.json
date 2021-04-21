@@ -10,7 +10,9 @@
     "dev": "npm run build && LOG_LEVEL=debug node ./build/ ./sample-league.yaml | npx pino-pretty",
     "lint": "eslint --fix-dry-run .",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json",
-    "make-odds": "cd odds/odds-calculator && stack install --copy-bins"
+    "make-odds": "cd odds/odds-calculator && stack install --copy-bins",
+    "test-odds": "cd odds/odds-calculator && stack test",
+    "test-all": "npm run test && npm run test-odds"
   },
   "repository": {
     "type": "git",

@@ -47,3 +47,7 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - odds-calculator
+    - QuickCheck
+    - hspec
+    - hspec-contrib
+    - HUnit
