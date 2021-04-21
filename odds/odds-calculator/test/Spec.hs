@@ -11,8 +11,7 @@ closeBy a b
     where delta = 0.0001
 
 shouldBeCloseBy :: Double -> Double -> Expectation
--- shouldBeCloseBy a b = closeBy a b `shouldBe` True
-shouldBeCloseBy a b = shouldSatisfy a (closeBy b)
+shouldBeCloseBy a b = (a, b) `shouldSatisfy` (uncurry closeBy)
 
 prop_allD6Odds :: Property
 prop_allD6Odds = forAll (chooseInt (1,6)) prop_D6Odds
