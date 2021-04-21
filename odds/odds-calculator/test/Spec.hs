@@ -13,12 +13,23 @@ closeBy a b
 shouldBeCloseBy :: Double -> Double -> Expectation
 shouldBeCloseBy a b = (a, b) `shouldSatisfy` (uncurry closeBy)
 
-prop_allD6Odds :: Property
-prop_allD6Odds = forAll (chooseInt (1,6)) prop_D6Odds
+allD6 :: (Int -> Bool) -> Property
+allD6 p = forAll (chooseInt (1, 6)) p
 
 prop_D6Odds :: Int -> Bool
 prop_D6Odds x = closeBy odds $ percentOdds $ mkScenario [DodgeRoll x] []
-    where odds = (1.0 - ((fromIntegral (x-1)) / 6.0))
+    where odds = rollSuccessOdds x
+
+prop_D6WithRerollOdds :: Int -> Bool
+prop_D6WithRerollOdds x = closeBy odds $ percentOdds $ mkScenario [DodgeRoll x] [HasReroll]
+    where odds = rollSuccessOdds x + ((rollFailureOdds x) * (rollSuccessOdds x))
+
+-- an x+ role has what chance of success
+rollSuccessOdds :: Int -> Double
+rollSuccessOdds x = (1.0 - ((fromIntegral (x-1)) /6.0))
+
+rollFailureOdds :: Int -> Double
+rollFailureOdds x = (1.0 - (rollSuccessOdds x))
 
 oddsTest :: Double -> [Roll] -> [Modifier] -> Expectation
 oddsTest expected rs ms = shouldBeCloseBy expected $ percentOdds $ mkScenario rs ms
@@ -46,5 +57,7 @@ main = hspec $ do
       it "Should use dodge over pro - better odds" $ do
         oddsTest 0.75 [DodgeRoll 4] [Dodge, Pro]
     it "Checking the odds of <x>+ dodgerolls with no modifiers" $ 
-        prop_allD6Odds
+        allD6 prop_D6Odds
+    it "Checking the odds of <x>+ dodgerolls with a reroll" $
+        allD6 prop_D6WithRerollOdds
           
