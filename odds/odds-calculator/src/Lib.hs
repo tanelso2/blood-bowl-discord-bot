@@ -1,5 +1,7 @@
 module Lib
     ( Scenario
+    , Result(..)
+    , Timeline
     , Roll(..)
     , Modifier(..)
     , emptyScenario
@@ -7,9 +9,70 @@ module Lib
     , percentOdds
     , simulateD6Roll
     , simulateTimeline
+    , calculateTimelines
+    , likelihood
     ) where
 
 import Data.Foldable
+import System.Random
+import System.Random.Internal
+
+type Timeline = [Result]
+
+-- likelihood of this timeline happening, I think?
+likelihood :: Timeline -> Double
+likelihood [] = 1.0
+likelihood rs = foldl' (\acc x -> acc * resultLikelihood x) 1.0 rs
+
+resultLikelihood :: Result -> Double
+-- d6 roll timeline splits always have a 1/6 chance of this particular one happening
+resultLikelihood (D6RollResult _ _ _) = (1.0/6.0)
+resultLikelihood _ = 1.0
+
+data Result = D6RollResult Roll Int Int
+    | EndResult
+    | FailureResult
+    deriving (Show)
+
+--d6 :: [Roll] -> [Modifier] -> (Int -> [Timeline]) -> ([Timeline] -> a) -> a
+
+calculateTimelines :: [Roll] -> [Modifier] -> [Timeline]
+calculateTimelines [] _ =
+    [[EndResult]]
+calculateTimelines (r:rs) ms =
+    case r of
+        (DodgeRoll _) -> d6RollCombine (timelinesD6Roll (Just Dodge) r rs ms) (\acc x -> acc ++ x) []
+
+timelinesD6Roll :: Maybe Modifier -> Roll -> [Roll] -> [Modifier] -> Int -> [Timeline]
+timelinesD6Roll autoRerollSkill currentRoll rs ms roll
+  -- action succeeds, proceed
+  | roll >= target = map (\x -> result:x) $ calculateTimelines rs ms
+  -- use auto reroll skill
+  | hasAutoRerollSkill ms autoRerollSkill = map (\x -> result:x) $ calculateTimelines (currentRoll:rs) $ (Rerolled):(removeSkill ms autoRerollSkill)
+  -- failure
+  | otherwise = [[result, FailureResult]]
+  where target = getTarget currentRoll ms
+        result = getResult target roll currentRoll
+
+getResult :: Int -> Int -> Roll -> Result
+getResult target roll currentRoll =
+    case currentRoll of
+        DodgeRoll x -> D6RollResult currentRoll target roll
+
+
+-- simulateD6Roll :: Maybe Modifier -> Roll -> [Roll] -> [Modifier] -> Int -> Int -> Double
+-- -- simulateD6Roll autoRerollSkill currentRoll rs ms target roll = probability
+-- simulateD6Roll maybeAutoSkill currentRoll rs ms target roll
+
+
+type Modifiers = [Modifier]
+
+getTarget :: Roll -> Modifiers -> Int
+getTarget (DodgeRoll x) _ = x
+getTarget (PickupRoll x) _ = x
+getTarget (ThrowRoll x) _ = x
+getTarget (CatchRoll x) _ = x
+getTarget GFIRoll ms = getGFITarget ms
 
 data Roll = DodgeRoll Int -- a dodge roll with difficulty <x>-up
     | PickupRoll Int -- a pickup roll with difficulty <x>-up
@@ -31,6 +94,29 @@ data Modifier =
     | Loner -- player has Loner skill
     | Pro -- player has Pro skill
     deriving (Show, Eq)
+
+allModifiers = [
+  Dodge
+  , HasReroll
+  , Rerolled
+  , Blizzard
+  , SureFeet
+  , SureHands
+  , Pass
+  , Catch
+  , Loner
+  , Pro
+  ]
+
+instance Uniform Modifier where
+    uniformM g = do
+        x <- uniformWord32R (fromIntegral (l-1)) g
+        return $ allModifiers !! (fromIntegral x)
+      where l = length allModifiers
+
+instance Random Modifier where
+    randomR (_,_) g =
+      runStateGen g uniformM
 
 mkScenario :: [Roll] -> [Modifier] -> Scenario
 mkScenario rs ms = Scenario {rolls=rs, modifiers=ms}
@@ -68,6 +154,9 @@ simulateProRoll rs ms r roll
     -- failure
     | otherwise = 0.0
 
+d6RollCombine :: (Int -> a) -> (a -> b -> b) -> b -> b
+d6RollCombine func combineFunc start = foldr combineFunc start $ map func [1..6]
+
 d6Roll :: (Int -> Double) -> Double
 d6Roll simulateFunc = equalChances $ map simulateFunc [1..6]
 
@@ -93,17 +182,17 @@ simulateD6Roll :: Maybe Modifier -> Roll -> [Roll] -> [Modifier] -> Int -> Int -
 simulateD6Roll maybeAutoSkill currentRoll rs ms target roll
   -- success, proceed on
   | roll >= target = nextAction rs ms
-  -- Pro comes before all other skills
-  | hasPro ms = simulateTimeline ((ProRoll currentRoll):rs) $ (remove Pro ms)
   -- if autoReroll skill, automatic reroll, use up skill
   | hasAutoRerollSkill ms maybeAutoSkill = simulateTimeline (currentRoll:rs) $ (Rerolled):(removeSkill ms maybeAutoSkill)
   -- if player has reroll, use up reroll
   | hasReroll ms = useTeamReroll rs ms currentRoll
+  -- Pro comes after all other skills, it helps less than them
+  | hasPro ms = simulateTimeline ((ProRoll currentRoll):rs) $ (remove Pro ms)
   -- failure, probability is 0
   | otherwise = 0.0
 
 hasPro :: [Modifier] -> Bool
-hasPro ms = Pro `elem` ms
+hasPro ms = Pro `elem` ms && notRerolled ms
 
 removeSkill :: [Modifier] -> Maybe Modifier -> [Modifier]
 removeSkill ms maybeSkill = maybe ms (\x -> (remove x ms)) maybeSkill
