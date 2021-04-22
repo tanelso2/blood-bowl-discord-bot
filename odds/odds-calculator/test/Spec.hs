@@ -8,7 +8,7 @@ closeBy :: Double -> Double -> Bool
 closeBy a b
     | (abs (a - b)) <= delta = True
     | otherwise = False
-    where delta = 0.0001
+    where delta = 0.0000001
 
 shouldBeCloseBy :: Double -> Double -> Expectation
 shouldBeCloseBy a b = (a, b) `shouldSatisfy` (uncurry closeBy)
@@ -29,10 +29,17 @@ prop_D6ChainingRolls xs = closeBy odds $ percentOdds $ mkScenario rolls []
     where rolls = map DodgeRoll xs
           odds = foldr (\x acc -> acc * rollSuccessOdds x) 1.0 xs
 
-prop_TimelineProbabilitySum :: [Roll] -> [Modifier] -> Bool
-prop_TimelineProbabilitySum rs ms = closeBy actual expected
+prop_TimelineProbabilitySum :: [Roll] -> [Modifier] -> Expectation
+prop_TimelineProbabilitySum rs ms = shouldBeCloseBy actual expected
     where expected = 1.0
           actual = foldr (\x acc -> acc + (likelihood x)) 0.0 $ calculateTimelines rs ms
+
+prop_TimelineAndFirstFunctionAgree :: [Roll] -> [Modifier] -> Expectation
+prop_TimelineAndFirstFunctionAgree rs ms = shouldBeCloseBy r1 r2
+    where
+      scenario = mkScenario rs ms
+      r1 = percentOdds scenario
+      r2 = percentOdds' scenario
 
 -- an x+ role has what chance of success
 rollSuccessOdds :: Int -> Double
@@ -45,11 +52,27 @@ rollFailureOdds x = (1.0 - (rollSuccessOdds x))
 oddsTest :: Double -> [Roll] -> [Modifier] -> Expectation
 oddsTest expected rs ms = shouldBeCloseBy expected $ percentOdds $ mkScenario rs ms
 
+forShortRandomScenarios :: Testable prop => ([Roll] -> [Modifier] -> prop) -> Property
+forShortRandomScenarios p = forAll randomRolls (\rs -> forAll randomModifiers (\ms -> p rs ms))
+
+instance Arbitrary Modifier where
+  arbitrary = randomModifier
+
+instance Arbitrary Roll where
+  arbitrary = do
+    x <- chooseInt (1,6)
+    return $ DodgeRoll x
+
 randomModifier :: Gen Modifier
 randomModifier = chooseAny
 
+maxsize = 6
+
 randomModifiers :: Gen [Modifier]
-randomModifiers = listOf randomModifier
+randomModifiers = resize maxsize $ listOf randomModifier
+
+randomRolls :: Gen [Roll]
+randomRolls = resize maxsize $ listOf $ arbitrary
 
 main :: IO ()
 main = hspec $ do
@@ -83,7 +106,7 @@ main = hspec $ do
         xs <- resize 10 $ listOf $ chooseInt (1, 6)
         return $ prop_D6ChainingRolls xs
   describe "Timelines" $ do
-    it "Probabilities should sum up to 1.0" $ property $ do
-        xs <- resize 10 $ listOf $ chooseInt (1,6)
-        ms <- randomModifiers
-        return $ prop_TimelineProbabilitySum (map (\x -> DodgeRoll x) xs) ms
+    it "Probabilities should sum up to 1.0" $ property $
+      forShortRandomScenarios $ prop_TimelineProbabilitySum
+    it "The two functions should agree" $ property $
+      forShortRandomScenarios $ prop_TimelineAndFirstFunctionAgree
