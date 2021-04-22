@@ -24,10 +24,16 @@ prop_D6WithRerollOdds :: Int -> Bool
 prop_D6WithRerollOdds x = closeBy odds $ percentOdds $ mkScenario [DodgeRoll x] [HasReroll]
     where odds = rollSuccessOdds x + ((rollFailureOdds x) * (rollSuccessOdds x))
 
+prop_D6ChainingRolls :: [Int] -> Bool
+prop_D6ChainingRolls xs = closeBy odds $ percentOdds $ mkScenario rolls []
+    where rolls = map DodgeRoll xs
+          odds = foldr (\x acc -> acc * rollSuccessOdds x) 1.0 xs
+
 -- an x+ role has what chance of success
 rollSuccessOdds :: Int -> Double
 rollSuccessOdds x = (1.0 - ((fromIntegral (x-1)) /6.0))
 
+-- an x+ role has what chance of failure
 rollFailureOdds :: Int -> Double
 rollFailureOdds x = (1.0 - (rollSuccessOdds x))
 
@@ -60,4 +66,9 @@ main = hspec $ do
         allD6 prop_D6Odds
     it "Checking the odds of <x>+ dodgerolls with a reroll" $
         allD6 prop_D6WithRerollOdds
+    it "Checking the odds of two random dodgerolls in a row" $
+        forAll (chooseInt (1,6)) (\x -> forAll (chooseInt (1, 6)) (\y -> prop_D6ChainingRolls [x,y]))
+    it "Random dodgerolls in a row" $ property $ do
+        xs <- resize 12 $ listOf $ chooseInt (1, 6) 
+        return $ prop_D6ChainingRolls xs
           
