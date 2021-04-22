@@ -29,6 +29,11 @@ prop_D6ChainingRolls xs = closeBy odds $ percentOdds $ mkScenario rolls []
     where rolls = map DodgeRoll xs
           odds = foldr (\x acc -> acc * rollSuccessOdds x) 1.0 xs
 
+prop_TimelineProbabilitySum :: [Roll] -> [Modifier] -> Bool
+prop_TimelineProbabilitySum rs ms = closeBy actual expected
+    where expected = 1.0
+          actual = foldr (\x acc -> acc + (likelihood x)) 0.0 $ calculateTimelines rs ms
+
 -- an x+ role has what chance of success
 rollSuccessOdds :: Int -> Double
 rollSuccessOdds x = (1.0 - ((fromIntegral (x-1)) /6.0))
@@ -39,6 +44,12 @@ rollFailureOdds x = (1.0 - (rollSuccessOdds x))
 
 oddsTest :: Double -> [Roll] -> [Modifier] -> Expectation
 oddsTest expected rs ms = shouldBeCloseBy expected $ percentOdds $ mkScenario rs ms
+
+randomModifier :: Gen Modifier
+randomModifier = chooseAny
+
+randomModifiers :: Gen [Modifier]
+randomModifiers = listOf randomModifier
 
 main :: IO ()
 main = hspec $ do
@@ -69,6 +80,10 @@ main = hspec $ do
     it "Checking the odds of two random dodgerolls in a row" $
         forAll (chooseInt (1,6)) (\x -> forAll (chooseInt (1, 6)) (\y -> prop_D6ChainingRolls [x,y]))
     it "Random dodgerolls in a row" $ property $ do
-        xs <- resize 12 $ listOf $ chooseInt (1, 6) 
+        xs <- resize 10 $ listOf $ chooseInt (1, 6)
         return $ prop_D6ChainingRolls xs
-          
+  describe "Timelines" $ do
+    it "Probabilities should sum up to 1.0" $ property $ do
+        xs <- resize 10 $ listOf $ chooseInt (1,6)
+        ms <- randomModifiers
+        return $ prop_TimelineProbabilitySum (map (\x -> DodgeRoll x) xs) ms
