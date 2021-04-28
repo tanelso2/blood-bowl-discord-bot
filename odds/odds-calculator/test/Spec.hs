@@ -106,9 +106,10 @@ main = hspec $ do
         xs <- resize 10 $ listOf $ chooseInt (1, 6)
         return $ prop_D6ChainingRolls xs
   describe "Timelines" $ do
-    fit "Probabilities should sum up to 1.0" $ property $
+    xit "Probabilities should sum up to 1.0" $ property $
       forShortRandomScenarios $ prop_TimelineProbabilitySum
-    it "Sum to one debugging" $ do
-      print $ show $ calculateTimelines [DodgeRoll 4] [Pro, Loner, Dodge]
-    it "The two functions should agree" $ property $
+    xit "Sum to one debugging" $ do
+      ts <- return $ calculateTimelines [DodgeRoll 4] [Pro, Loner, Dodge]
+      print $ show $ ts
+    xit "The two functions should agree" $ property $
       forShortRandomScenarios $ prop_TimelineAndFirstFunctionAgree

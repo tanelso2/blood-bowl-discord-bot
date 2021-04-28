@@ -98,6 +98,34 @@ data Result = EndResult
     | FailureResult
     deriving (Show, Eq)
 
+data EventTree =
+    DodgeNode Int EventTree EventTree
+    | YesNoDecision Decision EventTree EventTree
+    | ArmorCheckNode EventTree
+    | InjuryNode
+    | EmptyTree
+
+data Injury =
+    Stun
+    | KO
+    | CasualtyInjury
+
+-- UseSkill Skill ?
+data Decision = UseDodge Int
+
+
+mkTree :: Modifiers -> Rolls -> EventTree
+mkTree ms [] = EmptyTree
+mkTree ms ((DodgeRoll x):rs) = DodgeNode x failureTree successTree
+    where failureTree = mkYesNoDecision (UseDodge x) ms rs
+          successTree = mkTree ms rs
+
+-- TODO - if hasDodge?
+mkYesNoDecision :: Decision -> Modifiers -> Rolls -> EventTree
+mkYesNoDecision (UseDodge x) ms rs = YesNoDecision (UseDodge x) yesTree noTree
+  where yesTree = mkTree ((Rerolled):(remove Dodge ms)) ((DodgeRoll x):rs)
+        noTree = ArmorCheckNode EmptyTree
+
 data Casualty =
     BadlyHurt
     | BrokenJaw
