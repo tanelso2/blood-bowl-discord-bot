@@ -82,9 +82,11 @@ timelinesProRoll rs ms r roll
   where result = D6RollResult r 4 roll
 
 
-failWith :: Result -> Roll -> [Timeline]
--- TODO: the type of failure should branch. Perhaps this function needs more arguments?
-failWith res r = map (res:) $ singleTimeline $ [getFailureResult r, FailureResult]
+failWith :: Rolls -> Modifiers -> Result -> Roll -> [Timeline]
+failWith rs ms res r = map (res:) $ 
+    case getFailureResult r of
+        KnockdownResult -> calculateTimelines [ArmorCheck 7] ms
+        _ -> singleTimeline $ [getFailureResult f, FailureResult]
 
 d6RollCombineTimelines ts = d6RollCombine ts (\acc x -> acc ++ x) []
 
