@@ -1,3 +1,20 @@
+/**
+ * Want to contribute to the insult generator? This is the file you should do it on!
+ *
+ * How it works:
+ * Whenever the generator encounters a substring that looks like ${category}, it looks up that category in the directory and replaces it with a random string from that category.
+ * These strings can also contain other category references, so the generator will continue until there are no more ${category} substrings.
+ * The directory is at the bottom of this file. When editing the file, try to keep it there.
+ *
+ * How do I add to it?
+ * Just come up with more categories and/or add to existing categories.
+ * If you do add another category, make sure to add it to the directory.
+ *
+ * What if I want to add but don't actually know this programming language?
+ * Just give it your best shot. We'll make sure your syntax is correct before merging your changes in, no big deal.
+ */
+
+
 const badTeams = [
     "Ogres",
     "Halflings",
