@@ -109,6 +109,7 @@ async function queryCoach(): Promise<CoachData> {
         console.log(`Oh did you make a mistake? Fucking meatbags. Fine I'll just throw away all the work we just did and start over. All because you fucked up. You piece of shit`);
         return await queryCoach();
     }
+    console.log('\n');
     return retVal;
 }
 
@@ -133,7 +134,7 @@ function textToRound(text: string): RoundMock {
 async function makeRounds(teamNames: string[]): Promise<RoundMock[]> {
     const rounds = [];
     for (let i = 0; i < teamNames.length-1; i++) {
-        console.log(`Round ${i}`);
+        console.log(`Round ${i+1}`);
         await query('Press enter to continue');
         const round = await editObjectInEditor(teamNames, roundToText, textToRound);
         rounds.push(round);
@@ -172,7 +173,6 @@ async function main() {
         });
         return {round: idx+1, games};
     });
-    // TODO: ownerId select
     const data: LeagueData = {
         name, id,
         ownerId,
