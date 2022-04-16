@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm run compile && npm run make-odds",
+    "build": "npm run compile",
     "compile": "tsc --project ./",
     "test": "LOG_LEVEL=debug ts-mocha --paths --file ./src/tests/init \"**/*.spec*.ts\" --ignore \"node_modules/**/*\"",
     "dev": "npm run build && LOG_LEVEL=debug node ./build/ ./sample-league.yaml | npx pino-pretty",
@@ -55,6 +55,7 @@
     "@formatting": "build/src/formatting",
     "@generator": "build/src/generator",
     "@models": "build/src/models",
+    "@odds": "build/src/odds",
     "@utils": "build/src/utils"
   }
 }
