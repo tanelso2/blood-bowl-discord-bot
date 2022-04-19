@@ -213,8 +213,8 @@ async function calculateOdds(message: Discord.Message, _: Discord.User, __: Leag
     const oddsString = message.toString().split(' ').slice(2).join(' ');
     LOGGER.debug(`Using '${oddsString}' as input to calculator`);
     const reply = parseAndFindProbability(oddsString).on({
-        Left: (e: Error) => `ERROR: ${e}`,
-        Right: (x: number) => `The probability is ${x}`
+        Left: (e) => `ERROR: ${e}`,
+        Right: (x) => `The probability is ${x}`
     });
     return message.reply(reply);
 }
