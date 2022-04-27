@@ -135,29 +135,67 @@ export function buildTree(scenario: OddsScenario): EventTree {
     }
     const first = rolls[0];
     const rest = rolls.slice(1);
+    const successTree: EventTree = buildTree({rolls: rest, modifiers});
     if (first.kind === RollKind.DodgeRoll) {
-        const successTree: EventTree = buildTree({rolls: rest, modifiers});
         let failureTree: EventTree = makeTurnoverTree();
         if (Modifier.Dodge in modifiers) {
-            // if dodge, replace the failure route with a route where we try the roll again.
-
-            // if the dodge reroll succeeds, move on to the next roll after removing Dodge, since
-            // a player can't use it twice in one turn
-            const newSuccess = buildTree({rolls: rest, modifiers: modifiers.filter(x => x !== Modifier.Dodge)});
-            // failing the reroll is just a turnover again
-            const newFailure = makeTurnoverTree();
-            failureTree = makeRollTree(first, makeD6Outcomes(first.goal, newSuccess, newFailure))
+            failureTree = useAutoRerollSkill(first, Modifier.Dodge, modifiers, rest);
         } else if (Modifier.HasReroll in modifiers) {
-            // if reroll
-            const newSuccess = buildTree({rolls: rest, modifiers: modifiers.filter(x => x !== Modifier.HasReroll)});
-            const newFailure = makeTurnoverTree();
-            failureTree = makeRollTree(first, makeD6Outcomes(first.goal, newSuccess, newFailure))
+            failureTree = useTeamReroll(first, modifiers, rest);
+        }
+        const outcomes = makeD6Outcomes(first.goal, successTree, failureTree);
+        return makeRollTree(first, outcomes);
+    } else if (first.kind === RollKind.GFIRoll) {
+        const goal = Modifier.Blizzard in modifiers ? 3 : 2;
+        // update the roll to have the correct goal to reach since it depends on modifiers
+        const updatedRoll =  {goal, kind: first.kind};
+        let failureTree = makeTurnoverTree();
+        if (Modifier.SureFeet in modifiers) {
+            failureTree = useAutoRerollSkill(updatedRoll, Modifier.SureFeet, modifiers, rest);
+        } else if (Modifier.HasReroll in modifiers) {
+            failureTree = useTeamReroll(updatedRoll, modifiers, rest);
+        }
+        const outcomes = makeD6Outcomes(goal, successTree, failureTree);
+        return makeRollTree(updatedRoll, outcomes);
+    } else if (first.kind === RollKind.CatchRoll) {
+        let failureTree = makeTurnoverTree();
+        if (Modifier.Catch in modifiers) {
+            failureTree = useAutoRerollSkill(first, Modifier.Catch, modifiers, rest);
+        } else if (Modifier.HasReroll in modifiers) {
+            failureTree = useTeamReroll(first, modifiers, rest);
+        }
+        const outcomes = makeD6Outcomes(first.goal, successTree, failureTree);
+        return makeRollTree(first, outcomes);
+    } else if (first.kind === RollKind.PickupRoll) {
+        let failureTree = makeTurnoverTree();
+        if (Modifier.SureHands in modifiers) {
+            failureTree = useAutoRerollSkill(first, Modifier.SureHands, modifiers, rest);
+        } else if (Modifier.HasReroll in modifiers) {
+            failureTree = useTeamReroll(first, modifiers, rest);
         }
         const outcomes = makeD6Outcomes(first.goal, successTree, failureTree);
         return makeRollTree(first, outcomes);
     }
     return makeSuccessTree();
 }
+
+function useTeamReroll(roll: Roll, currentModifiers: Modifier[], rest: Roll[]): EventTree {
+    const {goal} = roll;
+    const success = buildTree({rolls: rest, modifiers: currentModifiers.filter(x => x !== Modifier.HasReroll)});
+    const failure = makeTurnoverTree();
+    return makeRollTree(roll, makeD6Outcomes(goal, success, failure));
+}
+
+function useAutoRerollSkill(roll: Roll, skill: Modifier, currentModifiers: Modifier[], rest: Roll[]): EventTree {
+    const {goal} = roll;
+    // On success, we can't use the auto-reroll skill again on this character this turn.
+    // but we still get to move on to the rest of the rolls
+    const success = buildTree({rolls: rest, modifiers: currentModifiers.filter(x => x !== skill)});
+    // failing the reroll is a turnover (whether it is an injury roll or not depends on the type of thing, but let's not track that yet)
+    const failure = makeTurnoverTree();
+    return makeRollTree(roll, makeD6Outcomes(goal, success, failure));
+}
+
 
 export function findSuccessProbability(tree: EventTree): number {
     const {event, outcomes} = tree;
