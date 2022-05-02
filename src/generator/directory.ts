@@ -15,7 +15,7 @@ const insults = [
     "You're so ${dumbSynonym} you put your ${clothing} on your ${bodyPart}",
     "Jeez you're more worthless than some ${container} filled with ${uselessItem}",
 ]
-const babyGame = [
+const babyGames = [
     "Fortnite",
     "Overwatch",
     "Bloons Tower Defense",
