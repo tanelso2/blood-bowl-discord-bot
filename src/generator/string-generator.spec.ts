@@ -1,6 +1,6 @@
 import { generateString } from './string-generator';
 import { Counter } from '@core/types/counter';
-import { logger } from '@core/logger';
+//import { logger } from '@core/logger';
 
 describe('generateString()', () => {
     it('should return something different', () => {

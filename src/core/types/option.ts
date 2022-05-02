@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { PatternMatchable } from './pattern';
 
 export class Option<a> extends PatternMatchable {
@@ -5,11 +7,11 @@ export class Option<a> extends PatternMatchable {
         super([Some, None]);
     }
 
-    static Some<a>(value: a) {
+    static Some<a>(value: a): Option<a> {
         return new Some(value);
     }
 
-    static None() {
+    static None<a>(): Option<a> {
         return new None();
     }
 

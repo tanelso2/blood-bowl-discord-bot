@@ -10,7 +10,7 @@ import { Round, RoundData } from './round';
 import { Game } from './game';
 import { processConfigValue } from './utils/config-reader';
 
-const LOGGER = logger.child({module: 'league'});
+//const LOGGER = logger.child({module: 'league'});
 
 export interface LeagueData {
     name: string;

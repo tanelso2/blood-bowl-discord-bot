@@ -1,5 +1,4 @@
 import { Either } from '@core/types/either';
-const { Left, Right } = Either;
 
 export interface OddsScenario {
     rolls: Roll[];
@@ -72,8 +71,6 @@ const rollKindParseMap: {[key: string]: RollKind} = {
     't': RollKind.ThrowRoll,
     'c': RollKind.CatchRoll
 };
-
-const dodgeRollRegex = /([2-6])\+d/;
 
 function parseRollOrModifier(input: string): Either<Roll, Modifier> {
     if (input in modifierParseMap) {
