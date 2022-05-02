@@ -186,8 +186,7 @@ async function main() {
        switch (curr) {
            case '--copy':
                // use the next argument
-               const filename = args[++i];
-               sourceFile = filename;
+               sourceFile = args[++i];
        }
     }
     let leagueData;

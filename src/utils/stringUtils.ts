@@ -1,15 +1,15 @@
 import { Stream } from 'stream';
 
-const levenshtien = require('damerau-levenshtein');
+import levenshtein from 'damerau-levenshtein';
 
 export function getSimilarity(x: string, y: string): number {
-    const result = levenshtien(x, y);
+    const result = levenshtein(x, y);
     return result.similarity;
 }
 
 export function getSimilarString(s: string, dictionary: string[]): string | undefined {
     const results = dictionary.map((word) => {
-        const result = levenshtien(word, s);
+        const result = levenshtein(word, s);
         const similarity = result.similarity;
         return { word, similarity };
     });

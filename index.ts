@@ -10,7 +10,6 @@ import { Game } from '@models/game';
 import * as insultGenerator from '@generator/string-generator';
 import * as stringUtils from '@utils/stringUtils';
 import { Option } from '@core/types/option';
-import * as childProcess from 'child_process';
 import { parseOddsScenario, findSuccessProbability, buildTree } from '@odds/odds';
 
 const configFile = './config.json';
@@ -296,7 +295,8 @@ async function handleMessage(message: Discord.Message) {
             Some: (cmd: Command) => {
                 try {
                     if (!cmd.requiresLeague) {
-                        const func = cmd.func as ((message: Discord.Message, user: Discord.User) => void);
+                        // Linter didn't understand that these types overlap, so convert to unknown first to please it
+                        const func = cmd.func as unknown as ((message: Discord.Message, user: Discord.User) => void);
                         return func(message, message.author);
                     }
                     const leagues = getLeagues(message, message.author);
