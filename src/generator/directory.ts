@@ -56,6 +56,7 @@ const bodyParts = [
 const curses = [
     "May you only be left with ${numberFrom1To5} players standing at the end of your next game",
     "May all your GFIs fail!",
+    "May you somehow roll Dead the next time your best player levels up.",
     "May all your block dice come up ${notGoodBlockDice}",
 ];
 
