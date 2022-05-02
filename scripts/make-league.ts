@@ -9,7 +9,7 @@ import { promises as fs } from 'fs';
 import { execSync } from 'child_process';
 
 import { CoachData } from '@models/coach';
-import { League, LeagueData } from '@models/league';
+import { getLeagueFromFile, League, LeagueData } from '@models/league';
 import { RoundData } from '@models/round';
 
 
@@ -158,14 +158,45 @@ async function pickOwnerId(coaches: CoachData[]): Promise<string> {
     return coaches.find(x => x.name === ownerName)!.id;
 }
 
-async function main() {
+async function queryLeagueData(): Promise<LeagueData> {
     const name = await query('League name');
     const id = await query('League id');
     const numCoaches = parseInt(await query('Number of coaches'));
     const audienceId = await query('The group id of the discord group that should be notified when games start');
     const coaches = await queryCoaches(numCoaches);
     const ownerId = await pickOwnerId(coaches);
-    const teamNames = coaches.map(x => x.teamName);
+    return {
+        name, id, ownerId,
+        audienceId: audienceId || undefined,
+        currentRound: 0,
+        coaches,
+        schedule: []
+    };
+}
+
+async function copyLeagueData(sourceFile: string): Promise<LeagueData> {
+    return getLeagueFromFile(sourceFile);
+}
+
+async function main() {
+    const args = process.argv;
+    let sourceFile = null;
+    for (let i = 1; i < args.length; i++) {
+       const curr = args[i]; 
+       switch (curr) {
+           case '--copy':
+               // use the next argument
+               const filename = args[++i];
+               sourceFile = filename;
+       }
+    }
+    let leagueData;
+    if (sourceFile) {
+        leagueData = await copyLeagueData(sourceFile);
+    } else {
+        leagueData = await queryLeagueData();
+    }
+    const teamNames = leagueData.coaches.map(x => x.teamName);
     const rounds = await makeRounds(teamNames);
     const schedule: RoundData[] = rounds.map((round, idx) => {
         const games = round.map((x) => {
@@ -173,16 +204,10 @@ async function main() {
         });
         return {round: idx+1, games};
     });
-    const data: LeagueData = {
-        name, id,
-        ownerId,
-        currentRound: 1,
-        audienceId: audienceId || undefined,
-        coaches,
-        schedule
-    };
+    leagueData.schedule = schedule;
+    leagueData.currentRound = 0;
     const outputFile = 'output.yaml';
-    const l = new League(data, outputFile);
+    const l = new League(leagueData, outputFile);
     l.save();
     console.log(`League written out to ${outputFile}`);
     readline.close();
