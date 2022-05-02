@@ -11,7 +11,7 @@ import * as insultGenerator from '@generator/string-generator';
 import * as stringUtils from '@utils/stringUtils';
 import { Option } from '@core/types/option';
 import * as childProcess from 'child_process';
-import { parseAndFindProbability } from '@odds/odds';
+import { parseOddsScenario, findSuccessProbability, buildTree } from '@odds/odds';
 
 const configFile = './config.json';
 
@@ -212,11 +212,15 @@ function listLeagues(message: Discord.Message, _: Discord.User, __: League) {
 async function calculateOdds(message: Discord.Message, _: Discord.User, __: League) {
     const oddsString = message.toString().split(' ').slice(2).join(' ');
     LOGGER.debug(`Using '${oddsString}' as input to calculator`);
-    const reply = parseAndFindProbability(oddsString).on({
-        Left: (e) => `ERROR: ${e}`,
-        Right: (x) => `The probability is ${x}`
-    });
-    return message.reply(reply);
+    try {
+        const scenario = parseOddsScenario(oddsString);
+        const eventTree = buildTree(scenario);
+        const prob = findSuccessProbability(eventTree);
+        const reply = `Parsed as ${JSON.stringify(scenario)}\nThe probability is ${prob}`;
+        return message.reply(reply);
+    } catch (e) {
+        return message.reply(`ERROR: ${e}`);
+    }
 }
 
 const commands: Command[] = [

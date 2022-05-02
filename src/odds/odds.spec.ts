@@ -41,6 +41,28 @@ describe('Odds', () =>{
                 goal: 5
             });
         });
+
+        it('should parse a pickup roll', () => {
+            const i = "2+pu";
+            const {rolls, modifiers} = parseOddsScenario(i);
+            modifiers.length.should.eql(0);
+            rolls.length.should.eql(1);
+            rolls[0].should.eql({
+                kind: RollKind.PickupRoll,
+                goal: 2
+            });
+        });
+
+        it('should parse a throw roll', () => {
+            const i = "3+t";
+            const {rolls, modifiers} = parseOddsScenario(i);
+            modifiers.length.should.eql(0);
+            rolls.length.should.eql(1);
+            rolls[0].should.eql({
+                kind: RollKind.ThrowRoll,
+                goal: 3
+            });
+        });
     });
     describe('Odds', () => {
         it('one dodge roll', () => {
@@ -81,6 +103,14 @@ describe('Odds', () =>{
             const modifiers: Modifier[] = [Modifier.Dodge, Modifier.HasReroll];
             const result = buildTree({rolls, modifiers});
             findSuccessProbability(result).should.eql(0.75);
+        });
+
+        it('a 2-up dodge roll', () => {
+            const rolls = [{kind: RollKind.DodgeRoll, goal: 2}];
+            const modifiers: Modifier[] = [];
+            const result = buildTree({rolls, modifiers});
+            result.outcomes.length.should.eql(2);
+            findSuccessProbability(result).should.eql(5/6);
         });
     }); 
 });
