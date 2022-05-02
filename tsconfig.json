@@ -49,6 +49,7 @@
         "@formatting/*": ["formatting/*"],
         "@generator/*": ["generator/*"],
         "@models/*": ["models/*"],
+        "@odds/*": [ "odds/*" ],
         "@utils/*": ["utils/*"]
     },
     // "rootDirs": [],                        /* List of root folders whose combined content represents the structure of the project at runtime. */
