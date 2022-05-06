@@ -18,6 +18,7 @@ const LOGGER = logger.child({module: 'league'});
 export interface LeagueData {
     name: string;
     id: string;
+    type: string;
     audienceId?: string | undefined;
     ownerId: string;
     currentRound: number;
@@ -52,10 +53,10 @@ class Tournament extends LeagueType {
 }
 
 class LeagueFactory {
-    data: any;
+    data: LeagueData;
     leagueFile: string;
 
-    constructor(data: any, leagueFile: string) {
+    constructor(data: LeagueData, leagueFile: string) {
         this.data = data;
         this.leagueFile = leagueFile;
     }
@@ -77,6 +78,7 @@ class LeagueFactory {
 export class League implements LeagueData {
     name: string;
     id: string;
+    type: string;
     audienceId: string | undefined;
     ownerIdRaw: string;
     ownerId: string;
@@ -88,9 +90,9 @@ export class League implements LeagueData {
     constructor(data: LeagueData, leagueFile: string) {
         this.name = data.name;
         this.id = data.id;
+        this.type = data.type;
         this.audienceId = data.audienceId;
 
-        // OwnerId
         this.ownerIdRaw = data.ownerId;
         this.ownerId = processConfigValue(this.ownerIdRaw).on({
             Left: (v: string) => v,
@@ -153,10 +155,16 @@ export class League implements LeagueData {
      * @param {Discord.User} user
      * @return {bool}
      */
-    userInLeague(user: Discord.User): boolean {
+    protected userInLeague(user: Discord.User): boolean {
         return this.coaches.some((c) => c.id === user.id);
     }
 
+    /**
+     * Returns if user is registered in the league as a coach or as the owner.
+     *
+     * @param {Discord.User} user
+     * @return {bool}
+     */
     userInvolvedInLeague(user: Discord.User): boolean {
         return this.userInLeague(user) || this.ownerId === user.id;
     }
@@ -164,7 +172,7 @@ export class League implements LeagueData {
     /**
      * @member {String} - The Discord mention string of the league owner.
      */
-    get ownerMentionString(): string {
+    protected get ownerMentionString(): string {
         return `<@${this.ownerId}>`;
     }
 
@@ -189,14 +197,14 @@ export class League implements LeagueData {
     }
 
     encode(): LeagueData {
-        const { id, name, ownerIdRaw, currentRound, coaches, schedule } = this;
+        const { id, name, type, ownerIdRaw, currentRound, coaches, schedule } = this;
         let {  audienceId } = this;
         const coachesData = coaches.map((c) => c.encode());
         const scheduleData = schedule.map((r) => r.encode());
 
         const ownerId = ownerIdRaw;
 
-        return { id, name, ownerId, currentRound,
+        return { id, name, type, ownerId, currentRound,
             coaches: coachesData,
             schedule: scheduleData,
             audienceId: audienceId || undefined
@@ -206,6 +214,10 @@ export class League implements LeagueData {
 
 class RoundRobinSeason extends League {}
 class TournamentSeason extends League {
+
+    // DNC same
+    // getCurrentRound(): Round {
+    // getAudience(): Option<string> {
 
     /**
      * Finds all games that a user participates in this league.
@@ -226,18 +238,30 @@ class TournamentSeason extends League {
         });
     }
 
+    // DNC open question: should this exclude defeated players?
+    protected userInLeague(user: Discord.User): boolean {
+        return this.coaches.some((c) => c.id === user.id);
+    }
+
+    // DNC same
+    // userInvolvedInLeague(user: Discord.User): boolean {
+
     // TODO this must return Either<Option<Round>, Err>
     // errors can occur when not all rounds reported winners to gen the next round
     incrementRound(): Option<Round> {
         // TODO games must declare winners too!
         return Option.None();
     }
+
+    // DNC same
+    // save(): void {
+    // encode(): LeagueData {
 }
 
 export function getLeagueFromFile(leagueFile: string): League {
     const content = fs.readFileSync(leagueFile, 'utf-8');
     const data = yaml.load(content) as LeagueData;
-    return new League(data, leagueFile);
+    return LeagueFactory(data, leagueFile).doit();
 }
 
 function parseLeagueType(type_string: string): Result<LeagueType> {

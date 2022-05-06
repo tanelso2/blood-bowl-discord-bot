@@ -10,6 +10,7 @@ export interface GameData {
     home: string;
     away: string;
     done?: boolean;
+    winner: string;
 }
 
 /** One match up in a Round. */

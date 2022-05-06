@@ -13,7 +13,7 @@ export class Option<a> extends PatternMatchable {
         return new None();
     }
 
-    static ofNullable<a>(x: a | undefined | null | NaN): Option<a> {
+    static ofNullable<a>(x: a | undefined | null | typeof NaN): Option<a> {
         if (x === null || x === undefined || isNaN(x)) {
             return Option.None();
         } else {

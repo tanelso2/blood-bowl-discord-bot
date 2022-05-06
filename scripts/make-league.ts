@@ -160,6 +160,7 @@ async function pickOwnerId(coaches: CoachData[]): Promise<string> {
 async function main() {
     const name = await query('League name');
     const id = await query('League id');
+    const type = await query('League type (round-robin|tournament)');
     const numCoaches = parseInt(await query('Number of coaches'));
     const audienceId = await query('The group id of the discord group that should be notified when games start');
     const coaches = await queryCoaches(numCoaches);
@@ -174,7 +175,9 @@ async function main() {
     });
     // TODO: ownerId select
     const data: LeagueData = {
-        name, id,
+        name,
+        id,
+        type,
         ownerId,
         currentRound: 1,
         audienceId: audienceId || undefined,
