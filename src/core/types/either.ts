@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { PatternMatchable } from './pattern';
 
-export class Either<a,b> extends PatternMatchable {
+export class Either<_a,_b> extends PatternMatchable {
     constructor() {
         super([Left, Right]);
     }

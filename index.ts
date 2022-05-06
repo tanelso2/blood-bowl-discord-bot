@@ -10,7 +10,7 @@ import { Game } from '@models/game';
 import * as insultGenerator from '@generator/string-generator';
 import * as stringUtils from '@utils/stringUtils';
 import { Option } from '@core/types/option';
-import * as childProcess from 'child_process';
+import { parseOddsScenario, findSuccessProbability, buildTree } from '@odds/odds';
 
 const configFile = './config.json';
 
@@ -74,7 +74,7 @@ async function advanceRound(message: Discord.Message, user: Discord.User, league
         return latestMessage.channel.messages.fetchPinned()
             .then(pinned_messages => Promise.all(
                     pinned_messages
-                        .filter((message: Discord.Message) => message.author.id === client.user!.id)
+                        .filter((message: Discord.Message) => message.author.id === client.user?.id ?? "")
                         .filter(message => message.id !== latestMessage.id)
                         .mapValues((message: Discord.Message) => message.unpin())
                         .array()
@@ -235,26 +235,15 @@ function listLeagues(message: Discord.Message, _: Discord.User, __: League) {
 async function calculateOdds(message: Discord.Message, _: Discord.User, __: League) {
     const oddsString = message.toString().split(' ').slice(2).join(' ');
     LOGGER.debug(`Using '${oddsString}' as input to calculator`);
-    const opts: childProcess.SpawnOptions = {
-        stdio: 'pipe'
-    };
-    const execName = `odds-calculator-exe`;
-    const p = childProcess.spawn(execName, [], opts)
-    p.stdin?.write(oddsString);
-    p.stdin?.write(`\n`);
-    const stdout = await stringUtils.streamToString(p.stdout!!);
-    const stderr = await stringUtils.streamToString(p.stderr!!);
-    p.on('close', (code: number) => {
-        LOGGER.debug(`code is ${code}`);
-        LOGGER.debug(`stdout from process is ${stdout}`);
-        LOGGER.debug(`stderr from process is ${stderr}`);
-        if (code !== 0) {
-            message.reply(`Your input made my calculator barf nonsense at me: \n\`\`\`${stderr}\`\`\``)
-        } else {
-            message.reply(`DEBUG: \`\`\`${stderr}\`\`\`${stdout}`);
-        }
-    });
-
+    try {
+        const scenario = parseOddsScenario(oddsString);
+        const eventTree = buildTree(scenario);
+        const prob = findSuccessProbability(eventTree);
+        const reply = `Parsed as ${JSON.stringify(scenario)}\nThe probability is ${prob}`;
+        return message.reply(reply);
+    } catch (e) {
+        return message.reply(`ERROR: ${e}`);
+    }
 }
 
 const commands: Command[] = [
@@ -315,6 +304,7 @@ async function handleMessage(message: Discord.Message) {
     };
 
 
+    /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
     if (message.mentions.has(client.user!, mentionsOptions)) {
         if (VACATION_MODE) {
             message.reply("Hey hey now, don't ask me to do anything, I have playoffs off. It's in my employment contract");
@@ -330,7 +320,8 @@ async function handleMessage(message: Discord.Message) {
             Some: (cmd: Command) => {
                 try {
                     if (!cmd.requiresLeague) {
-                        const func = cmd.func as ((message: Discord.Message, user: Discord.User) => any);
+                        // Linter didn't understand that these types overlap, so convert to unknown first to please it
+                        const func = cmd.func as unknown as ((message: Discord.Message, user: Discord.User) => void);
                         return func(message, message.author);
                     }
                     const leagues = getLeagues(message, message.author);

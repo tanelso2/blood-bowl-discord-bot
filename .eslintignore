@@ -1,2 +1,4 @@
 # Ignore generated docs
 docs/
+# Ignore build dir
+build/

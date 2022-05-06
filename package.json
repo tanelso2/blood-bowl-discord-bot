@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm run compile && npm run make-odds",
+    "build": "npm run compile",
     "compile": "tsc --project ./",
     "test": "LOG_LEVEL=debug ts-mocha --paths --file ./src/tests/init \"**/*.spec*.ts\" --ignore \"node_modules/**/*\"",
     "dev": "npm run build && LOG_LEVEL=debug node ./build/ ./sample-league.yaml | npx pino-pretty",
     "lint": "eslint --fix-dry-run .",
     "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json",
-    "make-odds": "cd odds/odds-calculator && stack install --copy-bins"
+    "make-odds": "cd odds/odds-calculator && stack install --copy-bins",
+    "test-odds": "cd odds/odds-calculator && stack test",
+    "test-all": "npm run test && npm run test-odds"
   },
   "repository": {
     "type": "git",
@@ -35,24 +37,28 @@
     "module-alias": "^2.2.2",
     "pino": "^6.3.2",
     "ts-node": "^9.1.1",
-    "typescript": "^4.1.5"
+    "tslint": "^6.1.3"
   },
   "devDependencies": {
     "@types/chai": "^4.2.15",
     "@types/mocha": "^8.2.1",
+    "@typescript-eslint/eslint-plugin": "^4.16.1",
+    "@typescript-eslint/parser": "^4.16.1",
     "chai": "^4.3.0",
     "docdash": "^1.2.0",
-    "eslint": "^7.2.0",
-    "jsdoc": "^3.6.4",
+    "eslint": "^7.21.0",
+    "jsdoc": "^3.6.10",
     "mocha": "^8.3.0",
     "pino-pretty": "^4.0.0",
-    "ts-mocha": "^8.0.0"
+    "ts-mocha": "^8.0.0",
+    "typescript": "^4.2.2"
   },
   "_moduleAliases": {
     "@core": "build/src/core",
     "@formatting": "build/src/formatting",
     "@generator": "build/src/generator",
     "@models": "build/src/models",
+    "@odds": "build/src/odds",
     "@utils": "build/src/utils"
   }
 }
