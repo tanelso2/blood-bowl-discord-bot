@@ -86,8 +86,8 @@ async function advanceRound(message: Discord.Message, user: Discord.User, league
         message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
     } else {
         league.incrementRound().on<void>({
-            None: () => {message.reply("I cannae do dat captain!, this is the last rund I knae about!")},
-            Some: (newRound) => {
+            Left: (e: Error) => {message.reply(e.message)},
+            Right: (newRound) => {
                 message
                     .reply(
                         `round has been advanced.`,
@@ -334,7 +334,7 @@ async function handleMessage(message: Discord.Message) {
                         // Only in one league, must be the one
                         cmd.func(message, message.author, leagues[0]);
                     }
-                } catch (e) {
+                } catch (e: any) {
                     LOGGER.info(e);
                     message.channel.send(`Ooff I had a bit of a glitch there`);
                 }

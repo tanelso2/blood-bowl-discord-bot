@@ -169,6 +169,7 @@ async function queryLeagueData(): Promise<LeagueData> {
     return {
         name, id, ownerId,
         audienceId: audienceId || undefined,
+        type,
         currentRound: 0,
         coaches,
         schedule: []
@@ -200,7 +201,7 @@ async function main() {
     const rounds = await makeRounds(teamNames);
     const schedule: RoundData[] = rounds.map((round, idx) => {
         const games = round.map((x) => {
-            return {home: x[0], away: x[1], done: false};
+            return {home: x[0], away: x[1]};
         });
         return {round: idx+1, games};
     });

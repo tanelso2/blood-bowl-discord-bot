@@ -10,7 +10,7 @@ import { PatternMatchable } from '@core/types/pattern';
 
 import { Coach, CoachData } from './coach';
 import { Round, RoundData } from './round';
-import { Game } from './game';
+import { Game, GameData } from './game';
 import { processConfigValue } from './utils/config-reader';
 
 //const LOGGER = logger.child({module: 'league'});
@@ -68,8 +68,8 @@ class LeagueFactory {
         });
 
         return leagueType.on({
-            RoundRobin: () => new League(this.data, this.leagueFile),
-            Tournament: () => new League(this.data, this.leagueFile),
+            RoundRobin: () => new RoundRobinSeason(this.data, this.leagueFile),
+            Tournament: () => new TournamentSeason(this.data, this.leagueFile),
         });
     }
 }
@@ -177,17 +177,17 @@ export class League implements LeagueData {
     }
 
     /**
-     * @return {Option<Round>} - The next round or None if there are no more.
+     * @return {Either<Round>} - The next round or an error if there are no more.
      */
-    incrementRound(): Option<Round> {
+    incrementRound(): Either<Error, Round> {
         const numRounds = this.schedule.length;
         const newRound = this.currentRound + 1;
         if (newRound > numRounds) {
-            return Option.None();
+            return Either.Left(new Error("Could not advance, that was the last round"));
         }
         this.currentRound = newRound;
         this.save();
-        return Option.Some(this.getCurrentRound());
+        return Either.Right(this.getCurrentRound());
     }
 
     save(): void {
@@ -246,11 +246,31 @@ class TournamentSeason extends League {
     // DNC same
     // userInvolvedInLeague(user: Discord.User): boolean {
 
-    // TODO this must return Either<Option<Round>, Err>
     // errors can occur when not all rounds reported winners to gen the next round
-    incrementRound(): Option<Round> {
-        // TODO games must declare winners too!
-        return Option.None();
+    incrementRound(): Either<Error, Round> {
+        const currentRound = this.getCurrentRound();
+        if(!currentRound.games.every((x) => x.hasWinner())) {
+            return Either.Left(new Error("Cannot advance current round, every match needs a winner declared"));
+        }
+        const winners = currentRound.games.map((x) => x.winner!);
+        if (winners.length === 1) {
+            return Either.Left(new Error("Cannot advance round, the champion has been declaredddddd"));
+        }
+        const matchups: GameData[] = [];
+        for (let i = 0; i < winners.length; i+=2) {
+            const home = winners[i];
+            const away = winners[i+1];
+            matchups.push({home, away});
+        }
+        const roundData: RoundData = {
+            round: currentRound.round + 1,
+            games: matchups
+        };
+        const r = new Round(roundData, this.coaches);
+        this.schedule.push(r);
+        this.currentRound += 1;
+
+        return Either.Right(this.getCurrentRound());
     }
 
     // DNC same
@@ -261,7 +281,7 @@ class TournamentSeason extends League {
 export function getLeagueFromFile(leagueFile: string): League {
     const content = fs.readFileSync(leagueFile, 'utf-8');
     const data = yaml.load(content) as LeagueData;
-    return LeagueFactory(data, leagueFile).doit();
+    return new LeagueFactory(data, leagueFile).doit();
 }
 
 function parseLeagueType(type_string: string): Result<LeagueType> {

@@ -1,7 +1,6 @@
 import { logger } from '@core/logger';
 import { Coach } from './coach';
 import { Option } from '@core/types/option';
-import { Either } from '@core/types/either';
 import Discord from 'discord.js';
 
 const LOGGER = logger.child({module: 'game'});
@@ -10,7 +9,7 @@ export interface GameData {
     home: string;
     away: string;
     done?: boolean;
-    winner: string;
+    winner?: string;
 }
 
 /** One match up in a Round. */
@@ -20,7 +19,7 @@ export class Game implements GameData {
     done: boolean;
     homeCoach: Coach;
     awayCoach: Coach;
-    winner: Option<string>;
+    winner?: string;
 
     constructor(data: GameData, coaches: Coach[]) {
         this.home = data.home;
@@ -28,7 +27,7 @@ export class Game implements GameData {
         this.done = data.done || false; // false if not-exists
         this.homeCoach = coaches.find(c => c.teamNameIsCloseEnough(data.home)) || Coach.null();
         this.awayCoach = coaches.find(c => c.teamNameIsCloseEnough(data.away)) || Coach.null();
-        this.winner = Option.None();
+        this.winner = data.winner;
     }
 
     /** @member {Array<Coach>} - Both coaches playing in this game. Order not guaranteed. Results may vary */
@@ -53,6 +52,10 @@ export class Game implements GameData {
         });
     }
 
+    hasWinner(): boolean {
+        return !!this.winner
+    }
+
     /**
      * @param {Discord.User} user - The winner of the matchup.
      */
@@ -60,7 +63,7 @@ export class Game implements GameData {
         const winningCoach = Option.ofNullable(this.coaches.find((c) => c.id === user.id));
         return winningCoach.on({
             Some: (coach) => {
-                this.winner = Option.Some(coach.teamName);
+                this.winner = coach.teamName;
                 this.done = true;
             },
             None: () => {
