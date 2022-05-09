@@ -8,7 +8,6 @@ import { logger } from '@core/logger';
 import { Option } from '@core/types/option';
 import { Either } from '@core/types/either';
 import { Result } from '@core/types/result';
-import { PatternMatchable } from '@core/types/pattern';
 
 import { Coach, CoachData } from './coach';
 import { Round, RoundData } from './round';
@@ -129,7 +128,7 @@ export class League implements LeagueData {
             return [];
         }
         return this.schedule
-            .map((round) => round.findUserGame(user))
+            .map((round) => round.findUserGame(user.id))
             .filter((game_or_none) => game_or_none.isSome())
             .map((game) => game.unwrap());
     }
@@ -216,7 +215,7 @@ class TournamentSeason extends League {
             return [];
         }
 
-        return this.getCurrentRound().findUserGame(user).on({
+        return this.getCurrentRound().findUserGame(user.id).on({
             Some: (game) => [game],
             None: () => [],
         });

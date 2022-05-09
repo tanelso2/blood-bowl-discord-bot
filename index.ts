@@ -144,7 +144,7 @@ async function printSchedule(message: Discord.Message, user: Discord.User, leagu
 }
 
 async function announceGame(message: Discord.Message, user: Discord.User, league: League) {
-    const usersGame = league.getCurrentRound().findUserGame(user);
+    const usersGame = league.getCurrentRound().findUserGame(user.id);
     return usersGame.on({
         Some: (game: Game) => {
             const audienceString = league.getAudience().on({
@@ -185,8 +185,8 @@ async function markGameDone(message: Discord.Message, user: Discord.User, league
     }
 
     const currentRound = league.getCurrentRound();
-    return currentRound.findUserGame(user).on({
-        Some: (game) => {
+    return currentRound.findUserGame(user.id).on({
+        Some: (game: Game) => {
             markDone(game);
             return respond(game);
         },
@@ -196,11 +196,11 @@ async function markGameDone(message: Discord.Message, user: Discord.User, league
 
 function declareWinner(message: Discord.Message, user: Discord.User, league: League) {
     const currentRound = league.getCurrentRound();
-    return currentRound.findUserGame(user).on({
-        Some: (finishedGame) => {
-            finishedGame.declareWinner(user);
+    return currentRound.findUserGame(user.id).on({
+        Some: (finishedGame: Game) => {
+            finishedGame.declareWinner(user.id);
             league.save();
-            const opponent = finishedGame.unwrap().getOpponent(user);
+            const opponent = finishedGame.getOpponent(user);
             const slight = insultGenerator.generateString("${slight}");
             return message.reply(`Nice, recorded your win against ${opponent.commonName}, that ${slight}.`);
         },

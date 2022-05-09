@@ -57,17 +57,17 @@ export class Game implements GameData {
     }
 
     /**
-     * @param {Discord.User} user - The winner of the matchup.
+     * @param {string} userId - The winner of the matchup.
      */
-    declareWinner(user: Discord.User) {
-        const winningCoach = Option.ofNullable(this.coaches.find((c) => c.id === user.id));
+    declareWinner(userId: string) {
+        const winningCoach = Option.ofNullable(this.coaches.find((c) => c.id === userId));
         return winningCoach.on({
             Some: (coach) => {
                 this.winner = coach.teamName;
                 this.done = true;
             },
             None: () => {
-                throw new Error(`could not find ${user} in coaches`);
+                throw new Error(`could not find userId ${userId} in coaches`);
             },
         });
     }
