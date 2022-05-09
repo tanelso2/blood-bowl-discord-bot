@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import * as yaml from 'js-yaml';
 import Discord from 'discord.js';
 
@@ -26,30 +28,9 @@ export interface LeagueData {
     schedule: RoundData[];
 }
 
-class LeagueType extends PatternMatchable {
-    constructor() {
-        super([RoundRobin, Tournament]);
-    }
-
-    static RoundRobin() {
-        return new RoundRobin();
-    }
-
-    static Tournament() {
-        return new Tournament();
-    }
-}
-
-class RoundRobin extends LeagueType {
-    constructor() {
-        super();
-    }
-}
-
-class Tournament extends LeagueType {
-    constructor() {
-        super();
-    }
+enum LeagueType {
+    RoundRobin,
+    Tournament
 }
 
 class LeagueFactory {
@@ -67,10 +48,14 @@ class LeagueFactory {
             Err: (err) => { throw err; }
         });
 
-        return leagueType.on({
-            RoundRobin: () => new RoundRobinSeason(this.data, this.leagueFile),
-            Tournament: () => new TournamentSeason(this.data, this.leagueFile),
-        });
+        switch (leagueType) {
+            case LeagueType.RoundRobin:
+                return new RoundRobinSeason(this.data, this.leagueFile);
+            case LeagueType.Tournament:
+                return new TournamentSeason(this.data, this.leagueFile);
+            default:
+                throw new Error(`Unhandled and unknown leagueType ${leagueType}`);
+        }
     }
 }
 
@@ -191,7 +176,6 @@ export class League implements LeagueData {
     }
 
     save(): void {
-        console.log(this.encode());
         const yamlStr = yaml.dump(this.encode());
         fs.writeFileSync(this.leagueFile, yamlStr, 'utf8');
     }
@@ -284,12 +268,18 @@ export function getLeagueFromFile(leagueFile: string): League {
     return new LeagueFactory(data, leagueFile).doit();
 }
 
+export function makeTmpFileLeague(data: LeagueData): League {
+    const randomName = `tmp-${Math.floor(Math.random() * Math.floor(1000))}`;
+    const tmpFile = path.join(os.tmpdir(), randomName);
+    return new LeagueFactory(data, tmpFile).doit();
+}
+
 function parseLeagueType(type_string: string): Result<LeagueType> {
     switch (type_string) {
         case "round-robin":
-            return Result.Ok(LeagueType.RoundRobin());
+            return Result.Ok(LeagueType.RoundRobin);
         case "tournament":
-            return Result.Ok(LeagueType.Tournament());
+            return Result.Ok(LeagueType.Tournament);
         default:
             return Result.Err(new Error(`Unknown league type ${type_string}`));
     }
