@@ -198,10 +198,6 @@ export class League implements LeagueData {
 class RoundRobinSeason extends League {}
 export class TournamentSeason extends League {
 
-    // DNC same
-    // getCurrentRound(): Round {
-    // getAudience(): Option<string> {
-
     /**
      * Finds all games that a user participates in this league.
      *
@@ -221,13 +217,9 @@ export class TournamentSeason extends League {
         });
     }
 
-    // DNC open question: should this exclude defeated players?
     protected userInLeague(user: Discord.User): boolean {
         return this.coaches.some((c) => c.id === user.id);
     }
-
-    // DNC same
-    // userInvolvedInLeague(user: Discord.User): boolean {
 
     // errors can occur when not all rounds reported winners to gen the next round
     incrementRound(): Either<Error, Round> {
@@ -255,11 +247,6 @@ export class TournamentSeason extends League {
 
         return Either.Right(this.getCurrentRound());
     }
-
-    // DNC same
-    // save(): void {
-    // encode(): LeagueData {
-
 
     static makeFirstRoundGivenRankings(rankings: CoachData[]): RoundData {
         // I swear I tried to figure out the algorithm for this, but couldn't get it
@@ -296,7 +283,7 @@ export function getLeagueFromFile(leagueFile: string): League {
 }
 
 export function makeTmpFileLeague(data: LeagueData): League {
-    const randomName = `tmp-${Math.floor(Math.random() * Math.floor(1000))}`;
+    const randomName = `tmp-league-${Math.floor(Math.random() * Math.floor(10000))}`;
     const tmpFile = path.join(os.tmpdir(), randomName);
     return new LeagueFactory(data, tmpFile).doit();
 }
