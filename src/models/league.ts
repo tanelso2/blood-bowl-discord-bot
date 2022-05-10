@@ -259,6 +259,32 @@ class TournamentSeason extends League {
     // DNC same
     // save(): void {
     // encode(): LeagueData {
+    static makeFirstRoundGivenRankings(rankings: CoachData[]): RoundData {
+        // I swear I tried to figure out the algorithm for this, but couldn't get it
+        // Hard code instead
+        switch (rankings.length) {
+            case 4:
+                return {
+                    round: 1,
+                    games: [
+                        {home: rankings[0].teamName, away: rankings[3].teamName},
+                        {home: rankings[1].teamName, away: rankings[2].teamName}
+                    ]
+                };
+            case 8:
+                return {
+                    round: 1,
+                    games: [
+                        {home: rankings[0].teamName, away: rankings[7].teamName},
+                        {home: rankings[3].teamName, away: rankings[4].teamName},
+                        {home: rankings[2].teamName, away: rankings[5].teamName},
+                        {home: rankings[1].teamName, away: rankings[6].teamName}
+                    ]
+                };
+            default:
+                throw new Error(`Cannot have a tournament with ${rankings.length} coaches`);
+        }
+    }
 }
 
 export function getLeagueFromFile(leagueFile: string): League {
