@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { PatternMatchable } from './pattern';
 
 export class Result<a> extends PatternMatchable {
@@ -5,11 +7,11 @@ export class Result<a> extends PatternMatchable {
         super([Ok, Err]);
     }
 
-    static Ok<a>(value: a) {
+    static Ok<a>(value: a): Result<a> {
         return new Ok(value);
     }
 
-    static Err(error: Error) {
+    static Err<a>(error: Error): Result<a> {
         return new Err(error);
     }
 }

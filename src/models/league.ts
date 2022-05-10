@@ -196,7 +196,7 @@ export class League implements LeagueData {
 }
 
 class RoundRobinSeason extends League {}
-class TournamentSeason extends League {
+export class TournamentSeason extends League {
 
     // DNC same
     // getCurrentRound(): Round {
@@ -259,6 +259,8 @@ class TournamentSeason extends League {
     // DNC same
     // save(): void {
     // encode(): LeagueData {
+
+
     static makeFirstRoundGivenRankings(rankings: CoachData[]): RoundData {
         // I swear I tried to figure out the algorithm for this, but couldn't get it
         // Hard code instead

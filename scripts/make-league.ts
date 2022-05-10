@@ -9,7 +9,7 @@ import { promises as fs } from 'fs';
 import { execSync } from 'child_process';
 
 import { CoachData } from '@models/coach';
-import { getLeagueFromFile, League, LeagueData } from '@models/league';
+import { getLeagueFromFile, League, LeagueData, TournamentSeason } from '@models/league';
 import { RoundData } from '@models/round';
 
 
@@ -161,7 +161,7 @@ async function pickOwnerId(coaches: CoachData[]): Promise<string> {
 async function queryLeagueData(): Promise<LeagueData> {
     const name = await query('League name');
     const id = await query('League id');
-    const type = await query('League type (round-robin|tournament)');
+    const type = await pickOne(['round-robin', 'tournament']);
     const numCoaches = parseInt(await query('Number of coaches'));
     const audienceId = await query('The group id of the discord group that should be notified when games start');
     const coaches = await queryCoaches(numCoaches);
@@ -180,15 +180,31 @@ async function copyLeagueData(sourceFile: string): Promise<LeagueData> {
     return getLeagueFromFile(sourceFile);
 }
 
+async function makeRankings(coaches: CoachData[]): Promise<CoachData[]> {
+    const teamNames = coaches.map(c => c.teamName);
+    const teamNamesRanked = await editObjectInEditor(teamNames, 
+        (x) => x.join('\n'), 
+        (x) => x.trim().split('\n'))
+    const coachesRanked = teamNamesRanked
+        .map((teamName) => coaches.find((x) => x.teamName === teamName)!)
+    return coachesRanked;
+}
+
 async function main() {
     const args = process.argv;
     let sourceFile = null;
+    let tournament = false;
     for (let i = 1; i < args.length; i++) {
        const curr = args[i]; 
        switch (curr) {
-           case '--copy':
-               // use the next argument
-               sourceFile = args[++i];
+            case '--copy':
+                // use the next argument
+                sourceFile = args[++i];
+                break;
+            case '--playoffs':
+                sourceFile = args[++i];
+                tournament = true;
+                break;
        }
     }
     let leagueData;
@@ -197,16 +213,26 @@ async function main() {
     } else {
         leagueData = await queryLeagueData();
     }
-    const teamNames = leagueData.coaches.map(x => x.teamName);
-    const rounds = await makeRounds(teamNames);
-    const schedule: RoundData[] = rounds.map((round, idx) => {
-        const games = round.map((x) => {
-            return {home: x[0], away: x[1]};
+    if (tournament) {
+        leagueData.type = 'tournament';
+    }
+    if (leagueData.type === 'round-robin') {
+        const teamNames = leagueData.coaches.map(x => x.teamName);
+        const rounds = await makeRounds(teamNames);
+        const schedule: RoundData[] = rounds.map((round, idx) => {
+            const games = round.map((x) => {
+                return {home: x[0], away: x[1]};
+            });
+            return {round: idx+1, games};
         });
-        return {round: idx+1, games};
-    });
-    leagueData.schedule = schedule;
-    leagueData.currentRound = 0;
+        leagueData.schedule = schedule;
+        leagueData.currentRound = 0;
+    } else if (leagueData.type === 'tournament') {
+        const rankings = await makeRankings(leagueData.coaches);
+        const round = TournamentSeason.makeFirstRoundGivenRankings(rankings);
+        leagueData.schedule = [round];
+        leagueData.currentRound = 0;
+    }
     const outputFile = 'output.yaml';
     const l = new League(leagueData, outputFile);
     l.save();

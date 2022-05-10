@@ -50,7 +50,7 @@ describe('League', () => {
             const l2 = getLeagueFromFile(l.leagueFile);
             const savedGame: Game = l2.getCurrentRound().findUserGame(mockCoach0.id).unwrap();
             savedGame.hasWinner().should.be.true;
-            savedGame.winner.should.eql(mockCoach0.teamName);
+            savedGame.winner?.should.eql(mockCoach0.teamName);
             // Check to make sure there is still an unmarked game
             l2.getCurrentRound().games.filter((x) => !x.hasWinner()).length.should.eql(1);
             l2.incrementRound();

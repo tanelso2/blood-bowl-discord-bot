@@ -61,7 +61,7 @@ export class Game implements GameData {
      */
     declareWinner(userId: string) {
         const winningCoach = Option.ofNullable(this.coaches.find((c) => c.id === userId));
-        return winningCoach.on({
+        winningCoach.on({
             Some: (coach) => {
                 this.winner = coach.teamName;
                 this.done = true;

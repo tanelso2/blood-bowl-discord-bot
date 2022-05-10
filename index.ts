@@ -22,8 +22,6 @@ const config: DiscordAuthConfig = JSON.parse(readFileSync(configFile, 'utf-8'));
 
 const LOGGER = logger.child({module:'index'});
 
-const VACATION_MODE = false;
-
 const leagueFiles = process.argv.slice(2);
 if (leagueFiles.length === 0) {
     console.error('USAGE: node index.js <league_file>...');
@@ -306,11 +304,6 @@ async function handleMessage(message: Discord.Message) {
 
     /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
     if (message.mentions.has(client.user!, mentionsOptions)) {
-        if (VACATION_MODE) {
-            message.reply("Hey hey now, don't ask me to do anything, I have playoffs off. It's in my employment contract");
-            return;
-        }
-
         // Should only trigger if they mention bot user by name
         //
         const command = message.content.split(/ +/)[1].toLowerCase();

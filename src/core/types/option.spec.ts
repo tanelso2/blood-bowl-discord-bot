@@ -69,9 +69,8 @@ describe('Option', () => {
                 Option.None().unwrap();
             } catch {
                 done();
-            } finally {
-                throw new Error("Should have thrown in unwrap of None");
             }
+            throw new Error("Should have thrown in unwrap of None");
         });
     });
 
