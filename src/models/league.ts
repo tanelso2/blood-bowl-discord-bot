@@ -53,7 +53,7 @@ class LeagueFactory {
             case LeagueType.Tournament:
                 return new TournamentSeason(this.data, this.leagueFile);
             default:
-                throw new Error(`Unhandled and unknown leagueType ${leagueType}`);
+                throw new Error(`Unhandled and unknown leagueType ${leagueType as string}`);
         }
     }
 }
@@ -212,7 +212,7 @@ export class TournamentSeason extends League {
         }
 
         return this.getCurrentRound().findUserGame(user.id).on({
-            Some: (game) => [game],
+            Some: (game: Game) => [game],
             None: () => [],
         });
     }

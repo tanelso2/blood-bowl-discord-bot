@@ -64,7 +64,10 @@ async function pickOne(choices: string[]): Promise<string> {
  * then resumes current script
  */
 function openFileInEditor(filename: string) {
-    const editor = process.env['EDITOR'];
+    let editor = process.env['EDITOR'];
+    if (!editor) {
+        throw new Error(`User has no EDITOR env variable set`);
+    }
     return execSync(`${editor} ${filename}`, {
         stdio: 'inherit',
         encoding: 'utf-8'
@@ -176,7 +179,7 @@ async function queryLeagueData(): Promise<LeagueData> {
     };
 }
 
-async function copyLeagueData(sourceFile: string): Promise<LeagueData> {
+function copyLeagueData(sourceFile: string): LeagueData {
     return getLeagueFromFile(sourceFile);
 }
 
@@ -190,7 +193,7 @@ async function makeRankings(coaches: CoachData[]): Promise<CoachData[]> {
     return coachesRanked;
 }
 
-async function main() {
+async function main(): Promise<void> {
     const args = process.argv;
     let sourceFile = null;
     let tournament = false;
@@ -209,7 +212,7 @@ async function main() {
     }
     let leagueData;
     if (sourceFile) {
-        leagueData = await copyLeagueData(sourceFile);
+        leagueData = copyLeagueData(sourceFile);
     } else {
         leagueData = await queryLeagueData();
     }
@@ -240,4 +243,5 @@ async function main() {
     readline.close();
 }
 
-main();
+// void needed to mark the async Promise as ignored
+void main();

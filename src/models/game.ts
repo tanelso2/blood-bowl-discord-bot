@@ -44,7 +44,7 @@ export class Game implements GameData {
     getOpponent(user: Discord.User): Coach {
         const opponent = Option.ofNullable(this.coaches.find((c) => c.id !== user.id));
         return opponent.on({
-            Some: (opponent) => opponent,
+            Some: (opponent: Coach) => opponent,
             None: () => {
                 LOGGER.error(`unknown opponent of ${user.id}`);
                 throw new Error(`unknown opponent of ${user.id}`);
@@ -62,7 +62,7 @@ export class Game implements GameData {
     declareWinner(userId: string) {
         const winningCoach = Option.ofNullable(this.coaches.find((c) => c.id === userId));
         winningCoach.on({
-            Some: (coach) => {
+            Some: (coach: Coach) => {
                 this.winner = coach.teamName;
                 this.done = true;
             },

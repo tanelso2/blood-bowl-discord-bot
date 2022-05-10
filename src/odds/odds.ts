@@ -216,6 +216,6 @@ export function parseAndFindProbability(input: string): Either<Error,number> {
         const prob = findSuccessProbability(eventTree);
         return Either.Right(prob);
     } catch (e) {
-        return Either.Left(e);
+        return Either.Left(e as Error);
     }
 }

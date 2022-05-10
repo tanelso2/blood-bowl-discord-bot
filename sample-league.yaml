@@ -1,5 +1,6 @@
 name: Pissmonger Test Tournament
 id: test
+type: round-robin
 ownerId: '$f{user-id.txt:8675309}'
 currentRound: 3
 coaches:
@@ -23,8 +24,6 @@ coaches:
     teamName: It Ain't Ogre
     teamType: Ogre
     nickname: "\U0001F480"
-# [regular|post]
-phase: "regular"
 schedule:
   - round: 1
     games:
@@ -50,15 +49,3 @@ schedule:
       - home: Waterloo Woodies
         away: Disgusting Bois
         done: false
-# bracket must be filled with the first level matchups before the phase can move to 'post'
-# Thomas requests 'type' 'round-robin' or 'tournament'
-# and separate league essentially
-bracket:
-  - round: 1
-    games:
-      - home: It Ain't Ogre
-        away: Brohemian Rhapsobro
-        winner: null
-      - home: Waterloo Woodies
-        away: Disgusting Bois
-        winner: null

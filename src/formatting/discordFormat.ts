@@ -30,7 +30,7 @@ export class DiscordFormat {
     roundAdvance(newRound: Round): Discord.MessageEmbed {
         return this.MessageEmbed()
             .setTitle(`Round ${newRound.id} Matchups`)
-            .addFields(newRound.games.map(this.makeMatchupField, this));
+            .addFields(newRound.games.map((x) => this.makeMatchupField(x)));
     }
 
     /**
@@ -80,7 +80,7 @@ export class DiscordFormat {
      * @return {Discord.MessageEmbed}
      */
     game(game: Game): Discord.MessageEmbed {
-        const getCoach = this.coach;
+        const getCoach = (x: Coach) => this.coach(x);
         return this.MessageEmbed()
             .setTitle(`${game.homeCoach.teamName} v ${game.awayCoach.teamName}`)
             .addFields(
@@ -123,7 +123,7 @@ export class DiscordFormat {
         }
 
         // OK I still hate JS, 'this' binding is broken so just capture it here
-        const formatCoachAndTeam = this.coachAndTeam;
+        const formatCoachAndTeam = (x: Coach) => this.coachAndTeam(x);
 
         const formatOpponent = function (game: Game) {
             const opponent = game.getOpponent(user);

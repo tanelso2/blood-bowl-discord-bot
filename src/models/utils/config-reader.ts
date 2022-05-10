@@ -27,7 +27,7 @@ export function processConfigValue(rawValue: string): Either<string, Error> {
  * @returns Either<Error, Option<String>>
  */
 function processFileSubstitution(value: string): Either<Error, Option<String>> {
-    const matches = value.match(filePattern);
+    const matches = filePattern.exec(value);
     if (!matches) {
         // No file substitution to do
         return Either.Right(Option.None());
@@ -35,7 +35,10 @@ function processFileSubstitution(value: string): Either<Error, Option<String>> {
 
     const [fileName, defaultValue] = splitValueAndDefault(matches[1]);
     try {
-        const fileContents = readFileSync(fileName as string, {encoding: "utf-8"});
+        if (!fileName) {
+            throw new Error(`Could not get a valid fileName from ${value}`);
+        }
+        const fileContents = readFileSync(fileName, {encoding: "utf-8"});
         if (!fileContents) {
             throw new Error(`Could not get fileContents of ${fileName}`);
         }
@@ -44,12 +47,12 @@ function processFileSubstitution(value: string): Either<Error, Option<String>> {
         if (defaultValue) {
             return Either.Right(Option.Some(defaultValue));
         }
-        return Either.Left(e);
+        return Either.Left(e as Error);
     }
 }
 
 function splitValueAndDefault(raw: string): (string | null)[] {
-    const matches = raw.match(defaultPattern);
+    const matches = defaultPattern.exec(raw);
     if (!matches) {
         return [ raw, null ];
     }
