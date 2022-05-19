@@ -8,6 +8,7 @@ export interface CoachData {
     teamName: string;
     teamType: string;
     nickname?: string | undefined;
+    standing?: number | undefined;
 }
 
 export class Coach implements CoachData {
@@ -18,6 +19,7 @@ export class Coach implements CoachData {
     teamType: string;
     nickname?: string | undefined;
     nicknameOpt: Option<string>;
+    standing?: number | undefined;
 
     static null(): Coach {
         return new Coach({
@@ -40,6 +42,7 @@ export class Coach implements CoachData {
         this.teamType = data.teamType;
         this.nickname = data.nickname || undefined;
         this.nicknameOpt = Option.ofNullable(this.nickname);
+        this.standing = data.standing || undefined;
     }
 
     get commonName(): string {

@@ -5,10 +5,13 @@ extends:
   - 'eslint:recommended'
   - 'plugin:@typescript-eslint/eslint-recommended'
   - 'plugin:@typescript-eslint/recommended'
+  - 'plugin:@typescript-eslint/recommended-requiring-type-checking'
 parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaVersion: 11
   sourceType: module
+  tsconfigRootDir: '.'
+  project: ['./tsconfig.json']
 plugins:
   - '@typescript-eslint'
 rules:
@@ -35,9 +38,14 @@ rules:
     - varsIgnorePattern: "^_"
       argsIgnorePattern: "^_"
   '@typescript-eslint/no-empty-function': off
+  # '@typescript-eslint/await-thenable':
+  #   - error
 overrides:
  - files:
      - "*.spec.ts"
    rules:
      '@typescript-eslint/no-unused-vars': off
      no-undef: off
+     '@typescript-eslint/no-unsafe-return': off
+     '@typescript-eslint/no-unsafe-member-access': off
+     '@typescript-eslint/no-unsafe-call': off

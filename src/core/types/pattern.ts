@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ErrorList } from '@utils/errorList';
 
 const ANY = "_";
@@ -15,6 +16,7 @@ export class PatternMatchable {
 
     constructor(ctrs: any[]) {
         this.ctrs = ctrs;
+        /* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
         this.options = this.ctrs.map(x => x.name);
         this.T = this.constructor.name;
     }
@@ -31,7 +33,7 @@ export class PatternMatchable {
             return null;
         }
 
-        return new Error(`Could not find patterns for ${failures}`);
+        return new Error(`Could not find patterns for ${failures.join(', ')}`);
     }
 
     _containsUnknowns<a>(patterns: PatternDoing<a>): null | Error {
@@ -41,7 +43,7 @@ export class PatternMatchable {
             return null;
         }
 
-        return new Error(`Excess patterns found: ${failures}`)
+        return new Error(`Excess patterns found: ${failures.join(', ')}`)
     }
 
     on<a>(patterns: PatternDoing<a>): a {

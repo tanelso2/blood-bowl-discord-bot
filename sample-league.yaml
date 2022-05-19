@@ -1,5 +1,6 @@
 name: Pissmonger Test Tournament
 id: test
+type: round-robin
 ownerId: '$f{user-id.txt:8675309}'
 currentRound: 3
 coaches:
