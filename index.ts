@@ -18,11 +18,9 @@ interface DiscordAuthConfig {
     token: string;
 }
 
-const config: DiscordAuthConfig = JSON.parse(readFileSync(configFile, 'utf-8'));
+const config = JSON.parse(readFileSync(configFile, 'utf-8')) as DiscordAuthConfig;
 
 const LOGGER = logger.child({module:'index'});
-
-const VACATION_MODE = false;
 
 const leagueFiles = process.argv.slice(2);
 if (leagueFiles.length === 0) {
@@ -70,37 +68,39 @@ async function advanceRound(message: Discord.Message, user: Discord.User, league
 
     // Unpins *all* other messages by this bot, but until any other messages are expected to be
     // pinned, this is easier than persisting message ids.
-    function unpinOtherMessages(latestMessage: Discord.Message): Promise<Discord.Message[]> {
-        return latestMessage.channel.messages.fetchPinned()
-            .then(pinned_messages => Promise.all(
-                    pinned_messages
-                        .filter((message: Discord.Message) => message.author.id === client.user?.id ?? "")
-                        .filter(message => message.id !== latestMessage.id)
-                        .mapValues((message: Discord.Message) => message.unpin())
-                        .array()
-            ));
+    async function unpinOtherMessages(latestMessage: Discord.Message): Promise<Discord.Message[]> {
+        const pinnedMessages = await latestMessage.channel.messages.fetchPinned();
+        const otherMessages = pinnedMessages
+                .filter((message: Discord.Message) => message.author.id === client.user?.id ?? "")
+                .filter(x => x.id !== latestMessage.id);
+        return Promise.all(
+            otherMessages
+                .mapValues((x: Discord.Message) => x.unpin())
+                .array()
+        );
     }
 
     if (user.id !== league.ownerId) {
         const insult = insultGenerator.generateString("${insult}");
-        message.channel.send(`You're not the fucking owner of this league, ${user}\n${insult}`);
+        await message.channel.send(`You're not the fucking owner of this league, ${user.toString()}\n${insult}`);
     } else {
-        league.incrementRound().on<void>({
-            None: () => {message.reply("I cannae do dat captain!, this is the last rund I knae about!")},
-            Some: (newRound) => {
-                message
-                    .reply(
-                        `round has been advanced.`,
-                        {
-                            embed: formatter.roundAdvance(newRound),
-                            disableMentions: 'all',
-                        }
-                    )
-                    .then(reply => reply.pin())
-                    .then(reply => unpinOtherMessages(reply))
-                    .catch(reason => {
-                        LOGGER.error(reason);
-                    });
+        await league.incrementRound().on({
+            Left: (e: Error) => {return void message.reply(e.message)},
+            Right: async (newRound) => {
+                try {
+                    const reply = await message
+                        .reply(
+                            `round has been advanced.`,
+                            {
+                                embed: formatter.roundAdvance(newRound),
+                                disableMentions: 'all',
+                            }
+                        );
+                    await reply.pin();
+                    return await unpinOtherMessages(reply);
+                } catch (reason) {
+                    LOGGER.error(reason as Error);
+                }
             }
         });
     }
@@ -120,8 +120,7 @@ async function findOpponent(message: Discord.Message, user: Discord.User, league
     }
 
     const opponent = usersGame.getOpponent(user);
-    const response = `you are playing ${formatter.coach(opponent)} this round.`;
-    return message.reply(response);
+    return message.reply(`you are playing ${formatter.coach(opponent)} this round.`);
 }
 
 /*
@@ -145,43 +144,68 @@ async function printSchedule(message: Discord.Message, user: Discord.User, leagu
 }
 
 async function announceGame(message: Discord.Message, user: Discord.User, league: League) {
-    const usersGame = league.getCurrentRound().findUserGame(user);
+    const usersGame = league.getCurrentRound().findUserGame(user.id);
+    return usersGame.on({
+        Some: (game: Game) => {
+            const audienceString = league.getAudience().on({
+                Some: (roleId: string) => `<@&${roleId}>`,
+                None: () => '@here'
+            });
+            const [homeCoach, awayCoach] = game.coaches;
 
-
-    if (!usersGame) {
-        return message.reply("you don't seem to be playing this round, smoothbrain.");
-    }
-
-    const audienceString = league.getAudience().on({
-        Some: (roleId) => `<@&${roleId}>`,
-        None: () => '@here'
+            return message.channel.send(`${audienceString} - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
+        },
+        None: () => message.reply("you don't seem to be playing this round, smoothbrain."),
     });
-
-    const [homeCoach, awayCoach] = usersGame.coaches;
-
-    return message.channel.send(`${audienceString} - ${homeCoach.teamType} v. ${awayCoach.teamType}`);
 }
 
 async function printInsult(message: Discord.Message, _: Discord.User, __: League) {
     LOGGER.debug(`printInsult called`);
     const insult = insultGenerator.generateString("${insult}");
-    message.reply(insult);
+    await message.reply(insult);
 }
 
 async function markGameDone(message: Discord.Message, user: Discord.User, league: League) {
-    const currentRound = league.getCurrentRound();
-    const usersGame = currentRound.findUserGame(user);
-    if (!usersGame) {
+    function markDone(finishedGame: Game) {
+        finishedGame.done = true;
+        league.save();
+    }
+
+    function respond(finishedGame: Game) {
+        const numUnfinishedGames = currentRound.getUnfinishedGames().length;
+        const opponent = finishedGame.getOpponent(user);
+        const isOrAre = numUnfinishedGames === 1 ? "is" : "are";
+        return message.reply(`Gotcha. Your game against ${opponent.commonName} has been recorded. ` +
+                             `There ${isOrAre} ${numUnfinishedGames} left in the round.`);
+    }
+
+    function insult() {
         const insult = insultGenerator.generateString("${insult}");
         return message.reply(`You don't appear to be playing this round...\n${insult}`);
     }
-    usersGame.done = true;
-    league.save();
 
-    const numUnfinishedGames = currentRound.getUnfinishedGames().length;
-    const opponent = usersGame.getOpponent(user);
-    const isOrAre = numUnfinishedGames === 1 ? "is" : "are";
-    return message.reply(`Gotcha. Your game against ${opponent.commonName} has been recorded. There ${isOrAre} ${numUnfinishedGames} left in the round.`);
+    const currentRound = league.getCurrentRound();
+    return currentRound.findUserGame(user.id).on({
+        Some: (game: Game) => {
+            markDone(game);
+            return respond(game);
+        },
+        None: () => insult(),
+    });
+}
+
+function declareWinner(message: Discord.Message, user: Discord.User, league: League) {
+    const currentRound = league.getCurrentRound();
+    return currentRound.findUserGame(user.id).on({
+        Some: (finishedGame: Game) => {
+            finishedGame.declareWinner(user.id);
+            league.save();
+            const opponent = finishedGame.getOpponent(user);
+            const slight = insultGenerator.generateString("${slight}");
+            return message.reply(`Nice, recorded your win against ${opponent.commonName}, that ${slight}.`);
+        },
+        None: () => message.reply(insultGenerator.generateString("You don't appear to be playing this round...${slight}")),
+    });
 }
 
 function printRound(message: Discord.Message, _: Discord.User, league: League) {
@@ -218,7 +242,7 @@ async function calculateOdds(message: Discord.Message, _: Discord.User, __: Leag
         const reply = `Parsed as ${JSON.stringify(scenario)}\nThe probability is ${prob}`;
         return message.reply(reply);
     } catch (e) {
-        return message.reply(`ERROR: ${e}`);
+        return message.reply(`ERROR: ${e as string}`);
     }
 }
 
@@ -232,7 +256,8 @@ const commands: Command[] = [
     makeCommand('opponent', findOpponent, 'Display and tag your current opponent', true),
     makeCommand('round', printRound, 'Print the status of the current round', true),
     makeCommand('schedule', printSchedule, 'Display your schedule for this league', true),
-    makeCommand('odds', calculateOdds, 'Calculate the odds of an event', false)
+    makeCommand('odds', calculateOdds, 'Calculate the odds of an event', false),
+    makeCommand('winner', declareWinner, 'Declare yourself the winner of your game this round', true),
 ];
 
 function listCommands(message:Discord.Message, _: Discord.User, __: League) {
@@ -281,17 +306,11 @@ async function handleMessage(message: Discord.Message) {
 
     /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
     if (message.mentions.has(client.user!, mentionsOptions)) {
-        if (VACATION_MODE) {
-            message.reply("Hey hey now, don't ask me to do anything, I have playoffs off. It's in my employment contract");
-            return;
-        }
-
         // Should only trigger if they mention bot user by name
         //
         const command = message.content.split(/ +/)[1].toLowerCase();
 
-
-        findCommand(command).on({
+        await findCommand(command).on({
             Some: (cmd: Command) => {
                 try {
                     if (!cmd.requiresLeague) {
@@ -301,22 +320,22 @@ async function handleMessage(message: Discord.Message) {
                     }
                     const leagues = getLeagues(message, message.author);
                     if (leagues.length === 0) {
-                        message.reply(`You don't seem to be in any leagues...`);
+                        return message.reply(`You don't seem to be in any leagues...`);
                     } else if (leagues.length > 1) {
                         const leagueNames = leagues.map(x => x.name).join(', ');
-                        message.reply(`Yeah you're going to need to be more specific. You're in these leagues: ${leagueNames}`);
+                        return message.reply(`Yeah you're going to need to be more specific. You're in these leagues: ${leagueNames}`);
                     } else {
                         // Only in one league, must be the one
-                        cmd.func(message, message.author, leagues[0]);
+                        return cmd.func(message, message.author, leagues[0]);
                     }
-                } catch (e) {
+                } catch (e: any) {
                     LOGGER.info(e);
-                    message.channel.send(`Ooff I had a bit of a glitch there`);
+                    return message.channel.send(`Ooff I had a bit of a glitch there`);
                 }
             },
             None: () => {
                 const insult = insultGenerator.generateString("${insult}");
-                message.reply(`Dude I have no idea what you're trying to say\n${insult}`);
+                return message.reply(`Dude I have no idea what you're trying to say\n${insult}`);
             }
         });
     }
@@ -325,7 +344,7 @@ async function handleMessage(message: Discord.Message) {
 
 
 client.on('message', message => {
-    handleMessage(message);
+    void handleMessage(message);
 });
 
-client.login(config.token);
+void client.login(config.token);
