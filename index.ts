@@ -11,6 +11,8 @@ import * as insultGenerator from '@generator/string-generator';
 import * as stringUtils from '@utils/stringUtils';
 import { Option } from '@core/types/option';
 import { parseOddsScenario, findSuccessProbability, buildTree } from '@odds/odds';
+import { ManagementDB } from '@models/utils/db-wrapper';
+import {TeamType} from '@models/teamtype';
 
 const configFile = './config.json';
 
@@ -231,6 +233,39 @@ function listLeagues(message: Discord.Message, _: Discord.User, __: League) {
     return message.channel.send(`These are all the leagues I know about: \n${leagueIds}\n`);
 }
 
+async function consultReference(message: Discord.Message, _: Discord.User, __: League) {
+    const referenceLookup = message.toString().split(/\s/).slice(2);
+    let teamName: string | undefined = undefined;
+    let starPlayersMode = false;
+    if (referenceLookup.length === 0) {
+        return message.reply(`ERROR: can't lookup nothing`);
+    } else if (referenceLookup.length === 1) {
+        teamName = referenceLookup[0];
+    } else if (referenceLookup[0] === "star" && referenceLookup[1] === "players") {
+        starPlayersMode = true;
+        teamName = referenceLookup[2];
+    } else {
+        return message.reply(`ERROR: Couldn't understand what to lookup from ${referenceLookup}`);
+    }
+
+    if (!teamName) {
+        return message.reply(`ERROR: no teamname found? Shouldn't reach this line anyways`)
+    }
+
+    const db = new ManagementDB();
+    const teamType = await TeamType.getTeamTypeFromName(db, teamName);
+    if (starPlayersMode) {
+        const playerTypes = await teamType.getStarPlayers();
+        const reply = playerTypes.map(x => x.toPrettyString()).join(`\n\n`);
+        return message.reply(reply);
+
+    } else {
+        const playerTypes = await teamType.getPlayerTypes();
+        const reply = playerTypes.map(x => x.toPrettyString()).join(`\n\n`);
+        return message.reply(reply);
+    }
+}
+
 
 async function calculateOdds(message: Discord.Message, _: Discord.User, __: League) {
     const oddsString = message.toString().split(' ').slice(2).join(' ');
@@ -254,6 +289,7 @@ const commands: Command[] = [
     makeCommand('insult', printInsult, 'Just print out an insult', false),
     makeCommand('list', listLeagues, 'List all the leagues the bot knows about', false),
     makeCommand('opponent', findOpponent, 'Display and tag your current opponent', true),
+    makeCommand('reference', consultReference, 'Display information about team types', false),
     makeCommand('round', printRound, 'Print the status of the current round', true),
     makeCommand('schedule', printSchedule, 'Display your schedule for this league', true),
     makeCommand('odds', calculateOdds, 'Calculate the odds of an event', false),

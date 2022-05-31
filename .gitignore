@@ -117,3 +117,6 @@ build/
 
 # IDE directory
 .idea/
+
+# Database files
+db/
