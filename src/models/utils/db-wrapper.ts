@@ -1,6 +1,5 @@
 import { Option } from '@core/types/option';
-import { existsSync } from 'fs';
-import path from 'path';
+import * as fs from 'fs';
 import { Database } from 'sqlite3';
 
 export class DBWrapper extends Database {
@@ -41,7 +40,7 @@ export function getManagementDB(): Option<ManagementDB> {
     return Option.Some(managementDBCache);
   }
 
-  if(!existsSync(DEFAULT_LOCATION)) {
+  if(!fs.existsSync(DEFAULT_LOCATION)) {
     return Option.None();
   }
   

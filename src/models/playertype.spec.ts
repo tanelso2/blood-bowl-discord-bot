@@ -6,7 +6,7 @@ import { TeamType } from './teamtype';
 let db: DBWrapper;
 
 let des = getManagementDB().on({
-  Some: (x) => {
+  Some: (x: ManagementDB) => {
     db = x;
     return describe;
   },
