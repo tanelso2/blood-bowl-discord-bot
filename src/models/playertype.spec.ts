@@ -1,10 +1,22 @@
-import { DBWrapper } from './utils/db-wrapper';
+import { DBWrapper, getManagementDB, ManagementDB } from './utils/db-wrapper';
 import { TeamType } from './teamtype';
 
 // TODO: Selectively enable tests if the database files are available
-xdescribe('Database stuff', () => {
-  const db = new DBWrapper();
 
+let db: DBWrapper;
+
+let des = getManagementDB().on({
+  Some: (x) => {
+    db = x;
+    return describe;
+  },
+  None: () => {
+    console.debug(`Skipping database tests`);
+    return describe.skip;
+  }
+});
+
+des('Database stuff', () => {
   it('all teams', async () => {
     const sql = `SELECT
                    DataConstant as name

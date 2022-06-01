@@ -1,9 +1,11 @@
+import { Option } from '@core/types/option';
+import { existsSync } from 'fs';
+import path from 'path';
 import { Database } from 'sqlite3';
 
 export class DBWrapper extends Database {
   constructor(filename?: string) {
-    const defaultLocation = "db/Management.db";
-    const file = filename || defaultLocation;
+    const file = filename || DEFAULT_LOCATION;
     super(file);
   }
 
@@ -24,8 +26,27 @@ export class DBWrapper extends Database {
   }
 }
 
+const DEFAULT_LOCATION = "db/Management.db";
+
 export class ManagementDB extends DBWrapper {
   constructor() {
-    super("db/Management.db");
+    super(DEFAULT_LOCATION);
   }
+}
+
+let managementDBCache: ManagementDB | undefined = undefined;
+
+export function getManagementDB(): Option<ManagementDB> {
+  if (managementDBCache) {
+    return Option.Some(managementDBCache);
+  }
+
+  if(!existsSync(DEFAULT_LOCATION)) {
+    return Option.None();
+  }
+  
+  const db = new ManagementDB();
+  managementDBCache = db;
+  return Option.Some(db);
+
 }
