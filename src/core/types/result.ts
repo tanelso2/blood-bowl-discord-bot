@@ -15,6 +15,14 @@ export class Result<a> extends PatternMatchable {
     static Err<a>(error: Error): Result<a> {
         return new Err(error);
     }
+
+    isOk(): this is Ok<a> {
+        return this instanceof Ok;
+    }
+
+    isErr(): this is Err<a> {
+        return this instanceof Err;
+    }
 }
 
 export class Ok<a> extends Result<a> {

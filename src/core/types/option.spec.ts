@@ -1,6 +1,47 @@
 import { Option } from './option';
 
 describe('Option', () => {
+    describe('isSome()', () => {
+        it('should be true on Some', () => {
+            const opt = Option.Some(42);
+            opt.isSome().should.be.true;
+        });
+
+        it('should be false on None', () => {
+            const opt = Option.None();
+            opt.isSome().should.be.false;
+        });
+    });
+
+    describe('isNone()', () => {
+        it('should be false on Some', () => {
+            const opt = Option.Some(42);
+            opt.isNone().should.be.false;
+        });
+
+        it('should be true on None', () => {
+            const opt = Option.None();
+            opt.isNone().should.be.true;
+        });
+    });
+
+    describe('pattern matching', () => {
+        it('should implement pattern matching', () => {
+            Option.Some(42).on({
+                Some: (_) => {},
+                None: () => {
+                    throw new Error("Some was matched to None");
+                },
+            });
+            Option.None().on({
+                Some: (_) => {
+                    throw new Error("None was matched to Some");
+                },
+                None: () => {},
+            });
+        });
+    });
+
     describe('ofNullable()', () => {
         it('should transform null into None', () => {
             Option.ofNullable(null).on({
@@ -30,6 +71,7 @@ describe('Option', () => {
         });
 
         it('should transform other falsy values into Some', () => {
+            Option.ofNullable([]).isSome().should.be.true;
             Option.ofNullable(false).on({
                 Some: (_) => {},
                 None: () => {
@@ -74,42 +116,4 @@ describe('Option', () => {
         });
     });
 
-    describe('isSome()', () => {
-        it('should align with pattern matching', () => {
-            const opt = Option.Some(42);
-            if (!opt.isSome()) {
-                throw new Error("Some should declare isSome()");
-            } else if (opt.isNone()) {
-                throw new Error("Some should not declare isNone()");
-            }
-        });
-    });
-
-    describe('isNone()', () => {
-        it('should align with pattern matching', () => {
-            const opt = Option.None();
-            if (!opt.isNone()) {
-                throw new Error("None should declare isNone()");
-            } else if (opt.isSome()) {
-                throw new Error("None should not declare isSome()");
-            }
-        });
-    });
-
-    describe('pattern matching', () => {
-        it('should implement pattern matching', () => {
-            Option.Some(42).on({
-                Some: (_) => {},
-                None: () => {
-                    throw new Error("Some was matched to None");
-                },
-            });
-            Option.None().on({
-                Some: (_) => {
-                    throw new Error("None was matched to Some");
-                },
-                None: () => {},
-            });
-        });
-    });
 });

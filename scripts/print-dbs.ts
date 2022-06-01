@@ -15,21 +15,20 @@ const managementDB = new DBWrapper("db/Management.db");
 
 async function getAllTables(db: DBWrapper): Promise<string[]> {
     const sql = "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'";
-    const results = await db.fetch(sql, []);
+    const results = await db.fetch(sql, []) as {name: string}[];
     const names = results.map((x) => x['name']);
-    return names as string[];
+    return names;
 }
 
 async function getSchemaOfTable(db: DBWrapper, name: string): Promise<string> {
     const sql = "SELECT sql FROM sqlite_master WHERE type='table' AND name=?";
-    const result = await db.fetchOne(sql, [name]);
+    const result = await db.fetchOne(sql, [name]) as {sql: string};
     return result['sql'] as string;
 }
 
 async function countRowsOfTable(db: DBWrapper, name: string): Promise<number> {
-    // Hello sql injection? Yes please
     const sql = `SELECT COUNT(*) as count FROM ${name}`;
-    const result = await db.fetchOne(sql, []);
+    const result = await db.fetchOne(sql, []) as {count: string};
     return parseInt(result['count']);
 }
 
@@ -57,7 +56,7 @@ async function showTableInformation(db: DBWrapper, name: string) {
 
 async function showExampleRow(db: DBWrapper, name: string) {
     const sql = `SELECT * FROM ${name} LIMIT 1`;
-    const result = await db.fetchOne(sql, []);
+    const result = await db.fetchOne(sql, []) as Record<string, unknown>;
     console.log(`    EXAMPLE: ${JSON.stringify(result)}`);
 }
 
@@ -106,4 +105,4 @@ async function main() {
 }
 
 
-main();
+void main();

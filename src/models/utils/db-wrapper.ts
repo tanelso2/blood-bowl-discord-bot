@@ -8,8 +8,18 @@ export class DBWrapper extends Database {
     super(file);
   }
 
+
+
+  // SOMETHING I TRIED AND THINK WE SHOULD NOT DO:
+  // async fetch<a>(sql: string, parameters: any[]): Promise<a[]> {
+  // Changing these from 'any' to an abstract type 'a' might actually
+  // be dangerous and make typescript's type checking less effective, leading to runtime
+  // errors
+  // Abstract types mean we have to declare what these will be at the call site, but in reality, the type we define 
+  // and the object returned might be different, leading to runtime errors that typescript is supposed to prevent.
+  // It's probably better that the callsites know, hey this could be fucking anything, you better handle it.
   async fetch(sql: string, parameters: any[]): Promise<any[]> {
-    return new Promise<any>((resolve, reject) => {
+    return new Promise<any[]>((resolve, reject) => {
       this.all(sql, parameters, (err, rows) => {
         if (err) {
           reject(err);
@@ -21,6 +31,7 @@ export class DBWrapper extends Database {
 
   async fetchOne(sql: string, parameters: any[]): Promise<any> {
     const rows = await this.fetch(sql, parameters);
+    /* eslint-disable-next-line @typescript-eslint/no-unsafe-return */
     return rows[0];
   }
 }

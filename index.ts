@@ -245,7 +245,7 @@ async function consultReference(message: Discord.Message, _: Discord.User, __: L
         starPlayersMode = true;
         teamName = referenceLookup[2];
     } else {
-        return message.reply(`ERROR: Couldn't understand what to lookup from ${referenceLookup}`);
+        return message.reply(`ERROR: Couldn't understand what to lookup from ${referenceLookup.join(' ')}`);
     }
 
     if (!teamName) {

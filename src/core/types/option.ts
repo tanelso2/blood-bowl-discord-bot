@@ -36,8 +36,8 @@ export class Option<a> extends PatternMatchable {
      *
      * @return {bool}
      */
-    isSome(): boolean {
-        throw new Error("Used a raw Option!");
+    isSome(): this is Some<a> {
+        return this instanceof Some;
     }
 
     /**
@@ -45,13 +45,13 @@ export class Option<a> extends PatternMatchable {
      *
      * @return {bool}
      */
-    isNone(): boolean {
-        throw new Error("Used a raw Option!");
+    isNone(): this is None<a> {
+        return this instanceof None;
     }
 }
 
 class Some<a> extends Option<a> {
-    value: a;
+    readonly value: a;
     constructor(value: a) {
         super();
         this.value = value;
@@ -60,14 +60,6 @@ class Some<a> extends Option<a> {
 
     unwrap(): a {
         return this.value;
-    }
-
-    isSome(): boolean {
-        return true;
-    }
-
-    isNone(): boolean {
-        return false;
     }
 }
 
@@ -79,13 +71,5 @@ class None<_> extends Option<_> {
 
     unwrap<_>(): _ {
         throw new Error("Unwrapped a None!");
-    }
-
-    isSome(): boolean {
-        return false;
-    }
-
-    isNone(): boolean {
-        return true;
     }
 }
