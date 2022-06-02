@@ -9,6 +9,15 @@ type PlayerTypeRow = {
   CharacsMovementAllowance: number;
 };
 
+function verifyPlayerTypeRow(x: any): x is PlayerTypeRow {
+  return "DataConstant" in x
+      && "CharacsAgility" in x
+      && "CharacsArmourValue" in x
+      && "Price" in x
+      && "CharacsStrength" in x
+      && "CharacsMovementAllowance" in x;
+}
+
 export class PlayerType {
   name: string;
   skillNames: string[];
@@ -48,7 +57,7 @@ export class PlayerType {
 
   static async getFromId(db: DBWrapper, id: number): Promise<PlayerType> {
     const sql = `SELECT * FROM bb_rules_player_types WHERE ID = ?`;
-    const result = await db.fetchOne(sql, [id]) as PlayerTypeRow;
+    const result = await db.fetchAndVerifyOne<PlayerTypeRow>(sql, [id], verifyPlayerTypeRow);
     const name = result["DataConstant"];
     const agility = result["CharacsAgility"];
     const armorValue = result["CharacsArmourValue"];
@@ -94,6 +103,10 @@ export class PlayerType {
 
 type NAME = {name: string};
 
+function isName(x: any): x is NAME {
+  return "name" in x;
+}
+
 async function getSkillNames(db: DBWrapper, playerTypeId: number): Promise<string[]> {
   const sql = `SELECT  
                 bb_rules_skill_listing.DataConstant as name
@@ -102,8 +115,8 @@ async function getSkillNames(db: DBWrapper, playerTypeId: number): Promise<strin
                 JOIN bb_rules_player_type_skills
                  ON bb_rules_skill_listing.ID = bb_rules_player_type_skills.IdSkillListing
                WHERE bb_rules_player_type_skills.IDPlayerTypes = ?`;
-  const results = await db.fetch(sql, [playerTypeId]) as NAME[];
-  const names = results.map(x => x["name"]);
+  const results = await db.fetchAndVerify<NAME>(sql, [playerTypeId], isName);
+  const names = results.map(x => x.name);
   return names;
 }
 
@@ -115,8 +128,8 @@ async function getNormalSkillAccess(db: DBWrapper, playerTypeId: number): Promis
                  JOIN bb_rules_skill_categories
                   ON bb_rules_player_type_skill_categories_normal.IdSkillCategories = bb_rules_skill_categories.ID
                 WHERE bb_rules_player_type_skill_categories_normal.IDPlayerTypes = ?`;
-  const results = await db.fetch(sql, [playerTypeId]) as NAME[];
-  const names = results.map(x => x["name"]);
+  const results = await db.fetch<NAME>(sql, [playerTypeId]);
+  const names = results.map(x => x.name!);
   return names;
 }
 
@@ -128,7 +141,7 @@ async function getDoublesSkillAccess(db: DBWrapper, playerTypeId: number): Promi
                  JOIN bb_rules_skill_categories
                   ON bb_rules_player_type_skill_categories_double.IdSkillCategories = bb_rules_skill_categories.ID
                 WHERE bb_rules_player_type_skill_categories_double.IDPlayerTypes = ?`;
-  const results = await db.fetch(sql, [playerTypeId]) as NAME[];
-  const names = results.map(x => x["name"]);
+  const results = await db.fetch<NAME>(sql, [playerTypeId]);
+  const names = results.map(x => x.name!);
   return names;
 }

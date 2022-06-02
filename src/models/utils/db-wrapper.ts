@@ -2,37 +2,47 @@ import { Option } from '@core/types/option';
 import * as fs from 'fs';
 import { Database } from 'sqlite3';
 
+function allVerify<a>(l: unknown[], verify: (x: unknown) => x is a): l is a[] {
+  return l.every(x => verify(x));
+}
+
 export class DBWrapper extends Database {
   constructor(filename?: string) {
     const file = filename || DEFAULT_LOCATION;
     super(file);
   }
 
-
-
-  // SOMETHING I TRIED AND THINK WE SHOULD NOT DO:
-  // async fetch<a>(sql: string, parameters: any[]): Promise<a[]> {
-  // Changing these from 'any' to an abstract type 'a' might actually
-  // be dangerous and make typescript's type checking less effective, leading to runtime
-  // errors
-  // Abstract types mean we have to declare what these will be at the call site, but in reality, the type we define 
-  // and the object returned might be different, leading to runtime errors that typescript is supposed to prevent.
-  // It's probably better that the callsites know, hey this could be fucking anything, you better handle it.
-  async fetch(sql: string, parameters: any[]): Promise<any[]> {
-    return new Promise<any[]>((resolve, reject) => {
+  async fetch<a>(sql: string, parameters: any[]): Promise<Partial<a>[]> {
+    return new Promise<Partial<a>[]>((resolve, reject) => {
       this.all(sql, parameters, (err, rows) => {
         if (err) {
           reject(err);
         }
-        resolve(rows);
+        resolve(rows as Partial<a>[]);
       })
     });
   }
 
-  async fetchOne(sql: string, parameters: any[]): Promise<any> {
+  async fetchOne<a>(sql: string, parameters: any[]): Promise<Partial<a>> {
     const rows = await this.fetch(sql, parameters);
     /* eslint-disable-next-line @typescript-eslint/no-unsafe-return */
-    return rows[0];
+    return rows[0] as Partial<a>;
+  }
+
+  async fetchAndVerify<a>(sql: string, parameters: any[], verify: (x: unknown) => x is a): Promise<a[]> {
+    const results = await this.fetch<a>(sql, parameters);
+    if(!allVerify(results, verify)) {
+      throw new Error("fuck");
+    }
+    return results;
+  }
+
+  async fetchAndVerifyOne<a>(sql: string, parameters: any[], verify: (x: unknown) => x is a): Promise<a> {
+    const r = await this.fetchOne<a>(sql, parameters);
+    if(!verify(r)) {
+      throw new Error("fuck");
+    }
+    return r;
   }
 }
 

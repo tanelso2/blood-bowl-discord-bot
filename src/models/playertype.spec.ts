@@ -17,16 +17,6 @@ let des = getManagementDB().on({
 });
 
 des('Database stuff', () => {
-  it('all teams', async () => {
-    const sql = `SELECT
-                   DataConstant as name
-                 FROM bb_rules_races
-                 WHERE IsTeam = 1`;
-    const results = await db.fetch(sql, []);
-    const names = results.map(x => x["name"]);
-    console.debug(names);
-  });
-
   describe('Team types', () => {
     it('should find Human', async () => {
       const name = 'Human';
