@@ -1,10 +1,14 @@
 import { Option } from '@core/types/option';
 import * as fs from 'fs';
 import { Database } from 'sqlite3';
+import { DBResult } from './db-result';
+
 
 function allVerify<a>(l: unknown[], verify: (x: unknown) => x is a): l is a[] {
   return l.every(x => verify(x));
 }
+
+type verifyFn<a> = (x: unknown) => x is a
 
 export class DBWrapper extends Database {
   constructor(filename?: string) {
@@ -43,6 +47,19 @@ export class DBWrapper extends Database {
       throw new Error("fuck");
     }
     return r;
+  }
+
+  async fetchResults<a>(sql: string, parameters: any[], verify: verifyFn<a>): Promise<DBResult<a[]>> {
+    let r;
+    try {
+      r = await this.fetch<a>(sql, parameters);
+    } catch (e: any) {
+      return DBResult.DBErr(e);
+    }
+    if(!allVerify(r, verify)) {
+      return DBResult.Unverified(r);
+    }
+    return DBResult.Result(r);
   }
 }
 

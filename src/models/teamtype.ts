@@ -60,14 +60,21 @@ export class TeamType {
         function isResult(x: any): x is result {
             return "ID" in x && "DataConstant" in x;
         }
-        const results = await db.fetchAndVerify<result>(sql, [], isResult);
-        const banlist = [`Extra`, `Common`, `StarPlayer`, `AllStars`];
-        return results
-            .filter(x => {
-                const name = x.DataConstant;
-                const bannedName = banlist.includes(name) || name.includes("Mercenary");
-                return !bannedName;
-            })
-            .map(x => new TeamType(x.ID, x.DataConstant, db));
+        const r = await db.fetchResults<result>(sql, [], isResult);
+        return r.on({
+            Result: (r: result[]) => {
+                const banlist = [`Extra`, `Common`, `StarPlayer`, `AllStars`];
+                return r
+                    .filter(x => {
+                        const name = x.DataConstant;
+                        const bannedName = banlist.includes(name) || name.includes("Mercenary");
+                        return !bannedName;
+                    })
+                    .map(x => new TeamType(x.ID, x.DataConstant, db));
+            },
+            _: () => {
+                throw new Error("Failed to get results");
+            }
+        });
     }
 }
