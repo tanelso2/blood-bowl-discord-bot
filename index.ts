@@ -247,7 +247,12 @@ async function consultReference(message: Discord.Message, _: Discord.User, __: L
             const allNames = allTeams.map(x => x.name).sort();
             return message.reply(`All Teams: ${allNames.join(', ')}`);
         } else if (referenceLookup[0] === "help") {
-            const reply = "```\nreference help\nreference teams\nreference <teamName>\nreference star players <teamName>```\n";
+            const reply = stringUtils.trimMultilineLiteral(`\`\`\`
+                reference help
+                reference teams
+                reference <team>
+                reference star players <team>
+                \`\`\``);
             return message.reply(reply);
         }
     } else if (referenceLookup[0] === "star" && referenceLookup[1] === "players") {
@@ -264,12 +269,11 @@ async function consultReference(message: Discord.Message, _: Discord.User, __: L
     const teamType = await TeamType.getTeamTypeFromName(db, teamName);
     if (starPlayersMode) {
         const playerTypes = await teamType.getStarPlayers();
-        const reply = playerTypes.map(x => x.toPrettyStringWithoutLevelUps()).join(`\n\n`);
+        const reply = `\n` + playerTypes.map(x => x.toPrettyStringWithoutLevelUps()).join(`\n\n`);
         return message.reply(reply);
-
     } else {
         const playerTypes = await teamType.getPlayerTypes();
-        const reply = playerTypes.map(x => x.toPrettyString()).join(`\n\n`);
+        const reply = `\n` + playerTypes.map(x => x.toPrettyString()).join(`\n\n`);
         return message.reply(reply);
     }
 }

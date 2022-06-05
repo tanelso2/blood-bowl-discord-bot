@@ -34,3 +34,9 @@ export async function streamToString (stream: Stream): Promise<string> {
         stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
     });
 }
+
+export function trimMultilineLiteral(s: string): string {
+    return s.split('\n')
+            .map(x => x.trim())
+            .join('\n');
+}

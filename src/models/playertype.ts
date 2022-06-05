@@ -1,3 +1,4 @@
+import { trimMultilineLiteral } from '@utils/stringUtils';
 import { DBWrapper } from './utils/db-wrapper';
 
 type PlayerTypeRow = {
@@ -17,12 +18,6 @@ function verifyPlayerTypeRow(x: any): x is PlayerTypeRow {
       && "CharacsStrength" in x
       && "CharacsMovementAllowance" in x;
 }
-
-function cleanupLongStringLiteral(s: string): string {
-    return s.split('\n')
-            .map(x => x.trim())
-            .join('\n');
-  }
 
 export class PlayerType {
   name: string;
@@ -98,7 +93,7 @@ export class PlayerType {
       MA: ${this.movementAllowance}  AV: ${this.armorValue}
       Skills: ${this.skillNames.join(", ")}
       Cost: ${this.cost}`
-    return cleanupLongStringLiteral(s);
+    return trimMultilineLiteral(s);
   }
 
   toPrettyString(): string {
@@ -106,7 +101,7 @@ export class PlayerType {
       Level ups
       Normal: ${this.normalSkillAccess.join(", ")}
       Doubles: ${this.doublesSkillAccess.join(", ")}`;
-    return cleanupLongStringLiteral(s);
+    return trimMultilineLiteral(s);
   }
 
 }
