@@ -234,6 +234,7 @@ function listLeagues(message: Discord.Message, _: Discord.User, __: League) {
 }
 
 async function consultReference(message: Discord.Message, _: Discord.User, __: League) {
+    const db = new ManagementDB();
     const referenceLookup = message.toString().split(/\s/).slice(2);
     let teamName: string | undefined = undefined;
     let starPlayersMode = false;
@@ -241,6 +242,14 @@ async function consultReference(message: Discord.Message, _: Discord.User, __: L
         return message.reply(`ERROR: can't lookup nothing`);
     } else if (referenceLookup.length === 1) {
         teamName = referenceLookup[0];
+        if (referenceLookup[0] === "teams") {
+            const allTeams = await TeamType.getAllTeamTypes(db);
+            const allNames = allTeams.map(x => x.name).sort();
+            return message.reply(`All Teams: ${allNames.join(', ')}`);
+        } else if (referenceLookup[0] === "help") {
+            const reply = "```\nreference help\nreference teams\nreference <teamName>\nreference star players <teamName>```\n";
+            return message.reply(reply);
+        }
     } else if (referenceLookup[0] === "star" && referenceLookup[1] === "players") {
         starPlayersMode = true;
         teamName = referenceLookup[2];
@@ -252,7 +261,6 @@ async function consultReference(message: Discord.Message, _: Discord.User, __: L
         return message.reply(`ERROR: no teamname found? Shouldn't reach this line anyways`)
     }
 
-    const db = new ManagementDB();
     const teamType = await TeamType.getTeamTypeFromName(db, teamName);
     if (starPlayersMode) {
         const playerTypes = await teamType.getStarPlayers();
