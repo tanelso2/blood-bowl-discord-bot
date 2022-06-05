@@ -18,6 +18,12 @@ function verifyPlayerTypeRow(x: any): x is PlayerTypeRow {
       && "CharacsMovementAllowance" in x;
 }
 
+function cleanupLongStringLiteral(s: string): string {
+    return s.split('\n')
+            .map(x => x.trim())
+            .join('\n');
+  }
+
 export class PlayerType {
   name: string;
   skillNames: string[];
@@ -85,18 +91,22 @@ export class PlayerType {
     return `PlayerType ${this.id} - ${this.name}`;
   }
 
-  toPrettyString(): string {
+
+  toPrettyStringWithoutLevelUps(): string {
     const s = `${this.name} 
-      ST: ${this.strength}    AG: ${this.agility}
-      AV: ${this.armorValue}    MA: ${this.movementAllowance}
+      ST: ${this.strength}  AG: ${this.agility}
+      MA: ${this.movementAllowance}  AV: ${this.armorValue}
       Skills: ${this.skillNames.join(", ")}
-      Cost: ${this.cost}
+      Cost: ${this.cost}`
+    return cleanupLongStringLiteral(s);
+  }
+
+  toPrettyString(): string {
+    const s = `${this.toPrettyStringWithoutLevelUps()}
       Level ups
       Normal: ${this.normalSkillAccess.join(", ")}
       Doubles: ${this.doublesSkillAccess.join(", ")}`;
-    return s.split('\n')
-            .map(x => x.trim())
-            .join('\n');
+    return cleanupLongStringLiteral(s);
   }
 
 }

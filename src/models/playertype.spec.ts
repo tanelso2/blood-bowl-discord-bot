@@ -1,11 +1,11 @@
 import { DBWrapper, getManagementDB, ManagementDB } from './utils/db-wrapper';
 import { TeamType } from './teamtype';
 
-// TODO: Selectively enable tests if the database files are available
 
 let db: DBWrapper;
 
-let des = getManagementDB().on({
+// Selectively enable tests if the database files are available
+const des = getManagementDB().on({
   Some: (x: ManagementDB) => {
     db = x;
     return describe;
@@ -18,6 +18,17 @@ let des = getManagementDB().on({
 
 des('Database stuff', () => {
   describe('Team types', () => {
+    it('should produce output small enough for all teams', async () => {
+      const teams = await TeamType.getAllTeamTypes(db);
+      for (const team of teams) {
+        const players = await team.getPlayerTypes();
+        const starPlayers = await team.getStarPlayers();
+        const playersReply = players.map(x => x.toPrettyString()).join(`\n\n`);
+        const starPlayersReply = starPlayers.map(x => x.toPrettyStringWithoutLevelUps()).join(`\n\n`);
+        playersReply.length.should.be.lessThan(1000);
+        starPlayersReply.length.should.be.lessThan(1000);
+      }
+    });
     it('should find Human', async () => {
       const name = 'Human';
       const teamType = await TeamType.getTeamTypeFromName(db, name);
@@ -44,7 +55,6 @@ des('Database stuff', () => {
         throw new Error("Griff unfound. My heart yearns");
       }
       griff.movementAllowance.should.eql(7);
-      console.log(griff.toPrettyString());
     });
 
     it('should find underworld', async () => {

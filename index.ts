@@ -256,7 +256,7 @@ async function consultReference(message: Discord.Message, _: Discord.User, __: L
     const teamType = await TeamType.getTeamTypeFromName(db, teamName);
     if (starPlayersMode) {
         const playerTypes = await teamType.getStarPlayers();
-        const reply = playerTypes.map(x => x.toPrettyString()).join(`\n\n`);
+        const reply = playerTypes.map(x => x.toPrettyStringWithoutLevelUps()).join(`\n\n`);
         return message.reply(reply);
 
     } else {

@@ -16,9 +16,12 @@ export class TeamType {
 
     async getStarPlayers(): Promise<PlayerType[]> {
         const sql = `SELECT
-                        IdPlayerTypes as ID
+                        bb_rules_player_types.ID
                      FROM bb_rules_races_star_players
-                     WHERE IdRaces = ?`;
+                       JOIN bb_rules_player_types
+                         ON bb_rules_player_types.ID=bb_rules_races_star_players.IdPlayerTypes
+                     WHERE bb_rules_races_star_players.IdRaces = ?
+                     AND bb_rules_player_types.DataConstant NOT LIKE '%_Fallback'`;
         const results = await this.db.fetch(sql, [this.id]) as ID[];
         const ids = results.map(x => parseInt(x.ID));
         return Promise.all(
@@ -43,10 +46,28 @@ export class TeamType {
                      FROM bb_rules_races
                      WHERE DataConstant LIKE ?`;
         type result = ID & {DataConstant: string};
-        const results = await db.fetchOne(sql, [name]) as result;
+        const results = await db.fetchOne<result>(sql, [name]);
         if(!results) {
             throw new Error(`Couldn't find a team type called ${name}`);
         }
-        return new TeamType(results["ID"], results["DataConstant"], db);
+        return new TeamType(results["ID"]!, results["DataConstant"]!, db);
+    }
+
+    static async getAllTeamTypes(db: DBWrapper): Promise<TeamType[]> {
+        const sql = `SELECT ID, DataConstant
+                     FROM bb_rules_races`;
+        type result = ID & {DataConstant: string};
+        function isResult(x: any): x is result {
+            return "ID" in x && "DataConstant" in x;
+        }
+        const results = await db.fetchAndVerify<result>(sql, [], isResult);
+        const banlist = [`Extra`, `Common`, `StarPlayer`, `AllStars`];
+        return results
+            .filter(x => {
+                const name = x.DataConstant;
+                const bannedName = banlist.includes(name) || name.includes("Mercenary");
+                return !bannedName;
+            })
+            .map(x => new TeamType(x.ID, x.DataConstant, db));
     }
 }
