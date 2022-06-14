@@ -21,10 +21,8 @@ des('Database stuff', () => {
     it('should produce output small enough for all teams', async () => {
       const teams = await TeamType.getAllTeamTypes(db);
       for (const team of teams) {
-        const players = await team.getPlayerTypes();
-        const starPlayers = await team.getStarPlayers();
-        const playersReply = players.map(x => x.toPrettyString()).join(`\n\n`);
-        const starPlayersReply = starPlayers.map(x => x.toPrettyStringWithoutLevelUps()).join(`\n\n`);
+        const playersReply = await team.getPlayersReferenceString();
+        const starPlayersReply = await team.getStarPlayersReferenceString();
         playersReply.length.should.be.lessThan(1000);
         starPlayersReply.length.should.be.lessThan(1000);
       }

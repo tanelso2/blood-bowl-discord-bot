@@ -268,13 +268,11 @@ async function consultReference(message: Discord.Message, _: Discord.User, __: L
 
     const teamType = await TeamType.getTeamTypeFromName(db, teamName);
     if (starPlayersMode) {
-        const playerTypes = await teamType.getStarPlayers();
-        const reply = `\n` + playerTypes.map(x => x.toPrettyStringWithoutLevelUps()).join(`\n\n`);
-        return message.reply(reply);
+        const refString = await teamType.getStarPlayersReferenceString();
+        return message.reply(refString);
     } else {
-        const playerTypes = await teamType.getPlayerTypes();
-        const reply = `\n` + playerTypes.map(x => x.toPrettyString()).join(`\n\n`);
-        return message.reply(reply);
+        const refString = await teamType.getPlayersReferenceString();
+        return message.reply(refString);
     }
 }
 

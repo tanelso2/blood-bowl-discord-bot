@@ -77,4 +77,20 @@ export class TeamType {
             }
         });
     }
+
+    async getPlayersReferenceString(): Promise<string> {
+        const players = await this.getPlayerTypes();
+        const playerStrs = players.map(x => x.toPrettyString());
+        return codeblock(playerStrs.join(`\n\n`));
+    }
+
+    async getStarPlayersReferenceString(): Promise<string> {
+        const starPlayers = await this.getStarPlayers();
+        const playerStrs = starPlayers.map(x => x.toPrettyStringWithoutLevelUps());
+        return codeblock(playerStrs.join(`\n\n`));
+    }
+}
+
+function codeblock(s: string): string {
+    return '```\n' + s + '\n```';
 }
