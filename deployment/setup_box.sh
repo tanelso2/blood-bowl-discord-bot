@@ -26,13 +26,6 @@ ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1MjEAAACFBAG6VWZq
 
 EOF
 
-cp -s "${BB_DIR}/deployment/discord-bot.service" "/etc/systemd/system/"
-
-systemctl daemon-reload
-
-systemctl enable discord-bot.service
-systemctl start discord-bot.service
-
 chown -R bb_bot:bb_bot "${BB_DIR}"
 
 # Give bb_bot permission to run update script as sudo (for automated deployments)
@@ -51,3 +44,9 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
 # Install nvm for bb_bot
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | sudo -u bb_bot bash
 
+cp -s "${BB_DIR}/deployment/discord-bot.service" "/etc/systemd/system/"
+
+systemctl daemon-reload
+
+systemctl enable discord-bot.service
+systemctl start discord-bot.service

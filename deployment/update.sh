@@ -2,7 +2,12 @@
 
 cd /opt/bb_bot/
 
-git pull
+OUTPUT=$(git pull)
 
-systemctl daemon-reload
-systemctl restart discord-bot.service
+if [[ $OUTPUT == "Already up to date" ]]; then
+    echo "We done here"
+else
+    systemctl daemon-reload
+    systemctl restart discord-bot.service
+fi
+
