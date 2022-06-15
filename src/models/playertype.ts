@@ -59,7 +59,7 @@ export class PlayerType {
   static async getFromId(db: DBWrapper, id: number): Promise<PlayerType> {
     const sql = `SELECT * FROM bb_rules_player_types WHERE ID = ?`;
     const result = await db.fetchAndVerifyOne<PlayerTypeRow>(sql, [id], verifyPlayerTypeRow);
-    const name = result["DataConstant"];
+    const name = cleanupName(result["DataConstant"]);
     const agility = result["CharacsAgility"];
     const armorValue = result["CharacsArmourValue"];
     const cost = result["Price"];
@@ -104,6 +104,13 @@ export class PlayerType {
     return trimMultilineLiteral(s);
   }
 
+}
+
+function cleanupName(dataConstant: string): string {
+  const x = dataConstant.split(/_/);
+  const frontRemoved: string = x.slice(1).join("_");
+  const splitOnCapitals = frontRemoved.split(/(?=[A-Z])/); //positive look-ahead is used here?
+  return splitOnCapitals.join(" ");
 }
 
 type NAME = {name: string};
