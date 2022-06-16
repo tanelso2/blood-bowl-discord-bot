@@ -46,6 +46,12 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | sudo 
 
 cp -s "${BB_DIR}/deployment/discord-bot.service" "/etc/systemd/system/"
 
+# Enable auto-updates
+CRON_FILE=/etc/cron.d/bb_bot_update
+cat <<EOF > "$CRON_FILE"
+* * * * * bb_bot sudo $HOME/deployment/update.sh
+EOF
+
 systemctl daemon-reload
 
 systemctl enable discord-bot.service
