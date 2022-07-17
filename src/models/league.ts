@@ -223,6 +223,10 @@ export class TournamentSeason extends League {
 
     // errors can occur when not all rounds reported winners to gen the next round
     incrementRound(): Either<Error, Round> {
+        if(this.currentRound == 0) {
+            this.currentRound += 1;
+            return Either.Right(this.getCurrentRound());
+        }
         const currentRound = this.getCurrentRound();
         if(!currentRound.games.every((x) => x.hasWinner())) {
             return Either.Left(new Error("Cannot advance current round, every match needs a winner declared"));
