@@ -1,4 +1,6 @@
-#!/bin/bash -x
+#!/bin/bash
+
+set +x
 
 export PATH="$HOME/.local/bin:$PATH"
 

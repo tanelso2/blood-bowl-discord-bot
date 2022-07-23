@@ -1,9 +1,15 @@
-#!/bin/bash -x
+#!/bin/bash
+
+set +x
 
 cd /opt/bb_bot/
 
 OUTPUT=$(git pull)
 
+if [[ $? -ne 0 ]]; then
+    echo "Something went wrong, doing nothing"
+    exit 1
+fi
 if [[ $OUTPUT == "Already up to date." ]]; then
     echo "We done here"
 else

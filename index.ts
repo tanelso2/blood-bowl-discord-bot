@@ -393,4 +393,5 @@ client.on('message', message => {
     void handleMessage(message);
 });
 
+console.log("Logging in");
 void client.login(config.token);
