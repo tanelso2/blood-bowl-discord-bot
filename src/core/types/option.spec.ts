@@ -91,6 +91,17 @@ describe('Option', () => {
                 }
             });
         });
+        it('should pass through other Options', () => {
+            const val = Math.random();
+            const x = Option.Some(val);
+            const y = Option.ofNullable(x);
+            y.isSome().should.be.true;
+            y.unwrap().should.eql(val);
+
+            const x2: Option<number> = Option.None();
+            const y2 = Option.ofNullable(x2);
+            y2.isNone().should.be.true;
+        });
     });
 
     describe('unwrap()', () => {
@@ -113,6 +124,41 @@ describe('Option', () => {
                 done();
             }
             throw new Error("Should have thrown in unwrap of None");
+        });
+    });
+
+    describe('map()', () => {
+        it('should map Nones to Nones', () => {
+            const x = Option.None<number>();
+            const y = x.map(x => x+1);
+            y.isNone().should.be.true;
+        });
+
+        it('should map Somes properly', () => {
+            const x = Option.Some(1);
+            const y = x.map(x => x+1);
+            y.isSome().should.be.true;
+            y.unwrap().should.eql(2);
+
+            const z = x.map(x => x*3).map(x => x+1);
+            z.isSome().should.be.true;
+            z.unwrap().should.eql(4);
+        });
+
+        it('should be able to change types', () => {
+            const x = Option.Some(1);
+            const y = x.map(x => x.toString());
+            y.isSome().should.be.true;
+            y.unwrap().should.eql("1");
+        });
+    });
+
+    describe('flatMap()', () => {
+        it('should flatten nested Options', () => {
+            const x = Option.Some(1);
+            const y = x.flatMap(x => Option.Some(x+1));
+            y.isSome().should.be.true;
+            y.unwrap().should.eql(2);
         });
     });
 

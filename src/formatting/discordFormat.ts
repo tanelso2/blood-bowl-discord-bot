@@ -27,10 +27,11 @@ export class DiscordFormat {
      * @param {Round} newRound
      * @return {Discord.MessageEmbed}
      */
-    roundAdvance(newRound: Round): Discord.MessageEmbed {
-        return this.MessageEmbed()
+    roundAdvance(newRound: Round): any {
+        return this.EmbedBuilder()
             .setTitle(`Round ${newRound.id} Matchups`)
-            .addFields(newRound.games.map((x) => this.makeMatchupField(x)));
+            .addFields(newRound.games.map((x) => this.makeMatchupField(x)))
+            .toJSON();
     }
 
     /**
@@ -39,16 +40,17 @@ export class DiscordFormat {
      * @param {Round} round
      * @return {Discord.MessageEmbed}
      */
-    roundStatus(round: Round): Discord.MessageEmbed {
+    roundStatus(round: Round): any {
         const gameFields = round.games.map((g) => {
             const { homeCoach, awayCoach } = g;
             const ret = `${homeCoach.commonName} (${homeCoach.teamType}) v (${awayCoach.teamType}) ${awayCoach.commonName}`;
             const value = g.done ? `~~${ret}~~` : ret;
             return { name: BLANK, value };
         });
-        return this.MessageEmbed()
+        return this.EmbedBuilder()
             .setTitle(`Round ${round.id}`)
-            .addFields(gameFields);
+            .addFields(gameFields)
+            .toJSON();
     }
 
 
@@ -77,11 +79,11 @@ export class DiscordFormat {
      * Creates the message for describing a game.
      *
      * @param {Game} game
-     * @return {Discord.MessageEmbed}
+     * @return {Discord.EmbedBuilder}
      */
-    game(game: Game): Discord.MessageEmbed {
+    game(game: Game): any {
         const getCoach = (x: Coach) => this.coach(x);
-        return this.MessageEmbed()
+        return this.EmbedBuilder()
             .setTitle(`${game.homeCoach.teamName} v ${game.awayCoach.teamName}`)
             .addFields(
                 {name: 'Home', value: game.homeCoach.teamName, inline: true},
@@ -90,7 +92,8 @@ export class DiscordFormat {
             .addFields(
                 {name: 'Coach', value: getCoach(game.homeCoach), inline: true},
                 {name: 'Coach', value: getCoach(game.awayCoach), inline: true},
-            );
+            )
+            .toJSON();
     }
 
     /**
@@ -137,15 +140,18 @@ export class DiscordFormat {
     }
 
     /**
-     * Creates a new embed with the bot's defaults applied.
+     * Creates a new EmbedBuilder with the bot's defaults applied.
      *
-     * @return {Discord.MessageEmbed}
+     * @return {Discord.EmbedBuilder}
      */
-    MessageEmbed(): Discord.MessageEmbed {
+    EmbedBuilder(): Discord.EmbedBuilder {
         const currentUser = this.client.user as Discord.User;
-        return new Discord.MessageEmbed()
-            .setColor('RED')
-            .setAuthor(currentUser.username, currentUser.displayAvatarURL())
+        return new Discord.EmbedBuilder()
+            .setColor('Red')
+            .setAuthor({
+                name: currentUser.username,
+                iconURL: currentUser.displayAvatarURL()
+            })
             .setTimestamp();
     }
 

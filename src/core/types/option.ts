@@ -16,7 +16,10 @@ export class Option<a> extends PatternMatchable {
         return new None();
     }
 
-    static ofNullable<a>(x: a | undefined | null): Option<a> {
+    static ofNullable<a>(x: a | undefined | null | Option<a>): Option<a> {
+        if (x instanceof Option<a>) {
+            return x;
+        }
         if (x === null || x === undefined || (typeof x === 'number' && isNaN(x))) {
             return Option.None();
         } else {
@@ -47,6 +50,20 @@ export class Option<a> extends PatternMatchable {
      */
     isNone(): this is None<a> {
         return this instanceof None;
+    }
+
+    map<b>(f: (x: a) => b): Option<b> {
+        return this.on({
+            Some: (x: a) => Option.Some(f(x)),
+            None: () => Option.None()
+        });
+    }
+
+    flatMap<b>(f: (x: a) => Option<b>): Option<b> {
+        return this.map(x => f(x).on({
+            Some: (v) => v,
+            None: () => Option.None()
+        }));
     }
 }
 

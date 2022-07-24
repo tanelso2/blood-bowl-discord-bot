@@ -8,13 +8,13 @@ describe('League', () => {
         it('Should increment the round correctly', () => {
             const l = makeTmpFileLeague(mockLeague);
             const startingRound = l.currentRound;
-            const startingRoundGames = l.getCurrentRound().games;
+            const startingRoundGames = l.getCurrentRound().unwrap().games;
             l.incrementRound().on({
                 Left: (e: Error) => { throw e; },
                 Right: (r: Round) => {
                     r.round.should.eql(startingRound+1);
                     r.games.should.not.eql(startingRoundGames);
-                    r.games.should.eql(l.getCurrentRound().games);
+                    r.games.should.eql(l.getCurrentRound().unwrap().games);
                 }
             })
         });
@@ -43,19 +43,19 @@ describe('League', () => {
         it('should persist winner declarations', () => {
             const l = makeTmpFileLeague(mockLeague);
             l.save();
-            const userGame: Game = l.getCurrentRound().findUserGame(mockCoach0.id).unwrap();
+            const userGame: Game = l.findUserCurrentGame(mockCoach0.id).unwrap();
             userGame.hasWinner().should.not.be.true;
             userGame.declareWinner(mockCoach0.id);
             l.save();
             const l2 = getLeagueFromFile(l.leagueFile);
-            const savedGame: Game = l2.getCurrentRound().findUserGame(mockCoach0.id).unwrap();
+            const savedGame: Game = l2.findUserCurrentGame(mockCoach0.id).unwrap();
             savedGame.hasWinner().should.be.true;
             savedGame.winner?.should.eql(mockCoach0.teamName);
             // Check to make sure there is still an unmarked game
-            l2.getCurrentRound().games.filter((x) => !x.hasWinner()).length.should.eql(1);
+            l2.getCurrentRound().unwrap().games.filter((x) => !x.hasWinner()).length.should.eql(1);
             l2.incrementRound();
             // Make sure it only effects the user's game in the current round, not the next one
-            const nextGame: Game = l2.getCurrentRound().findUserGame(mockCoach0.id).unwrap();
+            const nextGame: Game = l2.findUserCurrentGame(mockCoach0.id).unwrap();
             nextGame.hasWinner().should.not.be.true;
         });
     });
@@ -76,26 +76,28 @@ describe('League', () => {
 
         it('should not advance until all games have a winner', () => {
             const l = makeTmpFileLeague(mockTournament);
-            l.getCurrentRound().round.should.eql(1);
+            l.getCurrentRound().isSome().should.be.true;
+            l.getCurrentRound().unwrap().round.should.eql(1);
             l.incrementRound().on({
                 Left: (e: Error) => {},
                 Right: (r: Round) => { throw new Error("Shouldn't reach here")}
             });
-            l.getCurrentRound().round.should.eql(1);
-            l.getCurrentRound().games.forEach((g) => g.declareWinner(g.homeCoach.id));
+            l.getCurrentRound().unwrap().round.should.eql(1);
+            l.getCurrentRound().unwrap().games.forEach((g) => g.declareWinner(g.homeCoach.id));
             l.incrementRound().on({
                 Left: (e: Error) => {throw new Error("Shouldn't reach here, round should advance");},
                 Right: (r: Round) => {}
             })
-            l.getCurrentRound().round.should.eql(2);
+            l.getCurrentRound().unwrap().round.should.eql(2);
         });
 
         it('should create new rounds correctly', () => {
             const l = makeTmpFileLeague(mockTournament);
             l.schedule.length.should.eql(1);
-            l.getCurrentRound().games.forEach(g => g.declareWinner(g.homeCoach.id));
+            l.getCurrentRound().isSome().should.be.true;
+            l.getCurrentRound().unwrap().games.forEach(g => g.declareWinner(g.homeCoach.id));
             l.incrementRound();
-            const r = l.getCurrentRound();
+            const r = l.getCurrentRound().unwrap();
             r.round.should.eql(2);
             r.games.length.should.eql(1);
             const coaches = r.games[0].coaches;
@@ -110,15 +112,16 @@ describe('League', () => {
         
         it('should not advance past the end of the tournament', () => {
             const l = makeTmpFileLeague(mockTournament);
-            l.getCurrentRound().games.forEach(g => g.declareWinner(g.homeCoach.id));
+            l.getCurrentRound().isSome().should.be.true;
+            l.getCurrentRound().unwrap().games.forEach(g => g.declareWinner(g.homeCoach.id));
             l.incrementRound();
-            l.getCurrentRound().games.forEach(g => g.declareWinner(g.homeCoach.id));
-            const lastRound = l.getCurrentRound().round;
+            l.getCurrentRound().unwrap().games.forEach(g => g.declareWinner(g.homeCoach.id));
+            const lastRound = l.getCurrentRound().unwrap().round;
             l.incrementRound().on({
                 Left: (e: Error) => {},
                 Right: (r: Round) => {throw new Error("Shouldn't be able to increment round");}
             });
-            l.getCurrentRound().round.should.eql(lastRound);
+            l.getCurrentRound().unwrap().round.should.eql(lastRound);
         });
     })
 

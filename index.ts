@@ -7,6 +7,7 @@ import { DiscordFormat } from '@formatting/discordFormat';
 import { logger } from '@core/logger';
 import { getLeagueFromFile, League} from '@models/league';
 import { Game } from '@models/game';
+import { Round } from '@models/round';
 import * as insultGenerator from '@generator/string-generator';
 import * as stringUtils from '@utils/stringUtils';
 import { Option } from '@core/types/option';
@@ -54,7 +55,12 @@ function getLeagues(message: Discord.Message, user: Discord.User): League[] {
         .filter(l => !leagueSpecifier || l.matches(leagueSpecifier));
 }
 
-const client = new Discord.Client();
+const IntentFlags = Discord.IntentsBitField.Flags;
+const client = new Discord.Client({intents: [
+    IntentFlags.Guilds,
+    IntentFlags.GuildMessages,
+    IntentFlags.DirectMessages
+]});
 const formatter = new DiscordFormat(client);
 
 /**
@@ -77,8 +83,7 @@ async function advanceRound(message: Discord.Message, user: Discord.User, league
                 .filter(x => x.id !== latestMessage.id);
         return Promise.all(
             otherMessages
-                .mapValues((x: Discord.Message) => x.unpin())
-                .array()
+                .map((x: Discord.Message) => x.unpin())
         );
     }
 
@@ -90,14 +95,12 @@ async function advanceRound(message: Discord.Message, user: Discord.User, league
             Left: (e: Error) => {return void message.reply(e.message)},
             Right: async (newRound) => {
                 try {
+                    // TODO: See other TODO about disableMentions: 'all',
                     const reply = await message
-                        .reply(
-                            `round has been advanced.`,
-                            {
-                                embed: formatter.roundAdvance(newRound),
-                                disableMentions: 'all',
-                            }
-                        );
+                        .reply({
+                            content: `round has been advanced.`,
+                            embeds: [formatter.roundAdvance(newRound)],
+                        });
                     await reply.pin();
                     return await unpinOtherMessages(reply);
                 } catch (reason) {
@@ -113,16 +116,19 @@ async function advanceRound(message: Discord.Message, user: Discord.User, league
  *  @user you are playing @opponent this round
  */
 async function findOpponent(message: Discord.Message, user: Discord.User, league: League) {
-    const userInGame = (game: Game) => game.coaches.some((c) => c.id === user.id);
-    const usersGame = league.getCurrentRound().games.find(userInGame);
+    const usersGame = league.findUserCurrentGame(user.id);
 
-    if (usersGame === undefined) {
-        const insult = insultGenerator.generateString("${insult}");
-        return message.reply(`you don't seem to be playing this round, smoothbrain.\n${insult}`);
-    }
-
-    const opponent = usersGame.getOpponent(user);
-    return message.reply(`you are playing ${formatter.coach(opponent)} this round.`);
+    return usersGame.on({
+        None: () => {
+            const insult = insultGenerator.generateString("${insult}");
+            // The current round could have been None so this insult is incorrect
+            return message.reply(`you don't seem to be playing this round, smoothbrain.\n${insult}`);
+        },
+        Some: (g: Game) => {
+            const opponent = g.getOpponent(user);
+            return message.reply(`you are playing ${formatter.coach(opponent)} this round.`);
+        }
+    });
 }
 
 /*
@@ -139,14 +145,15 @@ async function printSchedule(message: Discord.Message, user: Discord.User, leagu
     if (matches.length) {
         const schedule = formatter.usersSchedule(user, matches, league.currentRound);
         const response = `here is your schedule this league:\n${schedule}`;
-        return message.reply(response, {disableMentions: 'all'});
+        // TODO: disableMentions: 'all' was previously passed. Did I break something in this upgrade?
+        return message.reply(response);
     }
     const insult = insultGenerator.generateString("${insult}");
     return message.reply(`you don't seem to be playing this round, smoothbrain.\n${insult}`);
 }
 
 async function announceGame(message: Discord.Message, user: Discord.User, league: League) {
-    const usersGame = league.getCurrentRound().findUserGame(user.id);
+    const usersGame = league.findUserCurrentGame(user.id);
     return usersGame.on({
         Some: (game: Game) => {
             const audienceString = league.getAudience().on({
@@ -167,13 +174,17 @@ async function printInsult(message: Discord.Message, _: Discord.User, __: League
     await message.reply(insult);
 }
 
+function nullRoundGlitch(message: Discord.Message) {
+    return message.reply(`The round was undefined? What the hell I'm broken. I'm brrroooooookkkeeeennnnnn.`);
+}
+
 async function markGameDone(message: Discord.Message, user: Discord.User, league: League) {
     function markDone(finishedGame: Game) {
         finishedGame.done = true;
         league.save();
     }
 
-    function respond(finishedGame: Game) {
+    function respond(finishedGame: Game, currentRound: Round) {
         const numUnfinishedGames = currentRound.getUnfinishedGames().length;
         const opponent = finishedGame.getOpponent(user);
         const isOrAre = numUnfinishedGames === 1 ? "is" : "are";
@@ -186,33 +197,53 @@ async function markGameDone(message: Discord.Message, user: Discord.User, league
         return message.reply(`You don't appear to be playing this round...\n${insult}`);
     }
 
-    const currentRound = league.getCurrentRound();
-    return currentRound.findUserGame(user.id).on({
-        Some: (game: Game) => {
-            markDone(game);
-            return respond(game);
+    function glitch() {
+        return nullRoundGlitch(message);
+    }
+
+    return league.getCurrentRound().on({
+        Some: (currentRound: Round) => {
+            return currentRound.findUserGame(user.id).on({
+                Some: (game: Game) => {
+                    markDone(game);
+                    return respond(game, currentRound);
+                },
+                None: () => insult()
+            });
         },
-        None: () => insult(),
-    });
+        None: () => glitch()
+    })
 }
 
 function declareWinner(message: Discord.Message, user: Discord.User, league: League) {
     const currentRound = league.getCurrentRound();
-    return currentRound.findUserGame(user.id).on({
-        Some: (finishedGame: Game) => {
-            finishedGame.declareWinner(user.id);
-            league.save();
-            const opponent = finishedGame.getOpponent(user);
-            const slight = insultGenerator.generateString("${slight}");
-            return message.reply(`Nice, recorded your win against ${opponent.commonName}, that ${slight}.`);
+    return currentRound.on({
+        Some: (currentRound: Round) => {
+            return currentRound.findUserGame(user.id).on({
+                Some: (finishedGame: Game) => {
+                    finishedGame.declareWinner(user.id);
+                    league.save();
+                    const opponent = finishedGame.getOpponent(user);
+                    const slight = insultGenerator.generateString("${slight}");
+                    return message.reply(`Nice, recorded your win against ${opponent.commonName}, that ${slight}.`);
+                },
+                None: () => message.reply(insultGenerator.generateString("You don't appear to be playing this round...${slight}")),
+            });
         },
-        None: () => message.reply(insultGenerator.generateString("You don't appear to be playing this round...${slight}")),
+        None: () => nullRoundGlitch(message)
     });
 }
 
 function printRound(message: Discord.Message, _: Discord.User, league: League) {
-    const currentRound = league.getCurrentRound(); const roundStatus = formatter.roundStatus(currentRound);
-    return message.reply("", { embed: roundStatus });
+    return league.getCurrentRound().on({
+        Some: (currentRound: Round) => {
+            // TODO: Get rid of this once we figure out the types that embeds should take
+            /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
+            const roundStatus = formatter.roundStatus(currentRound);
+            return message.reply({ embeds: [roundStatus] });
+        },
+        None: () => nullRoundGlitch(message)
+    })
 }
 
 type CommandFunc = (message: Discord.Message, user: Discord.User, league: League) => Promise<any>;

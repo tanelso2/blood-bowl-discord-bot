@@ -93,10 +93,10 @@ export class League implements LeagueData {
     }
 
     /**
-     * @return {Round} - The active round.
+     * @return {Option<Round>} - The active round, if it exists.
      */
-    getCurrentRound(): Round {
-        return this.schedule[this.currentRound - 1];
+    getCurrentRound(): Option<Round> {
+        return Option.ofNullable(this.schedule[this.currentRound - 1]);
     }
 
     /**
@@ -131,6 +131,10 @@ export class League implements LeagueData {
             .map((round) => round.findUserGame(user.id))
             .filter((game_or_none) => game_or_none.isSome())
             .map((game) => game.unwrap());
+    }
+
+    findUserCurrentGame(userId: string): Option<Game> {
+        return this.getCurrentRound().flatMap(x => x.findUserGame(userId));
     }
 
     /**
@@ -171,7 +175,10 @@ export class League implements LeagueData {
         }
         this.currentRound = newRound;
         this.save();
-        return Either.Right(this.getCurrentRound());
+        return this.getCurrentRound().on({
+            None: () => Either.Left(new Error("Advanced the round, but the new round is undefined")),
+            Some: (r: Round) => Either.Right(r)
+        });
     }
 
     save(): void {
@@ -211,7 +218,7 @@ export class TournamentSeason extends League {
             return [];
         }
 
-        return this.getCurrentRound().findUserGame(user.id).on({
+        return this.getCurrentRound().map(x => x.findUserGame(user.id)).on({
             Some: (game: Game) => [game],
             None: () => [],
         });
@@ -223,33 +230,36 @@ export class TournamentSeason extends League {
 
     // errors can occur when not all rounds reported winners to gen the next round
     incrementRound(): Either<Error, Round> {
-        if(this.currentRound == 0) {
-            this.currentRound += 1;
-            return Either.Right(this.getCurrentRound());
-        }
-        const currentRound = this.getCurrentRound();
-        if(!currentRound.games.every((x) => x.hasWinner())) {
-            return Either.Left(new Error("Cannot advance current round, every match needs a winner declared"));
-        }
-        const winners = currentRound.games.map((x) => x.winner!);
-        if (winners.length === 1) {
-            return Either.Left(new Error("Cannot advance round, the champion has been declaredddddd"));
-        }
-        const matchups: GameData[] = [];
-        for (let i = 0; i < winners.length; i+=2) {
-            const home = winners[i];
-            const away = winners[i+1];
-            matchups.push({home, away});
-        }
-        const roundData: RoundData = {
-            round: currentRound.round + 1,
-            games: matchups
-        };
-        const r = new Round(roundData, this.coaches);
-        this.schedule.push(r);
-        this.currentRound += 1;
+        return this.getCurrentRound().on({
+            Some: (currentRound: Round) => {
+                if(!currentRound.games.every((x) => x.hasWinner())) {
+                    return Either.Left(new Error("Cannot advance current round, every match needs a winner declared"));
+                }
+                const winners = currentRound.games.map((x) => x.winner!);
+                if (winners.length === 1) {
+                    return Either.Left(new Error("Cannot advance round, the champion has been declaredddddd"));
+                }
+                const matchups: GameData[] = [];
+                for (let i = 0; i < winners.length; i+=2) {
+                    const home = winners[i];
+                    const away = winners[i+1];
+                    matchups.push({home, away});
+                }
+                const roundData: RoundData = {
+                    round: currentRound.round + 1,
+                    games: matchups
+                };
+                const r = new Round(roundData, this.coaches);
+                this.schedule.push(r);
+                this.currentRound += 1;
 
-        return Either.Right(this.getCurrentRound());
+                return Either.Right(this.getCurrentRound());
+                },
+                None: () => {
+                    this.currentRound = 1;
+                    return Either.Right(this.getCurrentRound().unwrap());
+                }
+        });
     }
 
     static makeFirstRoundGivenRankings(rankings: CoachData[]): RoundData {
