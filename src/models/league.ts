@@ -254,11 +254,11 @@ export class TournamentSeason extends League {
                 this.currentRound += 1;
 
                 return Either.Right(this.getCurrentRound());
-                },
-                None: () => {
-                    this.currentRound = 1;
-                    return Either.Right(this.getCurrentRound().unwrap());
-                }
+            },
+            None: () => {
+                this.currentRound = 1;
+                return Either.Right(this.getCurrentRound().unwrap());
+            }
         });
     }
 
