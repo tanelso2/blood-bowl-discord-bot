@@ -4,6 +4,8 @@ set -x
 
 cd /opt/bb_bot/
 
+echo "Hello everybody"
+
 OUTPUT=$(git pull)
 
 if [[ $? -ne 0 ]]; then
