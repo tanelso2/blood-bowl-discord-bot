@@ -249,6 +249,7 @@ export class TournamentSeason extends League {
         this.schedule.push(r);
         this.currentRound += 1;
 
+        this.save();
         return Either.Right(this.getCurrentRound());
     }
 
