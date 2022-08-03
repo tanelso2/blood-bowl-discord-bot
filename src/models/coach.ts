@@ -1,5 +1,5 @@
 import { processConfigValue } from "./utils/config-reader";
-import { Option } from '@core/types/option';
+import { Option } from '@core/types/generated/option';
 import * as stringUtils from '@utils/stringUtils';
 
 export interface CoachData {

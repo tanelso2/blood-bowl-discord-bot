@@ -11,10 +11,10 @@ import { printRound } from "./round";
 import { printSchedule } from "./schedule";
 import { calculateOdds } from "./odds";
 import { declareWinner } from "./winner";
-import { Option } from "@core/types/option";
+import { Option } from "@core/types/generated/option";
 import { DiscordFormat } from "@formatting/discordFormat";
 import { League } from "@models/league";
-import { Either } from "@core/types/either";
+import { Either } from "@core/types/generated/either";
 
 const commands: Command[] = [
     makeCommand('advance', advanceRound, 'Advance to the next round (only usable by the league owner)', true),
@@ -92,7 +92,7 @@ export function makeContext(client: Discord.Client, leagues: League[], message: 
     const messageParts = message.toString().split(/\s/);
 
     const rawCommandName = messageParts[1].toLowerCase();
-    return findCommand(rawCommandName).on({
+    return findCommand(rawCommandName).match<Either<ContextError, CommandContext>>({
         None: () => Either.Left({kind: "unknown-command"}),
         Some: (cmd: Command) => {
             let partsUsed = 2;

@@ -1,0 +1,5 @@
+pat DBResult<a>(
+    Result a
+    | Unverified any
+    | DBErr Error
+)

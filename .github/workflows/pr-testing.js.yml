@@ -27,6 +27,6 @@ jobs:
     - run: npm ci
     # Keep these jobs separate so they all run and we get informed
     # of all errors
-    - run: npm run compile
+    - run: npm run build
     - run: npm run test
     - run: npm run lint

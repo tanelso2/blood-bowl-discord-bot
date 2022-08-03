@@ -37,7 +37,7 @@ export async function advanceRound(context: CommandContext) {
         const insult = generateInsult();
         await message.channel.send(`You're not the fucking owner of this league, ${user.toString()}\n${insult}`);
     } else {
-        await league.incrementRound().on({
+        await league.incrementRound().match({
             Left: (e: Error) => {return void message.reply(e.message)},
             Right: async (newRound: Round) => {
                 try {

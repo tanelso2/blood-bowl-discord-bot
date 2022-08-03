@@ -1,4 +1,4 @@
-import { Either } from '@core/types/either';
+import { Either } from '@core/types/generated/either';
 
 export interface OddsScenario {
     rolls: Roll[];

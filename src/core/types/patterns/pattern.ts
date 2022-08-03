@@ -3,9 +3,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ErrorList } from '@utils/errorList';
 
-const ANY = "_";
+export const WILDCARD = "_";
 
-interface PatternDoing<a> {
+export interface WildcardPattern<a> {
+    '_': () => a
+}
+
+export type Pattern<t, a> = t | (Partial<t> & WildcardPattern<a>)
+
+export interface StringsToFunctions<a> {
     [x: string]: (...args: any[]) => a
 }
 
@@ -21,9 +27,9 @@ export class PatternMatchable {
         this.T = this.constructor.name;
     }
 
-    _isExhaustive<a>(patterns: PatternDoing<a>): null | Error {
+    _isExhaustive<a>(patterns: StringsToFunctions<a>): null | Error {
         const patternNames = Object.entries(patterns).map(([p, _]) => p);
-        if (patternNames.includes(ANY)) {
+        if (patternNames.includes(WILDCARD)) {
             // wildcard is always completely exhaustive
             return null;
         }
@@ -36,9 +42,9 @@ export class PatternMatchable {
         return new Error(`Could not find patterns for ${failures.join(', ')}`);
     }
 
-    _containsUnknowns<a>(patterns: PatternDoing<a>): null | Error {
+    _containsUnknowns<a>(patterns: StringsToFunctions<a>): null | Error {
         const patternNames = Object.entries(patterns).map(([p, _]) => p)
-        const failures = patternNames.filter(p => p !== ANY && !this.options.includes(p))
+        const failures = patternNames.filter(p => p !== WILDCARD && !this.options.includes(p))
         if (failures.length === 0) {
             return null;
         }
@@ -46,7 +52,7 @@ export class PatternMatchable {
         return new Error(`Excess patterns found: ${failures.join(', ')}`)
     }
 
-    on<a>(patterns: PatternDoing<a>): a {
+    on<a>(patterns: StringsToFunctions<a>): a {
         const errs = new ErrorList(
             this._isExhaustive(patterns),
             this._containsUnknowns(patterns)
@@ -56,7 +62,7 @@ export class PatternMatchable {
         }
         const entries = Object.entries(patterns);
         const foundMatches = entries.filter(([key, _]) => this.matches(key));
-        const specificMatch = foundMatches.find(([key, _]) => key !== ANY);
+        const specificMatch = foundMatches.find(([key, _]) => key !== WILDCARD);
         let func;
         if (specificMatch === undefined) {
             // use wildcard one
@@ -78,8 +84,7 @@ export class PatternMatchable {
     }
 
     matches(patternName: string): boolean  {
-        return patternName === this.T || patternName === ANY;
+        return patternName === this.T || patternName === WILDCARD;
     }
 }
 
-module.exports = { PatternMatchable };

@@ -1,6 +1,6 @@
 import { logger } from '@core/logger';
 import { Coach } from './coach';
-import { Option } from '@core/types/option';
+import { Option } from '@core/types/generated/option';
 import Discord from 'discord.js';
 
 const LOGGER = logger.child({module: 'game'});

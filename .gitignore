@@ -120,3 +120,6 @@ build/
 
 # Database files
 db/
+
+# Generated .ts files
+**/generated/*
