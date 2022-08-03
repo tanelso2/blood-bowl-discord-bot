@@ -1,6 +1,6 @@
-import { Either } from './either';
+import { Either } from './generated/either';
 
-describe('Either', () => {
+describe('generated Either', () => {
     describe('on()', () => {
         it('should fail if given more than 2 args', (done) => {
             const testVal = Either.Left('Hello');

@@ -7,7 +7,7 @@ export function declareWinner(context: CommandContext) {
     assertLeague(league);
 
     const currentRound = league.getCurrentRound();
-    return currentRound.findUserGame(user.id).on({
+    return currentRound.findUserGame(user.id).match({
         Some: (finishedGame: Game) => {
             finishedGame.declareWinner(user.id);
             league.save();

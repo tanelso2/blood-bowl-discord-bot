@@ -1,6 +1,6 @@
-import { Option } from './option';
+import { Option } from './generated/option';
 
-describe('Option', () => {
+describe('generated Option', () => {
     describe('isSome()', () => {
         it('should be true on Some', () => {
             const opt = Option.Some(42);

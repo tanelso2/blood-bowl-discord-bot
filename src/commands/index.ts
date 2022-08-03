@@ -11,10 +11,10 @@ import { printRound } from "./round";
 import { printSchedule } from "./schedule";
 import { calculateOdds } from "./odds";
 import { declareWinner } from "./winner";
-import { Option } from "@core/types/option";
+import { Option } from "@core/types/generated/option";
 import { DiscordFormat } from "@formatting/discordFormat";
 import { League } from "@models/league";
-import { Either } from "@core/types/either";
+import { Either } from "@core/types/generated/either";
 
 const commands: Command[] = [
     makeCommand('advance', advanceRound, 'Advance to the next round (only usable by the league owner)', true),

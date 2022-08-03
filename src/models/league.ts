@@ -5,8 +5,8 @@ import * as yaml from 'js-yaml';
 import Discord from 'discord.js';
 
 import { logger } from '@core/logger';
-import { Option } from '@core/types/option';
-import { Either } from '@core/types/either';
+import { Option } from '@core/types/generated/option';
+import { Either } from '@core/types/generated/either';
 import { Result } from '@core/types/result';
 
 import { Coach, CoachData } from './coach';

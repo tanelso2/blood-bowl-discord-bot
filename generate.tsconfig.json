@@ -1,0 +1,7 @@
+{
+    "extends": "./tsconfig.json",
+    "include": [
+        "src/core/types/pattern.ts",
+        "src/utils/*.ts"
+    ]
+}
