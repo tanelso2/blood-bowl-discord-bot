@@ -45,7 +45,7 @@ async function handleDir(d: string) {
     const dir = await fs.opendir(d);
     for await (const x of dir) {
         const xPath = path.join(d, x.name);
-        if (x.isFile() && x.name.endsWith('.ts.pat')) {
+        if (x.isFile() && x.name.endsWith('.ts.patn')) {
             console.log(`Found: ${xPath}`);
             await handlePatFile(xPath);
         } else if (x.isDirectory()) {
