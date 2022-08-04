@@ -1,4 +1,4 @@
-import * as insultGenerator from '@generator/string-generator';
+import { generateSlight } from '@generator/helpers';
 import { Game } from '@models/game';
 import { assertLeague, CommandContext } from './core';
 
@@ -12,9 +12,14 @@ export function declareWinner(context: CommandContext) {
             finishedGame.declareWinner(user.id);
             league.save();
             const opponent = finishedGame.getOpponent(user);
-            const slight = insultGenerator.generateString("${slight}");
+            const slight = generateSlight();
             return message.reply(`Nice, recorded your win against ${opponent.commonName}, that ${slight}.`);
         },
-        None: () => message.reply(insultGenerator.generateString("You don't appear to be playing this round...${slight}")),
+        None: () => { 
+            const slight = generateSlight();
+            return message.reply(`You don't appear to be playing this round...${slight}`);
+        }
+
+
     });
 }

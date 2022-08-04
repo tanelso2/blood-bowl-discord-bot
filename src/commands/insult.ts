@@ -1,7 +1,7 @@
-import * as insultGenerator from '@generator/string-generator';
+import { generateInsult } from '@generator/helpers';
 import { CommandContext } from './core';
 
 export async function printInsult({message}: CommandContext) {
-    const insult = insultGenerator.generateString("${insult}");
+    const insult = generateInsult();
     await message.reply(insult);
 }

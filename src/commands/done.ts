@@ -1,5 +1,5 @@
+import { generateInsult } from '@generator/helpers';
 import { Game } from '@models/game';
-import * as insultGenerator from '@generator/string-generator';
 import { assertLeague, CommandContext } from './core';
 
 export async function markGameDone(context: CommandContext) {
@@ -20,7 +20,7 @@ export async function markGameDone(context: CommandContext) {
     }
 
     function insult() {
-        const insult = insultGenerator.generateString("${insult}");
+        const insult = generateInsult();
         return message.reply(`You don't appear to be playing this round...\n${insult}`);
     }
 

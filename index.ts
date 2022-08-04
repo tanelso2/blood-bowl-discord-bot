@@ -5,9 +5,9 @@ import { readFileSync } from 'fs';
 import Discord from 'discord.js';
 import { logger } from '@core/logger';
 import { getLeagueFromFile, League} from '@models/league';
-import * as insultGenerator from '@generator/string-generator';
 import { ContextError, makeContext } from '@commands/index';
 import { CommandContext } from '@commands/core';
+import { generateInsult } from '@generator/helpers';
 
 const configFile = './config.json';
 
@@ -55,7 +55,7 @@ async function handleMessage(message: Discord.Message, client: Discord.Client) {
             Left: (e: ContextError) => {
                 switch (e.kind) {
                     case "unknown-command": {
-                        const insult = insultGenerator.generateString("${insult}");
+                        const insult = generateInsult();
                         return message.reply(`Dude I have no idea what you're trying to say\n${insult}`);
                     }
                     case "user-in-no-leagues": {
