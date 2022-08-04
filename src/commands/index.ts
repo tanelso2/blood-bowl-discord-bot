@@ -92,7 +92,7 @@ export function makeContext(client: Discord.Client, leagues: League[], message: 
     const messageParts = message.toString().split(/\s/);
 
     const rawCommandName = messageParts[1].toLowerCase();
-    return findCommand(rawCommandName).on({
+    return findCommand(rawCommandName).match<Either<ContextError, CommandContext>>({
         None: () => Either.Left({kind: "unknown-command"}),
         Some: (cmd: Command) => {
             let partsUsed = 2;

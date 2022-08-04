@@ -1,6 +1,4 @@
-import { baseClass, patternDefToTS, patternLanguage } from "./pattern";
-import * as Parsimmon from 'parsimmon';
-import * as fs from 'fs';
+import { patternLanguage } from "./pattern";
 
 const boolDef = `
 pat Bool(
@@ -61,8 +59,8 @@ describe('Parsing?', () => {
     it('should parse ctors', () => {
         patternLanguage.ctorList.tryParse(`(True | False)`);
         patternLanguage.generics.tryParse(`<a>`);
-        let x = patternLanguage.extraDefs.tryParse(`{| |}`);
-        x = patternLanguage.extraDefs.tryParse(`{||}`);
+        patternLanguage.extraDefs.tryParse(`{| |}`);
+        patternLanguage.extraDefs.tryParse(`{||}`);
     })
 
     it('should read the Bool pattern', () => {

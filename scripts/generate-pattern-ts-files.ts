@@ -47,7 +47,7 @@ async function handleDir(d: string) {
         const xPath = path.join(d, x.name);
         if (x.isFile() && x.name.endsWith('.ts.pat')) {
             console.log(`Found: ${xPath}`);
-            handlePatFile(xPath);
+            await handlePatFile(xPath);
         } else if (x.isDirectory()) {
             await handleDir(xPath);
         }

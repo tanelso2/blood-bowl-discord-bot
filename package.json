@@ -7,7 +7,7 @@
     "build": "npm run generate && npm run compile",
     "generate": "npm run generate-pattern-ts",
     "clean": "rm -r build && rm -r node_modules",
-    "check-all": "npm run compile && npm run test && npm run lint",
+    "check-all": "npm run build && npm run test && npm run lint",
     "compile": "tsc --project ./",
     "test": "LOG_LEVEL=debug ts-mocha --paths --file ./src/tests/init \"**/*.spec*.ts\" --ignore \"node_modules/**/*\"",
     "dev": "npm run build && LOG_LEVEL=debug node ./build/ ./sample-league.yaml | npx pino-pretty",
