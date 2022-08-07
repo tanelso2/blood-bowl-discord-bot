@@ -1,4 +1,4 @@
-import * as insultGenerator from '@generator/string-generator';
+import { generateInsult } from '@generator/helpers';
 import { assertLeague, CommandContext } from './core';
 
 /*
@@ -20,6 +20,6 @@ export async function printSchedule(context: CommandContext) {
         const response = `here is your schedule this league:\n${schedule}`;
         return message.reply(response, {disableMentions: 'all'});
     }
-    const insult = insultGenerator.generateString("${insult}");
+    const insult = generateInsult();
     return message.reply(`you don't seem to be playing this round, smoothbrain.\n${insult}`);
 }

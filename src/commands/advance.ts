@@ -1,7 +1,8 @@
 import Discord from 'discord.js';
-import * as insultGenerator from '@generator/string-generator';
 import { logger } from '@core/logger';
 import { assertLeague, CommandContext } from './core';
+import { generateInsult } from '@generator/helpers';
+import { Round } from '@models/round';
 
 const LOGGER = logger.child({module:'commands/advance'});
 
@@ -33,12 +34,12 @@ export async function advanceRound(context: CommandContext) {
     }
 
     if (user.id !== league.ownerId) {
-        const insult = insultGenerator.generateString("${insult}");
+        const insult = generateInsult();
         await message.channel.send(`You're not the fucking owner of this league, ${user.toString()}\n${insult}`);
     } else {
         await league.incrementRound().on({
             Left: (e: Error) => {return void message.reply(e.message)},
-            Right: async (newRound) => {
+            Right: async (newRound: Round) => {
                 try {
                     const reply = await message
                         .reply(

@@ -1,4 +1,4 @@
-import * as insultGenerator from '@generator/string-generator';
+import { generateInsult } from "@generator/helpers";
 import { Game } from "@models/game";
 import { assertLeague, CommandContext } from "./core";
 
@@ -14,7 +14,7 @@ export async function findOpponent(context: CommandContext) {
     const usersGame = league.getCurrentRound().games.find(userInGame);
 
     if (usersGame === undefined) {
-        const insult = insultGenerator.generateString("${insult}");
+        const insult = generateInsult();
         return message.reply(`you don't seem to be playing this round, smoothbrain.\n${insult}`);
     }
 
