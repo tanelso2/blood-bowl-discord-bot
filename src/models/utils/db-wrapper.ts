@@ -1,7 +1,7 @@
-import { Option } from '@core/types/option';
+import { Option } from '@core/types/generated/option';
 import * as fs from 'fs';
 import { Database } from 'sqlite3';
-import { DBResult } from './db-result';
+import { DBResult } from './generated/db-result';
 import {allAre, TypeGuard} from '@core/types/type-guards';
 
 

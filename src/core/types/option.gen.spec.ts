@@ -1,4 +1,4 @@
-import { Option } from './option';
+import { Option } from './generated/option';
 
 describe('Option', () => {
     describe('isSome()', () => {
@@ -115,5 +115,25 @@ describe('Option', () => {
             throw new Error("Should have thrown in unwrap of None");
         });
     });
+
+    describe('map()', () => {
+        it('should pass thru Nones without calling f()', () => {
+            let called = false;
+            const f = (x: number) => { called = true; return x;};
+            const opt = Option.None<number>();
+            const res = opt.map(f);
+            res.isNone().should.be.true;
+            called.should.be.false;
+        });
+
+        it('should map Somes correctly', () => {
+            const n = 1;
+            const f = (x: number) => x + 1;
+            const opt = Option.Some(n);
+            const res = opt.map(f);
+            res.isSome().should.be.true;
+            res.unwrap().should.be.eql(f(n));
+        });
+    })
 
 });

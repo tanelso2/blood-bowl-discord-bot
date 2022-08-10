@@ -1,6 +1,6 @@
 import { Game, GameData } from './game';
 import { Coach } from './coach';
-import { Option } from "@core/types/option";
+import { Option } from "@core/types/generated/option";
 
 export interface RoundData {
     round: number;
