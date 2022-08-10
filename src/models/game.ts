@@ -42,12 +42,17 @@ export class Game implements GameData {
      * @return {Coach}
      */
     getOpponent(user: Discord.User): Coach {
-        const opponent = Option.ofNullable(this.coaches.find((c) => c.id !== user.id));
+        return this.getOpponentFromId(user.id);
+    }
+
+
+    getOpponentFromId(id: string): Coach {
+        const opponent = Option.ofNullable(this.coaches.find((c) => c.id !== id));
         return opponent.on({
             Some: (opponent: Coach) => opponent,
             None: () => {
-                LOGGER.error(`unknown opponent of ${user.id}`);
-                throw new Error(`unknown opponent of ${user.id}`);
+                LOGGER.error(`unknown opponent of ${id}`);
+                throw new Error(`unknown opponent of ${id}`);
             },
         });
     }
