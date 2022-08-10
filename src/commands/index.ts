@@ -15,10 +15,12 @@ import { Option } from "@core/types/generated/option";
 import { DiscordFormat } from "@formatting/discordFormat";
 import { League } from "@models/league";
 import { Either } from "@core/types/generated/either";
+import { debug } from "./debug";
 
 const commands: Command[] = [
     makeCommand('advance', advanceRound, 'Advance to the next round (only usable by the league owner)', true),
     makeCommand('announce', announceGame, 'Announce that your game for this current round is starting', true),
+    makeCommand('debug', debug, 'Debug commands', false),
     makeCommand('done', markGameDone, 'Mark your game for this round as done', true),
     makeCommand('help', listCommands, 'Display this help text', false),
     makeCommand('insult', printInsult, 'Just print out an insult', false),
