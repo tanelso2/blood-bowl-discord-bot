@@ -24,7 +24,7 @@ async function handlePatFile(fPath: string) {
     const { dir, name } = path.parse(fPath);
     const generatedDir = path.join(dir, "generated");
     if (!await exists(generatedDir)) {
-        console.log(`Creating ${generatedDir}`);
+        console.log(`>> Creating ${generatedDir}`);
         await fs.mkdir(generatedDir);
     }
     const patInputBuffer = await fs.readFile(fPath);
@@ -32,9 +32,9 @@ async function handlePatFile(fPath: string) {
     const patDef = patternLanguage.patternDef.tryParse(patInput);
     const typescriptOutput = patternDefToTS(patDef);
     const outputFile = path.join(generatedDir, `${name}`);
-    console.log(`Gonna write to ${outputFile}`);
+    console.log(`>> write ${outputFile}`);
     await fs.writeFile(outputFile, typescriptOutput);
-    console.log(`Gonna tsfmt ${outputFile}`);
+    console.log(`>> tsfmt ${outputFile}`);
     const result = await runProcess('tsfmt', ['-r', outputFile]);
     if (result.exitCode !== 0) {
         console.error(`ERROR - tsfmt failed`);
@@ -47,8 +47,9 @@ async function handleDir(d: string) {
     for await (const x of dir) {
         const xPath = path.join(d, x.name);
         if (x.isFile() && x.name.endsWith('.ts.patn')) {
-            console.log(`Found: ${xPath}`);
+            console.log(`>> Found: ${xPath}`);
             await handlePatFile(xPath);
+            console.log(``); //newline
         } else if (x.isDirectory()) {
             await handleDir(xPath);
         }
