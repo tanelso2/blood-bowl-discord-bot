@@ -1,6 +1,19 @@
-import { Modifier, parseOddsScenario, RollKind, buildTree, findSuccessProbability } from './odds';
+import { Modifier, parseOddsScenario, RollKind, buildTree, findSuccessProbability,  modifierString, rollString } from './odds';
 
 describe('Odds', () =>{
+    describe('Printing', () => {
+        it('Should display modifiers sanely', () => {
+            const m = Modifier.Blizzard;
+            modifierString(m).should.eql("Blizzard")
+        });
+        it('should display rolls sanely', () => {
+            const r = {
+                kind: RollKind.DodgeRoll,
+                goal: 4
+            };
+            rollString(r).should.eql("4-up DodgeRoll");
+        });
+    })
     describe('Parsing', () => {
         it('should parse "dodge" correctly', () => {
             const i = "dodge";
