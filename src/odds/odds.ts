@@ -38,6 +38,7 @@ export enum Modifier {
     Pro
 }
 
+
 export interface Roll {
     kind: RollKind;
     goal: number;
@@ -50,6 +51,24 @@ export enum RollKind {
     CatchRoll,
     GFIRoll,
     ProRoll
+}
+
+export function modifierString(m: Modifier): string {
+    return Modifier[m];
+}
+
+export function rollKindString(rk: RollKind): string {
+    return RollKind[rk];
+}
+
+export function rollString(r: Roll): string {
+    return `${r.goal}-up ${rollKindString(r.kind)}`;
+}
+
+export function scenarioString(s: OddsScenario): string {
+    const rolls = s.rolls.map(x => rollString(x));
+    const modifiers = s.modifiers.map(x => modifierString(x));
+    return JSON.stringify({rolls, modifiers});
 }
 
 const modifierParseMap: {[key: string]: Modifier} = {

@@ -1,5 +1,5 @@
 import { logger } from '@core/logger';
-import { parseOddsScenario, findSuccessProbability, buildTree } from '@odds/odds';
+import { parseOddsScenario, findSuccessProbability, buildTree, scenarioString } from '@odds/odds';
 import { CommandContext } from './core';
 
 const LOGGER = logger.child({module: 'commands/odds'});
@@ -11,7 +11,7 @@ export async function calculateOdds({message, restOfMessage}: CommandContext) {
         const scenario = parseOddsScenario(oddsString);
         const eventTree = buildTree(scenario);
         const prob = findSuccessProbability(eventTree);
-        const reply = `Parsed as ${JSON.stringify(scenario)}\nThe probability is ${prob}`;
+        const reply = `Parsed as ${scenarioString(scenario)}\nThe probability is ${prob}`;
         return message.reply(reply);
     } catch (e) {
         return message.reply(`ERROR: ${e as string}`);
