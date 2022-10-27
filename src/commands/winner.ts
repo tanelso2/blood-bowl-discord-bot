@@ -21,9 +21,10 @@ export function declareWinner(context: CommandContext) {
             finishedGame.declareWinner(userId);
             league.save();
             const opponent = finishedGame.getOpponentFromId(userId);
-            const slight = generateSlight();
+            // TODO: Replace with exultations of the greatness of the winner
+            // const slight = generateSlight();
             const winnerString = userId === user.id ? "your" : `<@${userId}>'s`;
-            return message.reply(`Nice, recorded ${winnerString} win against ${opponent.commonName}, that ${slight}.`);
+            return message.reply(`Nice, recorded ${winnerString} win against ${opponent.commonName}.`);
         },
         None: () => { 
             const slight = generateSlight();
