@@ -170,6 +170,7 @@ export class League implements LeagueData {
             return Either.Left(new Error("Could not advance, that was the last round"));
         }
         this.currentRound = newRound;
+        this.getCurrentRound().setRoundStart();
         this.save();
         return Either.Right(this.getCurrentRound());
     }
@@ -225,6 +226,9 @@ export class TournamentSeason extends League {
     incrementRound(): Either<Error, Round> {
         if(this.currentRound == 0) {
             this.currentRound += 1;
+            const curr = this.getCurrentRound();
+            curr.setRoundStart()
+            this.save();
             return Either.Right(this.getCurrentRound());
         }
         const currentRound = this.getCurrentRound();
@@ -248,7 +252,7 @@ export class TournamentSeason extends League {
         const r = new Round(roundData, this.coaches);
         this.schedule.push(r);
         this.currentRound += 1;
-
+        this.getCurrentRound().setRoundStart()
         this.save();
         return Either.Right(this.getCurrentRound());
     }
