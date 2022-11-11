@@ -5,6 +5,7 @@ import { Option } from "@core/types/generated/option";
 export interface RoundData {
     round: number;
     games: GameData[];
+    startTime?: number | undefined;
 }
 
 /** One round of a League. */
@@ -12,6 +13,7 @@ export class Round implements RoundData {
     id: number;
     round: number;
     games: Game[];
+    startTime: number | undefined;
 
     /**
      * @param {Object} data - Yaml representation of a round.
@@ -21,6 +23,7 @@ export class Round implements RoundData {
         this.id = data.round;
         this.round = data.round;
         this.games = data.games.map((d) => new Game(d, coaches));
+        this.startTime = data.startTime;
     }
 
     /**
@@ -39,9 +42,18 @@ export class Round implements RoundData {
         return this.games.filter((game) => !game.done);
     }
 
+    getRoundStart(): Option<number> {
+        return Option.ofNullable(this.startTime)
+    }
+
+    setRoundStart() {
+        this.startTime = Date.now();
+    }
+
     encode(): RoundData {
         const round = this.id;
         const games = this.games.map((g) => g.encode());
-        return { round, games };
+        const startTime = this.startTime || undefined;
+        return { round, games, startTime };
     }
 }
