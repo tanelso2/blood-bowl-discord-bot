@@ -27,31 +27,31 @@ Basically, a lot of these are info you can find in the game, but it is annoying 
 Use [nvm](https://github.com/nvm-sh/nvm) to use the proper version of Node.js
 
 ```bash
-    nvm install
+nvm install
 
-    nvm use
+nvm use
 ```
 
 ```bash
-    npm install
+npm install
 ```
 
 ## Building
 
 ```bash
-    npm run build
+npm run build
 ```
 
 ## Testing
 
 ```bash
-    npm run test
+npm run test
 ```
 
 ## Linting
 
 ```bash
-    npm run lint
+npm run lint
 ```
 
 ## Running in Dev mode
@@ -59,5 +59,5 @@ Use [nvm](https://github.com/nvm-sh/nvm) to use the proper version of Node.js
 Requires a [config.json](https://discordjs.guide/creating-your-bot/#using-config-json) file with your [bot api token from Discord](https://discordjs.guide/preparations/setting-up-a-bot-application.html#your-bot-s-token)
 
 ```bash
-    npm run dev
+npm run dev
 ```
