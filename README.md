@@ -1,5 +1,7 @@
 # Blood Bowl Discord Bot
 
+[![Build Status](https://github.com/tanelso2/blood-bowl-discord-bot/actions/workflows/pr-testing.js.yml/badge.svg)](https://github.com/tanelso2/blood-bowl-discord-bot/actions/workflows/pr-testing.js.yml)
+
 A discord bot to help manage leagues of [Blood Bowl 2](https://store.steampowered.com/app/236690/Blood_Bowl_2/).
 
 This bot does not use the BB2 API and instead must be configured via a yaml file. (see [sample-league.yaml](./sample-league.yaml))
