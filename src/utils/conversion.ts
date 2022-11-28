@@ -1,22 +1,7 @@
 import { Option } from "@core/types/generated/option";
 
-export enum TimeUnit {
-  Milliseconds = "milliseconds",
-  Seconds = "seconds",
-  Minutes = "minutes",
-  Hours = "hours",
-  Days = "days",
-  Weeks = "weeks"
-}
 
 export type UnitConversion<T> = [T, number, T];
-
-const timeConversions: UnitConversion<TimeUnit>[] = [
-  [TimeUnit.Seconds, 1000, TimeUnit.Milliseconds],
-  [TimeUnit.Minutes, 60, TimeUnit.Seconds],
-  [TimeUnit.Hours, 60, TimeUnit.Minutes],
-  [TimeUnit.Days, 24, TimeUnit.Hours]
-];
 
 function getConversionFrom<T>(conv: UnitConversion<T>, y: T): Option<[T, number]> {
   const [x1, m, x2] = conv;
@@ -29,7 +14,7 @@ function getConversionFrom<T>(conv: UnitConversion<T>, y: T): Option<[T, number]
   }
 }
 
-function convert<T>(convs: UnitConversion<T>[], startVal: number, startUnit: T, endUnit: T): Option<number> {
+export function convert<T>(convs: UnitConversion<T>[], startVal: number, startUnit: T, endUnit: T): Option<number> {
   function helper(currVal: number, currUnit: T, visited: T[]): Option<number> {
     if (currUnit === endUnit) {
       return Option.Some(currVal);
@@ -50,8 +35,4 @@ function convert<T>(convs: UnitConversion<T>[], startVal: number, startUnit: T, 
     }
   }
   return helper(startVal, startUnit, [startUnit]);
-}
-
-export function convertTime(startVal: number, startUnit: TimeUnit, endUnit: TimeUnit): Option<number> {
-  return convert(timeConversions, startVal, startUnit, endUnit);
 }

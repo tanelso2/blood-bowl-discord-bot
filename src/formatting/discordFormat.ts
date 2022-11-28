@@ -2,9 +2,11 @@ import Discord from 'discord.js';
 import { Game } from '@models/game';
 import { Round } from '@models/round';
 import { Coach } from '@models/coach';
-import { convertTime, TimeUnit } from '@utils/conversion';
+import { timeStringDaysElapsed, TimeUnit } from '@utils/timeUtils';
 
 const BLANK = '\u200b';
+
+export const MAX_LENGTH = ''
 
 interface MatchupField {
     name: string;
@@ -53,17 +55,7 @@ export class DiscordFormat {
         round.getRoundStart().match({
             Some: (startTime) => {
                 const timeElapsed = Date.now() - startTime;
-                const days = convertTime(timeElapsed, TimeUnit.Milliseconds, TimeUnit.Days).unwrap();
-                function daysString(days: number): string {
-                    if (days < 1) {
-                        return `less than a day`;
-                    } else if (days < 7) {
-                        return `only ${days} days`;
-                    } else {
-                        return `${days} days`;
-                    }
-                }
-                const value = `It's been ${daysString(days)} since the round started.`;
+                const value = `It's been ${timeStringDaysElapsed(timeElapsed, TimeUnit.Milliseconds)} since the round started.`;
                 ret = ret.addFields([{ name: BLANK, value }]);
             },
             None: () => {}
