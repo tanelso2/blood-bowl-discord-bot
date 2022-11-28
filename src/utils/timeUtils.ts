@@ -1,4 +1,5 @@
 import { UnitConversion, convert } from "./conversion";
+import { Option } from "@core/types/generated/option";
 
 export enum TimeUnit {
   Milliseconds = "milliseconds",

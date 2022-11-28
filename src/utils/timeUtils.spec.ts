@@ -1,4 +1,4 @@
-import { convertTime, TimeUnit } from "./conversion";
+import { convertTime, TimeUnit } from "./timeUtils";
 
 describe('convertTime', () => {
   const cases: [[number, TimeUnit, TimeUnit], number][] = [
