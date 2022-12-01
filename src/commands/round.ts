@@ -6,5 +6,5 @@ export function printRound(context: CommandContext) {
 
     const currentRound = league.getCurrentRound(); 
     const roundStatus = formatter.roundStatus(currentRound);
-    return message.reply("", { embed: roundStatus });
+    return message.reply({ embeds: [roundStatus] });
 }

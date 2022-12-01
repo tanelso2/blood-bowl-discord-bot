@@ -1,4 +1,4 @@
-import Discord from 'discord.js';
+import Discord, { EmbedBuilder } from 'discord.js';
 import { Game } from '@models/game';
 import { Round } from '@models/round';
 import { Coach } from '@models/coach';
@@ -28,10 +28,10 @@ export class DiscordFormat {
      * Creates the message for advancing a round.
      *
      * @param {Round} newRound
-     * @return {Discord.MessageEmbed}
+     * @return {Discord.EmbedBuilder}
      */
-    roundAdvance(newRound: Round): Discord.MessageEmbed {
-        return this.MessageEmbed()
+    roundAdvance(newRound: Round): Discord.EmbedBuilder {
+        return this.defaultEmbed()
             .setTitle(`Round ${newRound.id} Matchups`)
             .addFields(newRound.games.map((x) => this.makeMatchupField(x)));
     }
@@ -40,16 +40,16 @@ export class DiscordFormat {
      * Creates the message for the current status of a round.
      * 
      * @param {Round} round
-     * @return {Discord.MessageEmbed}
+     * @return {Discord.EmbedBuilder}
      */
-    roundStatus(round: Round): Discord.MessageEmbed {
+    roundStatus(round: Round): Discord.EmbedBuilder {
         const gameFields = round.games.map((g) => {
             const { homeCoach, awayCoach } = g;
             const ret = `${homeCoach.commonName} (${homeCoach.teamType}) v (${awayCoach.teamType}) ${awayCoach.commonName}`;
             const value = g.done ? `~~${ret}~~` : ret;
             return { name: BLANK, value };
         });
-        let ret = this.MessageEmbed()
+        let ret = this.defaultEmbed()
             .setTitle(`Round ${round.id}`)
             .addFields(gameFields);
         round.getRoundStart().match({
@@ -89,11 +89,11 @@ export class DiscordFormat {
      * Creates the message for describing a game.
      *
      * @param {Game} game
-     * @return {Discord.MessageEmbed}
+     * @return {Discord.EmbedBuilder}
      */
-    game(game: Game): Discord.MessageEmbed {
+    game(game: Game): Discord.EmbedBuilder {
         const getCoach = (x: Coach) => this.coach(x);
-        return this.MessageEmbed()
+        return this.defaultEmbed()
             .setTitle(`${game.homeCoach.teamName} v ${game.awayCoach.teamName}`)
             .addFields(
                 {name: 'Home', value: game.homeCoach.teamName, inline: true},
@@ -151,14 +151,15 @@ export class DiscordFormat {
     /**
      * Creates a new embed with the bot's defaults applied.
      *
-     * @return {Discord.MessageEmbed}
+     * @return {Discord.EmbedBuilder}
      */
-    MessageEmbed(): Discord.MessageEmbed {
+    defaultEmbed(): EmbedBuilder {
         const currentUser = this.client.user as Discord.User;
-        return new Discord.MessageEmbed()
-            .setColor('RED')
-            .setAuthor(currentUser.username, currentUser.displayAvatarURL())
+        return new Discord.EmbedBuilder()
+            .setColor('Red')
+            .setAuthor({name: currentUser.username, iconURL: currentUser.displayAvatarURL()})
             .setTimestamp();
+
     }
 
     /**

@@ -52,8 +52,8 @@ const insults = [
     "Nuffle utters a curse: '${curse}!'",
     "A CURSE UPON YOU: ${curse}",
     "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    "Boo, choke on your ${uselessItem}!",
-    "Trip over your ${uselessItem} and fall into a ${container} of ${grossBodilyFluid}",
+    "Boo, choke on ${uselessItem}!",
+    "Trip over ${uselessItem} and fall into a ${container} of ${grossBodilyFluid}",
     "You do realize this is Blood Bowl, right? Not ${babyGame}?",
     "You're so ${dumbSynonym} you put your ${clothing} on your ${bodyPart}",
     "Jeez you're more worthless than some ${container} filled with ${uselessItem}",
@@ -71,9 +71,8 @@ const babyGames = [
 const uselessItems = [
     "my hopes and dreams",
     "my resume",
-    "smaller versions of itself",
     "ambition, competition, greed, envy, jealousy, hatred, injustice, treachery, and ill-health... but also hope",
-    "Libra",
+    "Libras",
     "promises made by United States Senator Ted Cruz (R-TX)",
 ];
 
