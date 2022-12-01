@@ -28,6 +28,7 @@ client.once(Events.ClientReady, (_) => {
     console.log('Ready!');
 });
 
+/* eslint-disable-next-line @typescript-eslint/require-await */
 async function handleMessage(message: Message, client: Client) {
     const mentionsOptions = {
         ignoreDirect: false,
