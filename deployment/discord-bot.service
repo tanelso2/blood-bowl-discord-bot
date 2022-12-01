@@ -4,9 +4,9 @@ Description = "Discord bot"
 [Service]
 Type=simple
 Restart=always
-WorkingDirectory=/opt/bb_bot/
-ExecStart=/opt/bb_bot/deployment/run.sh
-User=bb_bot
+WorkingDirectory=/opt/discord_bot/
+ExecStart=/opt/discord_bot/deployment/run.sh
+User=discord_bot
 
 [Install]
 WantedBy=multi-user.target
