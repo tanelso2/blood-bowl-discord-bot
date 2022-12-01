@@ -1,8 +1,0 @@
-* Add to 'advanceRound' reply - Games are not completed, but you're the admin of the group so fuck 'em
-
-* Need tests for saving league files. yaml.safe_dump likes to barf on `undefined`
-
-* Maybe throw an exception when constructing the models and a required field does not exist? 
-
-* Paired with a generic exception handler on all messages that will display the exception in discord (maybe toggleable by a debug flag?)
-

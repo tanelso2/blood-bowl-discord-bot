@@ -1,8 +1,0 @@
-{
-    "extends": "./tsconfig.json",
-    "include": [
-        "src/core/types/patterns/*.ts",
-        "src/utils/errorList.ts",
-        "src/utils/procUtils.ts"
-    ]
-}
