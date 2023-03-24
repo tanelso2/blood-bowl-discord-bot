@@ -40,7 +40,7 @@
     "module-alias": "^2.2.2",
     "parsimmon": "^1.18.1",
     "pino": "^8.7.0",
-    "sqlite3": "^5.0.8",
+    "sqlite3": "^5.1.5",
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
