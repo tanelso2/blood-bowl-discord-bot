@@ -123,3 +123,6 @@ db/
 
 # Generated .ts files
 **/generated/*
+
+# Generated vs-code files
+.vscode/

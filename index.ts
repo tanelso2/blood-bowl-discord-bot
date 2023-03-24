@@ -2,7 +2,7 @@ import 'module-alias/register';
 
 import * as process from 'process';
 import { readFileSync } from 'fs';
-import Discord from 'discord.js';
+import { Client, Events, GatewayIntentBits, Message } from 'discord.js';
 import { logger } from '@core/logger';
 import { getLeagueFromFile, League} from '@models/league';
 import { ContextError, makeContext } from '@commands/index';
@@ -33,13 +33,21 @@ function getAllLeagues(): League[] {
     return leagueFiles.map(getLeagueFromFile);
 }
 
-const client = new Discord.Client();
 
-client.once('ready', () => {
+const intents = [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.MessageContent
+];
+
+const client = new Client({intents});
+
+client.once(Events.ClientReady, (_) => {
     console.log('Ready!');
 });
 
-async function handleMessage(message: Discord.Message, client: Discord.Client) {
+async function handleMessage(message: Message, client: Client) {
     const mentionsOptions = {
         "ignoreDirect": false,
         "ignoreRoles": true,
@@ -51,7 +59,7 @@ async function handleMessage(message: Discord.Message, client: Discord.Client) {
     if (message.mentions.has(client.user!, mentionsOptions)) {
         // Should only trigger if they mention bot user by name
         //
-        await makeContext(client, getAllLeagues(), message).on({
+        await makeContext(client, getAllLeagues(), message).match<Promise<any>>({
             Left: (e: ContextError) => {
                 switch (e.kind) {
                     case "unknown-command": {
@@ -81,8 +89,12 @@ async function handleMessage(message: Discord.Message, client: Discord.Client) {
     }
 }
 
+client.on(Events.Error, e => {
+    console.error(`Got an error: ${e.message}`);
+});
 
-client.on('message', message => {
+
+client.on(Events.MessageCreate, message => {
     void handleMessage(message, client);
 });
 
