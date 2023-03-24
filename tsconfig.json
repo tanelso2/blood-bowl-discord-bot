@@ -75,5 +75,22 @@
     "skipLibCheck": true,                     /* Skip type checking of declaration files. */
     "forceConsistentCasingInFileNames": true,  /* Disallow inconsistently-cased references to the same file. */
     "resolveJsonModule": true
+  },
+  "typedocOptions": {
+      "entryPoints": ["index.ts",
+                      "src"],
+      "entryPointStrategy": "expand",
+      "exclude": "**/*.spec.ts",
+      "out": "docs",
+      "intentionallyNotExported": [
+          "src/core/types/generated/bool.ts:True",
+          "src/core/types/generated/bool.ts:False",
+          "src/core/types/generated/option.ts:Some",
+          "src/core/types/generated/option.ts:None",
+          "src/core/types/generated/result.ts:Ok",
+          "src/core/types/generated/result.ts:Err",
+          "src/core/types/generated/either.ts:Left",
+          "src/core/types/generated/either.ts:Right"
+      ]
   }
 }

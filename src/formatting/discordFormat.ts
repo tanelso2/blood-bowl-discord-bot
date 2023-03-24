@@ -72,7 +72,7 @@ export class DiscordFormat {
      * @param {Game} - The game to create an embed field for.
      * @return {Object} - The embed field to add for this game.
      */
-    makeMatchupField(game: Game): MatchupField {
+    private makeMatchupField(game: Game): MatchupField {
         const home = game.homeCoach;
         const away = game.awayCoach;
 
