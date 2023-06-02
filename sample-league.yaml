@@ -1,4 +1,4 @@
-name: Pissmonger Test Tournament
+name: Test Tournament
 id: test
 type: round-robin
 ownerId: '$f{user-id.txt:8675309}'
