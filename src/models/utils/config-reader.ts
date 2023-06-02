@@ -1,38 +1,38 @@
 import { readFileSync } from 'fs';
 import { Either } from '@core/types/generated/either';
-import { Option } from '@core/types/generated/option';
 
 const filePattern = /^\$f{(.*)}$/
 
 const defaultPattern = /^(.*):(.*)$/
 
 /**
- *
+ * Processes config macros and returns the value.
+ * So far only file substitutions exist, so this function
+ * only calls that one.
+ * 
+ * This is intended to be the only export from the module
+ * 
  * @param {String} rawValue
  * @returns {Either<String, Error>}
  */
 export function processConfigValue(rawValue: string): Either<string, Error> {
-    return processFileSubstitution(rawValue).on({
-       Left: (err: Error) => Either.Right(err),
-       Right: (valueOpt: Option<string>) => valueOpt.on({
-            Some: (v: string) => Either.Left(v),
-            _: () => Either.Left(rawValue),
-        })
-    });
+    return processFileSubstitution(rawValue);
 }
 
-// type ProcessResult =
-
 /**
- * @returns Either<Error, Option<String>>
+ * Processes substitution macro that reads the contents of a file and returns that
+ * 
+ * @returns Either<Error, String>
  */
-function processFileSubstitution(value: string): Either<Error, Option<String>> {
+function processFileSubstitution(value: string): Either<string, Error> {
     const matches = filePattern.exec(value);
     if (!matches) {
-        // No file substitution to do
-        return Either.Right(Option.None());
+        // No file substitution to do, the value is just the whole string
+        return Either.Left(value);
     }
 
+    // Case1: $f{filename}
+    // Case2: $f{filename:default}
     const [fileName, defaultValue] = splitValueAndDefault(matches[1]);
     try {
         if (!fileName) {
@@ -42,12 +42,14 @@ function processFileSubstitution(value: string): Either<Error, Option<String>> {
         if (!fileContents) {
             throw new Error(`Could not get fileContents of ${fileName}`);
         }
-        return Either.Right(Option.Some(fileContents.trim()));
+        return Either.Left(fileContents.trim());
     } catch(e) {
         if (defaultValue) {
-            return Either.Right(Option.Some(defaultValue));
+            // Case2
+            return Either.Left(defaultValue);
         }
-        return Either.Left(e as Error);
+        // Case1
+        return Either.Right(e as Error);
     }
 }
 
